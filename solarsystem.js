@@ -14,7 +14,7 @@
   "use strict";
 
 Orb.SolarSystem = Orb.SolarSystem || function(){
-  
+  var vsop_dir = './vsop/'; 
   var rad=Math.PI/180;
   
   var NutationAndObliquity = function(time){
@@ -161,7 +161,7 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
      }
   }
 
-  var vsop_earth =  PlanetLoader("./vsop/vsop87d_ear.json");
+  var vsop_earth =  PlanetLoader(vsop_dir + "vsop87d_ear.json");
 
   var EarthPosition = function(time){
     var earth = new PlanetPosition(time,vsop_earth);
@@ -751,7 +751,7 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
       }
     },
     Mercury:function(){
-      var data = PlanetLoader("./vsop/vsop87d_mer.json");
+      var data = PlanetLoader(vsop_dir + "vsop87d_mer.json");
       return {
         position:{
           ecliptic:function(time){
@@ -770,7 +770,7 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     },
 
     Venus:function(){
-      var data = PlanetLoader("./vsop/vsop87d_ven.json");
+      var data = PlanetLoader(vsop_dir + "vsop87d_ven.json");
       return {
         position:{
           ecliptic:function(time){
@@ -789,7 +789,7 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     },
 
     Earth:function(){
-      var data = PlanetLoader("./vsop/vsop87d_ear.json");
+      var data = PlanetLoader(vsop_dir + "vsop87d_ear.json");
       return {
         position:{
           ecliptic:function(time){
@@ -803,7 +803,7 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
       }
     },
     Mars:function(){
-      var data = PlanetLoader("./vsop/vsop87d_mar.json");
+      var data = PlanetLoader(vsop_dir + "vsop87d_mar.json");
       return {
         position:{
           ecliptic:function(time){
@@ -822,7 +822,7 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     },
 
     Jupiter:function(){
-      var data = PlanetLoader("./vsop/vsop87d_jup.json");
+      var data = PlanetLoader(vsop_dir + "vsop87d_jup.json");
       return {
         position:{
           ecliptic:function(time){
@@ -841,7 +841,7 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     },
 
     Saturn:function(){
-      var data = PlanetLoader("./vsop/vsop87d_sat.json");
+      var data = PlanetLoader(vsop_dir + "vsop87d_sat.json");
       return {
         position:{
           ecliptic:function(time){
@@ -860,7 +860,7 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     },
 
     Uranus:function(){
-      var data = PlanetLoader("./vsop/vsop87d_ura.json");
+      var data = PlanetLoader(vsop_dir + "vsop87d_ura.json");
       return {
         position:{
           ecliptic:function(time){
@@ -879,7 +879,7 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     },
 
     Neptune:function(){
-      var data = PlanetLoader("./vsop/vsop87d_nep.json");
+      var data = PlanetLoader(vsop_dir + "vsop87d_nep.json");
       return {
         position:{
           ecliptic:function(time){
