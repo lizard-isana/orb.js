@@ -292,16 +292,6 @@ Orb.Position = Orb.Position || function(obj){
       return obj;
     },
  
-    //geographic to rectangular
-    geographic_to_rectangular : function(){
-      if(obj.position.geographic){
-        var latituude=obj.position.geographic.latituude;
-        var longitude=obj.position.geographic.longitude;
-        var altitude =obj.position.geographic.altitude;
-
-    
-    },
-    
     //rectangular to geographic
     rectangular_to_geographic : function(){
       var time = obj.time;
@@ -376,20 +366,22 @@ Orb.Position = Orb.Position || function(obj){
 
 
 Orb.Observer = Orb.Observer || function(position){
-   var rad=Math.PI/180;
-   var a = 6377.39715500; // earth radius
-   var e2 = 0.006674372230614;
-   var n = a/(Math.sqrt(1-e2*Math.cos(position.latitude*rad)))
-   return {
-     latitude: position.latitude,
-     longitude: position.longitude,
-     altitude: position.altitude,
-     toRectangular: function(){
-       x: (n+position.altitude)*Math.cos(position.latitude*rad)*Math.cos(position.longitude*rad),
-       y: (n+position.altitude)*Math.cos(position.latitude*rad)*Math.sin(position.longitude*rad),
-       z: (n*(1-e2)+position.altitude)*Math.sin(position.latitude*rad)
-     }
-   }
+  var rad=Math.PI/180;
+  var a = 6377.39715500; // earth radius
+  var e2 = 0.006674372230614;
+  var n = a/(Math.sqrt(1-e2*Math.cos(position.latitude*rad)))
+  return {
+    latitude: position.latitude,
+    longitude: position.longitude,
+    altitude: position.altitude,
+    toRectangular: function(){
+      return {
+        x: (n+position.altitude)*Math.cos(position.latitude*rad)*Math.cos(position.longitude*rad),
+        y: (n+position.altitude)*Math.cos(position.latitude*rad)*Math.sin(position.longitude*rad),
+        z: (n*(1-e2)+position.altitude)*Math.sin(position.latitude*rad)
+      }
+    }
+  }
 }
 
 Orb.Observation = Orb.Observation || function(observer,target){
