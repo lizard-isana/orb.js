@@ -43,7 +43,7 @@ Orb.Satellite = Orb.Satellite || function(tle){
       ephemeris_type :  Number(line1.substring(62,63)),
       element_number :  Number(line1.substring(64,68)),
       check_sum_1 :   Number(line1.substring(69,69)),
-      line_number_2 :   Number(line1.slice(0,0)),
+      line_number_2 :   Number(line2.slice(0,0)),
       catalog_no_2 :  Number(line2.slice(2,7)),
       inclination : Number(line2.substring(8,16)),
       right_ascension : Number(line2.substring(17,25)),
