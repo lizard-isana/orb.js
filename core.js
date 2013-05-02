@@ -17,14 +17,12 @@
 
 
 // for Name Space
-var Orb;
 
-Orb = Orb || {
+var Orb = Orb || {
     VERSION : "0.0.0 pre-alpha",
     AUTHOR : "KASHIWAI,Isana",
     LICENSE : "GPL"
 };
-
 
 (function (global) {
   "use strict";
@@ -95,11 +93,7 @@ Orb.Tool = Orb.Tool || {
     return Loader(option);
   } // end Orb.Tool.DataLoader
 } // end Orb.Tool
-}(this));
 
-
-(function (global) {
-  "use strict";
 Orb.Time = function(date){
 
   if(!date){
@@ -265,12 +259,6 @@ Orb.Time = function(date){
     et: _et
   } // end of return Orb.Time
 } // end of Orb.Time
-
-}(this));
-
-
-(function (global) {
-  "use strict";
 
 Orb.Position = Orb.Position || function(obj){
   //not used yet.
