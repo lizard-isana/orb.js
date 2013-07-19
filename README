@@ -9,6 +9,21 @@ JavaScript libraries for Astronomical Calclations
 Source Codes
 https://github.com/lizard-isana/orb.js/
 
+Demo Site
+http://www.lizard-tail.com/isana/lab/orb/
+
+Gist
+ How to calc the position of satellites with Orb.js *English
+ https://gist.github.com/2698126.git
+
+ Orb.js: How to calc the position of satellites *Japanese
+ https://gist.github.com/2418524.git
+ 
+ Orb.js: How to convert RA/Dec to horizontal coodinates
+ https://gist.github.com/2418098.git
+
+ 
+
 License
 ----------
 Copyright (c) 2012 Isana Kashiwai
