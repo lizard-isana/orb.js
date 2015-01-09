@@ -17,16 +17,18 @@
 
 
 // for Name Space
+var Orb;
 
-var Orb = Orb || {
+Orb = Orb || {
     VERSION : "0.0.0 pre-alpha",
     AUTHOR : "KASHIWAI,Isana",
     LICENSE : "GPL"
 };
 
+
 (function (global) {
   "use strict";
-
+Orb.Storage = Orb.Storage || {}
 Orb.Tool = Orb.Tool || {
   
   DataLoader : function(option){
@@ -93,7 +95,11 @@ Orb.Tool = Orb.Tool || {
     return Loader(option);
   } // end Orb.Tool.DataLoader
 } // end Orb.Tool
+}(this));
 
+
+(function (global) {
+  "use strict";
 Orb.Time = function(date){
 
   if(!date){
@@ -224,7 +230,7 @@ Orb.Time = function(date){
         var dt = 62.92 + 0.32217 * t + 0.005589 * t*t
       }else if(year>2050 && year<=2150){
         /*
-        This expression is derived from estimated values of ƒ¢T in the years 2010 and 2050. The value for 2010 (66.9 seconds) is based on a linearly extrapolation from 2005 using 0.39 seconds/year (average from 1995 to 2005). The value for 2050 (93 seconds) is linearly extrapolated from 2010 using 0.66 seconds/year (average rate from 1901 to 2000).
+        This expression is derived from estimated values of Î”T in the years 2010 and 2050. The value for 2010 (66.9 seconds) is based on a linearly extrapolation from 2005 using 0.39 seconds/year (average from 1995 to 2005). The value for 2050 (93 seconds) is linearly extrapolated from 2010 using 0.66 seconds/year (average rate from 1901 to 2000).
         */
         var dt = -20 + 32 * ((y-1820)/100)*((y-1820)/100) - 0.5628 * (2150 - y)
         //The last term is introduced to eliminate the discontinuity at 2050.
@@ -259,6 +265,12 @@ Orb.Time = function(date){
     et: _et
   } // end of return Orb.Time
 } // end of Orb.Time
+
+}(this));
+
+
+(function (global) {
+  "use strict";
 
 Orb.Position = Orb.Position || function(obj){
   //not used yet.
