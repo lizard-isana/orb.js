@@ -43,7 +43,7 @@ Orb.Satellite = Orb.Satellite || function(tle){
       ephemeris_type :  Number(line1.substring(62,63)),
       element_number :  Number(line1.substring(64,68)),
       check_sum_1 :   Number(line1.substring(69,69)),
-      line_number_2 :   Number(line2.slice(0,0)),
+      line_number_2 :   Number(line1.slice(0,0)),
       catalog_no_2 :  Number(line2.slice(2,7)),
       inclination : Number(line2.substring(8,16)),
       right_ascension : Number(line2.substring(17,25)),
@@ -52,10 +52,11 @@ Orb.Satellite = Orb.Satellite || function(tle){
       mean_anomaly : Number(line2.substring(43,51)),
       mean_motion : Number(line2.substring(52,63)),
       rev_number_at_epoch : Number(line2.substring(64,68)),
-      check_sum_2 :   Number(line2.substring(68,69))
+      check_sum_2 :   Number(line1.substring(68,69))
     }
     return orbital_elements
   }
+  
 
   var _setSGP4 = function(orbital_elements){
     var torad = Math.PI/180;
@@ -165,8 +166,6 @@ Orb.Satellite = Orb.Satellite || function(tle){
       var t4cof=0.25*(3.0*d3+c1*(12.0*d2+10.0*c1sq));
       var t5cof=0.2*(3.0*d4+12.0*c1*d3+6.0*d2*d2+15.0*c1sq*(2.0*d2+c1sq));
     }  
-    var epoch_in_date = new Date();
-    epoch_in_date.setTime(Date.UTC(epoch_year-1, 11, 31, 0, 0, 0)+(epoch*24*60*60*1000));
 
   //set accesser
     return {
@@ -176,7 +175,6 @@ Orb.Satellite = Orb.Satellite || function(tle){
       orbital_period: orbital_period,
       epoch_year: epoch_year,
       epoch: epoch,
-      epoch_in_date: epoch_in_date,
       xmo: xmo,
       xmdot: xmdot,
       omegao: omegao,
@@ -232,6 +230,7 @@ Orb.Satellite = Orb.Satellite || function(tle){
       return elapsed_time;
     })(time,orbital_elements)
     
+   
     var xmo=sgp4.xmo;
     var xmdot=sgp4.xmdot;
     var omegao=sgp4.omegao;
@@ -446,10 +445,7 @@ Orb.Satellite = Orb.Satellite || function(tle){
   // Public members.
   return {
     "orbital_elements" : elements,
-    "epoch_in_date": sgp4.epoch_in_date,
     "orbital_period" : sgp4.orbital_period,
-    "apogee" : sgp4.apoge,
-    "perigee" : sgp4.perige,    
     "position" :{
       "rectangular": function(time){
          var rect = _execSGP4(time,sgp4);
