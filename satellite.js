@@ -1,13 +1,10 @@
 // orb - satellite.js
 //
-// Orb 0.0.1 - Javascript Library for Astronomical Calcrations
+// Orb.js - Javascript Library for Astronomical Calcrations
 //
 // Copyright (c) 2010 KASHIWAI, Isana
 // Dual licensed under the MIT (MIT-LICENSE.txt), 
 // and GPL (GPL-LICENSE.txt) licenses.
-//
-// Date: 2010-06-20 00:00:00 +0900 (Sun, 20 Jun 2010) 
-// Rev: 0001
 //
 
 (function (global) {
@@ -20,13 +17,11 @@ Orb.Satellite = Orb.Satellite || function(tle){
     var line1 = tle.first_line;
     var line2 = tle.second_line;
     var epy = Number(line1.slice(18,20));
-
     //epoch_year should be smaller than 2057.
     if(epy<57){var epoch_year=epy+2000}else{var epoch_year=epy+1900};
     var bstar_mantissa = Number(line1.substring(53,59))*1e-5;
     var bstar_exponent = Number("1e" + Number(line1.substring(59,61)));
     var bstar = bstar_mantissa*bstar_exponent
-
     var orbital_elements={
       name: name,
       line_number_1 :   Number(line1.slice(0,0)),
@@ -56,7 +51,6 @@ Orb.Satellite = Orb.Satellite || function(tle){
     }
     return orbital_elements
   }
-  
 
   var _setSGP4 = function(orbital_elements){
     var torad = Math.PI/180;
@@ -75,7 +69,6 @@ Orb.Satellite = Orb.Satellite || function(tle){
     var pio2 = 1.57079633;
     var twopi = 6.2831853;
     var x3pio2 = 4.71238898;
-
     var epoch = orbital_elements.epoch;
     var epoch_year = orbital_elements.epoch_year;
     var bstar = orbital_elements.bstar;
@@ -97,14 +90,11 @@ Orb.Satellite = Orb.Satellite || function(tle){
     var delo=1.5*ck2*x3thm1/(ao*ao*betao*betao2);
     var xnodp=xno/(1.0+delo); //original_mean_motion
     var aodp=ao/(1.0-delo); //semi_major_axis
-
     var orbital_period= 1440.0/Number(orbital_elements["mean_motion"]);
-
     var isimp=0;
     if ((aodp*(1.0-eo)/ae) < (220.0/xkmper+ae)){
       isimp=1;
     }
-
     var s4=s;
     var qoms24=qoms2t;
     var perige=(aodp*(1.0-eo)-ae)*xkmper;
@@ -126,7 +116,6 @@ Orb.Satellite = Orb.Satellite || function(tle){
     var psisq=Math.abs(1.0-etasq);
     var coef=qoms24*Math.pow(tsi,4);
     var coef1=coef/Math.pow(psisq,3.5);
-    
     var c2=coef1*xnodp*(aodp*(1.0+1.5*etasq+eeta*(4.0+etasq))+0.75*ck2*tsi/psisq*x3thm1*(8.0+3.0*etasq*(8.0+etasq)));
     var c1=bstar*c2;
     var sinio=Math.sin(xincl);
@@ -135,13 +124,11 @@ Orb.Satellite = Orb.Satellite || function(tle){
     var x1mth2=1.0-theta2;
     var c4=2.0*xnodp*coef1*aodp*betao2*(eta*(2.0+0.5*etasq)+eo*(0.5+2.0*etasq)-2.0*ck2*tsi/(aodp*psisq)*(-3.0*x3thm1*(1.0-2.0*eeta+etasq*(1.5-0.5*eeta))+0.75*x1mth2*(2.0*etasq-eeta*(1.0+etasq))*Math.cos((2.0*omegao))));
     var c5=2.0*coef1*aodp*betao2*(1.0+2.75*(etasq+eeta)+eeta*etasq);
-
     var theta4=theta2*theta2;
     var temp1=3.0*ck2*pinvsq*xnodp;
     var temp2=temp1*ck2*pinvsq;
     var temp3=1.25*ck4*pinvsq*pinvsq*xnodp;
     var xmdot=xnodp+0.5*temp1*betao*x3thm1+0.0625*temp2*betao*(13.0-78.0*theta2+137.0*theta4);
-
     var x1m5th=1.0-5.0*theta2;
     var omgdot=-0.5*temp1*x1m5th+0.0625*temp2*(7.0-114.0*theta2+395.0*theta4)+temp3*(3.0-36.0*theta2+49.0*theta4);
     var xhdot1=-temp1*cosio;
@@ -155,7 +142,6 @@ Orb.Satellite = Orb.Satellite || function(tle){
     var delmo=Math.pow((1.0+eta*Math.cos(xmo)),3);
     var sinmo=Math.sin(xmo);
     var x7thm1=7.0*theta2-1.0;
-
     if (isimp != 1){
       var c1sq=c1*c1;
       var d2=4.0*aodp*tsi*c1sq;
@@ -166,7 +152,6 @@ Orb.Satellite = Orb.Satellite || function(tle){
       var t4cof=0.25*(3.0*d3+c1*(12.0*d2+10.0*c1sq));
       var t5cof=0.2*(3.0*d4+12.0*c1*d3+6.0*d2*d2+15.0*c1sq*(2.0*d2+c1sq));
     }  
-
   //set accesser
     return {
       orbital_elements: orbital_elements,
@@ -229,8 +214,6 @@ Orb.Satellite = Orb.Satellite || function(tle){
       var elapsed_time=(now_sec-epoch_sec)/(60*1000);
       return elapsed_time;
     })(time,orbital_elements)
-    
-   
     var xmo=sgp4.xmo;
     var xmdot=sgp4.xmdot;
     var omegao=sgp4.omegao;
@@ -272,7 +255,6 @@ Orb.Satellite = Orb.Satellite || function(tle){
     var xkmper = sgp4.xkmper;
     var epoch_year=sgp4.epoch_year;
     var epoch=sgp4.epoch;
-
     var xmdf=xmo+xmdot*tsince;
     var omgadf=omegao+omgdot*tsince;
     var xnoddf=xnodeo+xnodot*tsince;
@@ -283,7 +265,6 @@ Orb.Satellite = Orb.Satellite || function(tle){
     var tempa=1.0-c1*tsince;
     var tempe=bstar*c4*tsince;
     var templ=t2cof*tsq;
-
     if (isimp != 1){
       var delomg=omgcof*tsince;
       var delm=xmcof*(Math.pow((1.0+eta*Math.cos(xmdf)),3)-delmo);
@@ -326,8 +307,7 @@ Orb.Satellite = Orb.Satellite || function(tle){
     };
     temp2=epw;
   }
-       // short period preliminary quantities
-
+   // short period preliminary quantities
     var ecose=temp5+temp6;
     var esine=temp3-temp4;
     var elsq=axn*axn+ayn*ayn;
@@ -349,18 +329,14 @@ Orb.Satellite = Orb.Satellite || function(tle){
     var temp=1.0/pl;
     var temp1=ck2*temp;
     var temp2=temp1*temp;
-
     // update for short periodics
-
     var rk=r*(1.0-1.5*temp2*betal*x3thm1)+0.5*temp1*x1mth2*cos2u;
     var uk=u-0.25*temp2*x7thm1*sin2u;
     var xnodek=xnode+1.5*temp2*cosio*sin2u;
     var xinck=xincl+1.5*temp2*cosio*sinio*cos2u;
     var rdotk=rdot-xn*temp1*x1mth2*sin2u;
     var rfdotk=rfdot+xn*temp1*(x1mth2*cos2u+1.5*x3thm1);
-
     // orientation vectors
-
     var sinuk=Math.sin(uk);
     var cosuk=Math.cos(uk);
     var sinik=Math.sin(xinck);
@@ -381,14 +357,12 @@ Orb.Satellite = Orb.Satellite || function(tle){
     var xdot=rdotk*ux+rfdotk*vx;
     var ydot=rdotk*uy+rfdotk*vy;
     var zdot=rdotk*uz+rfdotk*vz;
-
     var xkm = (x*xkmper);
     var ykm = (y*xkmper);
     var zkm = (z*xkmper);
     var xdotkmps = (xdot*xkmper/60);
     var ydotkmps = (ydot*xkmper/60);
     var zdotkmps = (zdot*xkmper/60);
-    
     return {
       x: xkm,
       y: ykm,
@@ -398,7 +372,7 @@ Orb.Satellite = Orb.Satellite || function(tle){
       zdot: zdotkmps,
     }
   }
-  
+
   var _toGeographic = function(time,rect){
     var time = time;
     var xkm = rect.x;
@@ -417,11 +391,9 @@ Orb.Satellite = Orb.Satellite || function(tle){
     if(lng>360){lng = lng%360;}
     if(lng<0){lng = lng%360+360;}    
     if(lng>180){lng=lng-360}
-   
     var lat = Math.atan2(zkm,r);
     var e2 = f*(2-f);
     var tmp_lat = 0
-
     do{
       tmp_lat = lat;
       var sin_lat= Math.sin(tmp_lat)
@@ -437,11 +409,9 @@ Orb.Satellite = Orb.Satellite || function(tle){
       velocity : v
     }
   }
-  
   //initialize;
   var elements = _decodeTLE(tle);
   var sgp4 = _setSGP4(elements);
-  
   // Public members.
   return {
     "orbital_elements" : elements,

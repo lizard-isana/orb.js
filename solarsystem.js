@@ -16,9 +16,10 @@
 Orb.SolarSystem = Orb.SolarSystem || function(){
   
   Orb.Storage.vsop_directory = './vsop/'; 
+  var vsop_earth =  PlanetLoader("vsop87a_ear.json");
   var rad=Math.PI/180;
-
   var au = 149597870700;
+
   var NutationAndObliquity = function(time){
 	    //var dt = DeltaT()/86400;
 	    //var dt = 64/86400;
@@ -35,8 +36,8 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
 	    nutation:nutation,
 		obliquity:obliquity
 	  }
-  
   }
+
   var PlanetPositionEcliptic = function(time,d){
     var data = d.data;
     var jd = time.jd();
@@ -62,14 +63,12 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     var gcx = from.x-to.x; 
     var gcy = from.y-to.y; 
     var gcz =from.z-to.z;
-
     var ecl = 23.439281;
     var eqx = gcx
     var eqy = gcy*Math.cos(ecl*rad) - gcz * Math.sin(ecl*rad)
     var eqz = gcy*Math.sin(ecl*rad) + gcz * Math.cos(ecl*rad)
-
     var ra = Math.atan2(eqy,eqx)/rad;
-    if (ra <0){
+    if (ra<0){
       ra = ra%360+360
     }
     if(ra >360){
@@ -117,8 +116,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
      }
   }
 
-  var vsop_earth =  PlanetLoader("vsop87a_ear.json");
-
   var EarthPosition = function(time){
     var earth = new PlanetPositionEcliptic(time,vsop_earth);
     var earth_ecliptic = earth
@@ -131,24 +128,19 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
 
   var FromKeplerian = function(orbital_elements,time){
      var au = 149597870.691;
-
      function deg2rad(d){
        return d*(Math.PI/180);
      }
-
      function rad2deg(r){
        return r*(180/Math.PI);
      }
-
      var eccentricity = Number(orbital_elements.eccentricity);
      var gm = 2.9591220828559093*Math.pow(10,-4);
-     
      if(orbital_elements.time_of_periapsis){
        var epoch = orbital_elements.time_of_periapsis;
      }else{
        var epoch = orbital_elements.epoch;
      }
-     
      var EllipticalOrbit = function(orbital_elements,time){
        if(orbital_elements.semi_major_axis){
          var semi_major_axis = orbital_elements.semi_major_axis;
@@ -187,7 +179,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
      }
      
      var ParabolicOrbit = function(orbital_elements,time){
-
        var perihelion_distance = Number(orbital_elements.perihelion_distance);
        var mean_motion = rad2deg(Math.sqrt(gm/(2*perihelion_distance*perihelion_distance*perihelion_distance)));
        var elapsed_time = Number(time.jd())-Number(epoch);
@@ -217,7 +208,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
        }
 	   return orbital_plane;
 	 }
-
 
     var HyperbolicOrbit = function(orbital_elements,time){
        if(Math.cosh == undefined){
@@ -266,8 +256,7 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
        }
 	   return orbital_plane;
      }
-
-   
+     
      var ecliptic_rectangular = function(orbital_elements,orbital_plane,time){
        var lan = deg2rad(Number(orbital_elements.longitude_of_ascending_node));
        var ap = deg2rad(Number(orbital_elements.argument_of_periapsis));
@@ -283,15 +272,15 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
        };
      }
 
-	 if(eccentricity<1.0){
-	   var orbital_plane = EllipticalOrbit(orbital_elements,time);
-	 }else if(eccentricity>1.0){
-	   var orbital_plane = HyperbolicOrbit(orbital_elements,time);
-	 }else if(eccentricity == 1.0){
+   if(eccentricity<1.0){
+     var orbital_plane = EllipticalOrbit(orbital_elements,time);
+   }else if(eccentricity>1.0){
+     var orbital_plane = HyperbolicOrbit(orbital_elements,time);
+   }else if(eccentricity == 1.0){
       eccentricity = 1.0000001; // Fallback: Parabolic Orbit not working properly. 
      var orbital_plane = HyperbolicOrbit(orbital_elements,time);
      //var orbital_plane = ParabolicOrbit(orbital_elements,time); 
-	 }
+   }
      var position = ecliptic_rectangular(orbital_elements,orbital_plane,time);
      return {
        x:position.x,
@@ -333,13 +322,11 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     var true_anomary = mean_anomaly + equation;
     //radius vector, distance between center of the Sun and the Earth
     var radius = (1.000001018*(1-eccentricity*eccentricity))/(1 + eccentricity*Math.cos(true_anomary*rad));
-
     var nao = new NutationAndObliquity(time)
     var nutation = nao.nutation;
     var obliquity = nao.obliquity;
     var apparent_longitude = true_longitude + nutation;
     var longitude = apparent_longitude;
-
     //right asantion of the Sun
     var ra = Math.atan2(Math.cos(obliquity*rad)*Math.sin(longitude*rad), Math.cos(longitude*rad))
     ra = round_angle(ra/rad);
@@ -399,7 +386,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
       A2 = round_angle(A2)*rad;
       var A3 = (313.45 + 481266.484*t);
       A3 = round_angle(A3)*rad;
-
       var SigmaL = function(){
         var result =0;
         var terms = LunaTerms.LR;
@@ -420,10 +406,8 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
         result += 3958*Math.sin(A1)
         result += 1962*Math.sin(L1-F0)
         result += 318*Math.sin(A2)
-
         return result;
       }
-
       var SigmaR = function(){
         var result =0;
         var terms = LunaTerms.LR;
@@ -443,7 +427,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
         }
         return result;
       }
-
       var SigmaB = function(){
         var result =0;
         var terms = LunaTerms.B;
@@ -469,7 +452,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
         result += -115*Math.sin(L1+M1)
         return result;
       }
-
       var LunaTerms = {
         LR: [
           [0,  0,  1,  0,  6288774, -20905335],
@@ -596,12 +578,9 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
           [2, -2,  0,  1,     107]
         ]
       }
-
       var sigma_l = SigmaL();
       var sigma_r = SigmaR();
       var sigma_b = SigmaB();
-
-
       var true_longitude = (L1/rad)%360  + (sigma_l)/1000000
       var latitude = (sigma_b)/1000000
       var distance = 385000.56 + sigma_r/1000
@@ -610,25 +589,20 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
   	  var obliquity = nao.obliquity;
   	  var apparent_longitude = true_longitude + nutation;
       var longitude = apparent_longitude;
-
 	  var ra = Math.atan2(Math.sin(longitude*rad)*Math.cos(obliquity*rad)-Math.tan(latitude*rad)*Math.sin(obliquity*rad),Math.cos(longitude*rad))/rad;
       ra = round_angle(ra)/15;
       var dec = Math.asin(Math.sin(latitude*rad)*Math.cos(obliquity*rad) + Math.cos(latitude*rad)*Math.sin(obliquity*rad)*Math.sin(longitude*rad))/rad;
-
       //rectanger
       var x = distance*Math.cos(latitude*rad)*Math.cos(longitude*rad);
       var y = distance*Math.cos(latitude*rad)*Math.sin(longitude*rad);
       var z = distance*Math.sin(latitude*rad);
-
       var p = {
         x:x,
         y:y,
         z:z
       }
-
       // equatiorial horizontal parallax
       var parallax = Math.asin(6378.14/distance)/rad
-
       return {
         time : time,
         position: {
@@ -659,7 +633,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
           var t3 = t*t*t;
           var t4 = t*t*t*t;
           var jde0 = 2451550.09766 + 29.530588861*k + 0.00015437*t2 - 0.000000150*t3 + 0.00000000073*t4;
-
           var e = 1-0.002516*t - 0.0000074*t2;
           e = round_angle(e);
           //Sun's mean anomary at the time;
@@ -674,7 +647,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
           //Longitude of the ascending node of lunar orbit
           var omega = 124.7746 -  1.56375588*k + 0.0020672*t2 + 0.00000215*t3;
           omega = round_angle(omega);
-
           var c1 = 0;
           c1 = c1 - 0.40720 * Math.sin(m1*rad);
           c1 = c1 + 0.17241 * e * Math.sin(m0*rad);
@@ -701,7 +673,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
           c1 = c1 - 0.00002 * Math.sin((m1-m0-2*f)*rad);
           c1 = c1 - 0.00002 * Math.sin((3*m1+m0)*rad);
           c1 = c1 + 0.00002 * Math.sin(4*m1*rad);
-
           var a1 = 299.77 + 0.107408*k-0.009173*t2;
           var a2 = 251.88 + 0.016321*k;
           var a3 = 251.83 + 26.651886*k;
@@ -716,7 +687,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
           var a12 =  161.72+24.198154*k;
           var a13 =  239.56+25.513099*k;
           var a14 =  331.55+3.592518*k;
-
           var c2 = 0;
           c2 = c2 + 0.000325 *Math.sin(a1*rad);
           c2 = c2 + 0.000165 *Math.sin(a2*rad);
@@ -738,7 +708,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
         }
       } //end  return;
   }
-
 
   return {
     Sun:function(){
@@ -823,7 +792,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
         "mass":"3.3022E+23"
       }
     },
-
     Venus:function(){
       var data = PlanetLoader("vsop87a_ven.json");
       return {
@@ -851,7 +819,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
       "mass":"4.8685E+24"
       }
     },
-
     Earth:function(){
       var data = PlanetLoader("vsop87a_ear.json");
       return {
@@ -906,7 +873,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
         "mass":"6.4185E+23"
       }
     },
-
     Jupiter:function(){
       var data = PlanetLoader("vsop87a_jup.json");
       return {
@@ -934,7 +900,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
       "mass":"1.8986E+27"
       }
     },
-
     Saturn:function(){
       var data = PlanetLoader("vsop87a_sat.json");
       return {
@@ -962,7 +927,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
       "mass":"5.6846E+26"
       }
     },
-
     Uranus:function(){
       var data = PlanetLoader("vsop87a_ura.json");
       return {
@@ -990,7 +954,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
       "mass":"8.6810E+25"
       }
     },
-
     Neptune:function(){
       var data = PlanetLoader("vsop87a_nep.json");
       return {
@@ -1018,7 +981,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
       "mass":"1.0243E+26"
       }
     },
-
     FromOrbitalElements:function(object){
       var orbital_elements = object.position.orbital_elements;
       return {
@@ -1052,7 +1014,6 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
         }
       }
     },
-
     Moon :function(){
       return {
         position:{

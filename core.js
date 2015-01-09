@@ -1,20 +1,15 @@
 // orb - core.js
 //
-// Orb 0.0.1 - Javascript Library for Astronomical Calcrations
+// Orb.js - Javascript Library for Astronomical Calcrations
 //
 // Copyright (c) 2010 KASHIWAI, Isana
 // Dual licensed under the MIT (MIT-LICENSE.txt), 
 // and GPL (GPL-LICENSE.txt) licenses.
 //
-// Date: 2010-07-15 00:00:00 +0900 (Sun, 20 Jun 2010)
-// Rev: 0001
-//
-
 // This script includes "json2.js" on the last part of the file.
 // "json2.js" creates a global JSON object
 // Copyright/License: Public Domain
 // ref. http://www.JSON.org/js.html
-
 
 // for Name Space
 var Orb;
@@ -24,7 +19,6 @@ Orb = Orb || {
     AUTHOR : "KASHIWAI,Isana",
     LICENSE : "GPL"
 };
-
 
 (function (global) {
   "use strict";
@@ -48,7 +42,6 @@ Orb.Tool = Orb.Tool || {
     }
     
     var Loader = function(option) {
-  
       XMLhttpObject=createXMLhttpObject();
       if (!XMLhttpObject){return;}
       XMLhttpObject.open("GET", option.path, option.ajax);
@@ -94,11 +87,7 @@ Orb.Tool = Orb.Tool || {
     return Loader(option);
   } // end Orb.Tool.DataLoader
 } // end Orb.Tool
-}(this));
 
-
-(function (global) {
-  "use strict";
 Orb.Time = function(date){
   if(!date){
     var _date = new Date();
@@ -116,24 +105,23 @@ Orb.Time = function(date){
       seconds: _date.getUTCSeconds()
     }
   }
-  
+
   var _utc = _getUTCArray(_date);
+
   var _time_in_day = function(){
       return _utc.hours/24 + _utc.minutes/1440 + _utc.seconds/86400
-  }  
+  }
+  
   var _jd = function(){
       var year = _utc.year;
       var month = _utc.month;;
       var day = _utc.day;
       var calender = "";
-
       if(month <= 2){
         var year = year - 1;
         var month = month + 12;
       }
-
       var julian_day = Math.floor(365.25*(year+4716))+Math.floor(30.6001*(month+1))+day-1524.5;
-
       if (calender == "julian"){
         var transition_offset=0;
       }else if(calender == "gregorian"){
@@ -148,6 +136,7 @@ Orb.Time = function(date){
       var jd=julian_day+transition_offset ;
       return jd;
   }
+
   var _gmst = function(){
       var rad=Math.PI/180;
       var time_in_sec = _utc.hours*3600 + _utc.minutes*60 + _utc.seconds;
@@ -182,6 +171,7 @@ Orb.Time = function(date){
       var tjd=jd - 2440000.5;
       return tjd;
   }
+
   var _delta_t = function(){
       //NASA - Polynomial Expressions for Delta T
       //http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html
@@ -239,7 +229,7 @@ Orb.Time = function(date){
         var dt = -20 + 32 * u*u
       }
     return dt;
-    } // end of DeltaT()
+    } // end of _delta_t()
 
     var _et = function(){
       var et = new Date();
@@ -249,23 +239,18 @@ Orb.Time = function(date){
     }
     
     var _utc_string = function FormatUTCDate(){
-    return _utc.year +"-"+ZeroFill(_utc.month) + "-" + ZeroFill(_utc.day)  + " " + ZeroFill(_utc.hours) + ":" + ZeroFill(_utc.minutes) + ":" + ZeroFill(_utc.seconds);// + "." + ZeroFill((milliseconds/10).toFixed(0))
+    return _utc.year +"-"+ZeroFill(_utc.month) + "-" + ZeroFill(_utc.day)  + " " + ZeroFill(_utc.hours) + ":" + ZeroFill(_utc.minutes) + ":" + ZeroFill(_utc.seconds);
   }
 
   var _local_string = function FormatLocalDate(date){
     var date = _date
     var year = date.getFullYear()
-    var month = date.getUTCMonth()+1
-    if(month>12){
-      year = year +1;
-      month = 12-month;
-    }
+    var month = date.getMonth()+1
     var day = date.getDate() 
     var hours = date.getHours()
     var minutes = date.getMinutes() 
     var seconds = date.getSeconds()
-    //var milliseconds = date.getMilliseconds()
-    return year +"-"+ZeroFill(month) + "-" + ZeroFill(day)  + " " + ZeroFill(hours) + ":" + ZeroFill(minutes) + ":" + ZeroFill(seconds); //+ "." + ZeroFill((milliseconds/10).toFixed(0))
+    return year +"-"+ZeroFill(month) + "-" + ZeroFill(day)  + " " + ZeroFill(hours) + ":" + ZeroFill(minutes) + ":" + ZeroFill(seconds);
   }
 
   function ZeroFill(num){
@@ -292,7 +277,6 @@ Orb.Time = function(date){
     jd : function(){
       return _jd()+ _time_in_day()
     },
-    
     gmst: _gmst,
     mjd: _mjd,
     tjd: _tjd,
@@ -300,13 +284,6 @@ Orb.Time = function(date){
     et: _et
   } // end of return Orb.Time
 } // end of Orb.Time
-
-
-}(this));
-
-
-(function (global) {
-  "use strict";
 
 Orb.Position = Orb.Position || function(obj){
   //not used yet.
@@ -400,7 +377,6 @@ Orb.Position = Orb.Position || function(obj){
   } //end of return
 } // end of Orb.Position
 
-
 Orb.Observer = Orb.Observer || function(position){
   var rad=Math.PI/180;
   var a = 6377.39715500; // earth radius
@@ -439,28 +415,22 @@ Orb.Observation = Orb.Observation || function(observer,target){
     var azimuth = (Math.atan2(-Math.cos(dec)*Math.sin(h),Math.sin(dec)*Math.cos(lat)-Math.cos(dec)*Math.sin(lat)*Math.cos(h)))/rad;
     var elevation = (Math.asin(Math.sin(dec)*Math.sin(lat)+Math.cos(lat)*Math.cos(dec)*Math.cos(h)))/rad;
     if (azimuth<0){azimuth = azimuth%360 +360}
-
     return {
       azimuth : azimuth,
       elevation : elevation,
       hour_angle : hour_angle
-    
     };
   }
-    
   return {
   // Public members.
     // equatorial to horizontal
     horizontal: function(time){
         return _horizontal(time);
     } // end Orb.Observation.horizontal
-
   } // end of return
 } // end of Orb.Observation
 
 }(this));
-
-
 
 //JSON2.js http://www.JSON.org/js.html
 var JSON;if(!JSON){JSON={};}
