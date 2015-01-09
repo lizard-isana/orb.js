@@ -14,16 +14,17 @@
   "use strict";
 
 Orb.SolarSystem = Orb.SolarSystem || function(){
-  var vsop_dir = './vsop/'; 
-  var rad=Math.PI/180;
   
+  Orb.Storage.vsop_directory = './vsop/'; 
+  var rad=Math.PI/180;
+
+  var au = 149597870700;
   var NutationAndObliquity = function(time){
-      var time_in_day=time.hours/24+time.minutes/1440+time.seconds/86400;
 	    //var dt = DeltaT()/86400;
 	    //var dt = 64/86400;
-      var jd = time.jd() + time_in_day;// + dt;
+      var jd = time.jd();// + dt;
       var t = (jd -2451545.0)/36525;
-	  var omega = (125.04452 - 1934.136261*t+0.0020708*t*t + (t*t+t)/450000)*rad;
+	    var omega = (125.04452 - 1934.136261*t+0.0020708*t*t + (t*t+t)/450000)*rad;
       var L0 = (280.4665 + 36000.7698*t)*rad
       var L1 = (218.3165 + 481267.8813*t)*rad
       var nutation = (-17.20/3600)*Math.sin(omega)-(-1.32/3600)*Math.sin(2*L0)-(0.23/3600)*Math.sin(2*L1)+(0.21/3600)*Math.sin(2*omega)/rad;
@@ -36,18 +37,12 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
 	  }
   
   }
-  
-  var PlanetPosition = function(time,d){
+  var PlanetPositionEcliptic = function(time,d){
     var data = d.data;
-    var hours=time.hours;
-    var minutes=time.minutes;
-    var seconds=time.seconds;
-    var time_in_day=hours/24+minutes/1440+seconds/86400;
-    var jd = time.jd() + time_in_day;
+    var jd = time.jd();
     var data_length = data.length;
     var t = ((jd -2451545.0)/365250);
-    var v = [];
-    v[0] = 0; v[1] = 0 ;v[2] = 0;
+    var v = [0,0,0];
     var td = data[0].v
     for(var i=0;i<data_length; i++){
       var tmp_data = data[i].v;
@@ -55,21 +50,18 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
       var sum = Math.pow(t,Number(tmp_data[1]))*Number(tmp_data[2]) * Math.cos(Number(tmp_data[3]) + Number(tmp_data[4]) * t);
       v[n] = v[n]  + sum;
     }
-    var longitude = v[0];
-    var latitude = v[1];
-    var radius = v[2];
-    this.longitude = longitude;
-    this.latitude = latitude;
-    this.radius = radius;
-    return this
+    return {
+    x:v[0],
+    y:v[1],
+    z:v[2]
+    }
   }
 
   var EclipticToEquatorial = function(from,to){
     var rad=Math.PI/180;
-    
-    var gcx = to.x - from.x; 
-    var gcy = to.y - from.y;
-    var gcz = to.z - from.z;
+    var gcx = from.x-to.x; 
+    var gcy = from.y-to.y; 
+    var gcz =from.z-to.z;
 
     var ecl = 23.439281;
     var eqx = gcx
@@ -86,68 +78,32 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     ra=ra/15
     var dec = Math.atan2(eqz,Math.sqrt(eqx*eqx + eqy*eqy))/rad;
     var distance = Math.sqrt(eqx*eqx + eqy*eqy + eqz*eqz);  
-    this.ra = ra;
-    this.dec = dec;
-    this.distance = distance;
-    return this;
-  }
-  
-  var ToEquatorial = function(time,planet){
-    var earth = new EarthPosition(time);
-    var planet_longitude= planet.longitude;
-    var planet_latitude = planet.latitude;
-    var planet_radius = planet.radius;
-    var earth_longitude= earth.longitude;
-    var earth_latitude = earth.latitude;
-    var earth_radius = earth.radius;
-
-    var rad=Math.PI/180;
-    var gcx = planet_radius * Math.cos(planet_latitude)*Math.cos(planet_longitude) - earth_radius * Math.cos(earth_latitude)*Math.cos(earth_longitude); 
-    var gcy = planet_radius * Math.cos(planet_latitude)*Math.sin(planet_longitude) - earth_radius * Math.cos(earth_latitude)*Math.sin(earth_longitude)
-    var gcz = planet_radius * Math.sin(planet_latitude) - earth_radius * Math.sin(earth_latitude); 
-
-    var ecl = 23.439281;
-    var eqx = gcx
-    var eqy = gcy*Math.cos(ecl*rad) - gcz * Math.sin(ecl*rad)
-    var eqz = gcy*Math.sin(ecl*rad) + gcz * Math.cos(ecl*rad)
-
-    var ra = Math.atan2(eqy,eqx)/rad;
-
-    if (ra <0){
-      ra = ra%360+360
-    }
-    if(ra >360){
-      ra = ra%360
-    }
-    ra=ra/15
-    var dec = Math.atan2(eqz,Math.sqrt(eqx*eqx + eqy*eqy))/rad;
-    var distance = Math.sqrt(eqx*eqx + eqy*eqy + eqz*eqz);  
     return {
-    ra : ra,
-    dec : dec,
-    distance : distance
-    }
-  }
-  
-  var ToEcliptic = function(planet){
-    var planet_longitude= planet.longitude;
-    var planet_latitude = planet.latitude;
-    var planet_radius = planet.radius;
-    var rad=Math.PI/180;
-    return {
-      x : planet_radius * Math.cos(planet_latitude)*Math.cos(planet_longitude),
-      y : planet_radius * Math.cos(planet_latitude)*Math.sin(planet_longitude),
-      z : planet_radius * Math.sin(planet_latitude)
-    }
+      "ra":ra,
+      "dec":dec,
+      "distance":distance,
+      "x":eqx,
+      "y":eqy,
+      "z":eqz
+    };
   }
 
-  var PlanetLoader = function(path){
-     var data_loader_option = {
-       format:"json",
-       path:path,
-       ajax:false
+  var PlanetLoader = function(file){
+     Orb.Storage.vsop_loaded = Orb.Storage.vsop_loaded || []
+     Orb.Storage.vsop = Orb.Storage.vsop || {}
+     if(Orb.Storage.vsop_loaded.indexOf(file)<0){
+       var vsop_dir = Orb.Storage.vsop_directory;
+       var data_loader_option = {
+         format:"json",
+         path:vsop_dir+file,
+         ajax:false
+       }
+       var data = Orb.Tool.DataLoader(data_loader_option);
+       Orb.Storage.vsop_loaded.push(file);
+       Orb.Storage.vsop[file] = data;
+     }else{
+       var data = Orb.Storage.vsop[file]
      }
-     var data = Orb.Tool.DataLoader(data_loader_option);
      return data;
   }
   
@@ -161,15 +117,12 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
      }
   }
 
-  var vsop_earth =  PlanetLoader(vsop_dir + "vsop87d_ear.json");
+  var vsop_earth =  PlanetLoader("vsop87a_ear.json");
 
   var EarthPosition = function(time){
-    var earth = new PlanetPosition(time,vsop_earth);
-    var earth_ecliptic = new ToEcliptic(earth);
+    var earth = new PlanetPositionEcliptic(time,vsop_earth);
+    var earth_ecliptic = earth
     return {
-      latitude : earth.latitude,
-      longitude : earth.longitude,
-      radius : earth.radius,
       x : earth_ecliptic.x,
       y : earth_ecliptic.y,
       z : earth_ecliptic.z
@@ -188,19 +141,26 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
      }
 
      var eccentricity = Number(orbital_elements.eccentricity);
-     var gm = 2.9591220828559093*Math.pow(10,-4)
+     var gm = 2.9591220828559093*Math.pow(10,-4);
+     
+     if(orbital_elements.time_of_periapsis){
+       var epoch = orbital_elements.time_of_periapsis;
+     }else{
+       var epoch = orbital_elements.epoch;
+     }
+     
      var EllipticalOrbit = function(orbital_elements,time){
        if(orbital_elements.semi_major_axis){
          var semi_major_axis = orbital_elements.semi_major_axis;
        }else if(orbital_elements.perihelion_distance){
-         var semi_major_axis = (orbital_elements.perihelion_distance)/(1-orbital_elements.eccentricity)
+         var semi_major_axis = (orbital_elements.perihelion_distance)/(1-eccentricity)
        }
        var mean_motion = rad2deg(Math.sqrt(gm/(semi_major_axis*semi_major_axis*semi_major_axis)));
-       var elapsed_time = Number(time.jd()+time.hours/24+time.minutes/(24*60)+time.seconds/(24*60*60))-Number(orbital_elements.epoch);
-       if(orbital_elements.mean_anomaly){
+       var elapsed_time = Number(time.jd())-Number(epoch);
+       if(orbital_elements.mean_anomaly && orbital_elements.epoch){
          var mean_anomaly = Number(orbital_elements.mean_anomaly);
-         var l=mean_motion*elapsed_time+mean_anomaly;
-       }else{
+         var l=(mean_motion*elapsed_time)+mean_anomaly;
+       }else if(orbital_elements.time_of_periapsis){
          var mean_anomaly = mean_motion*elapsed_time;
          var l=mean_anomaly;
        }
@@ -227,9 +187,10 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
      }
      
      var ParabolicOrbit = function(orbital_elements,time){
-       var perihelion_distance = orbital_elements.perihelion_distance;
+
+       var perihelion_distance = Number(orbital_elements.perihelion_distance);
        var mean_motion = rad2deg(Math.sqrt(gm/(2*perihelion_distance*perihelion_distance*perihelion_distance)));
-       var elapsed_time = Number(time.jd()+time.hours/24+time.minutes/(24*60)+time.seconds/(24*60*60))-Number(orbital_elements.epoch);
+       var elapsed_time = Number(time.jd())-Number(epoch);
        if(orbital_elements.mean_anomaly){
          var mean_anomaly = Number(orbital_elements.mean_anomaly);
          var l=mean_motion*elapsed_time+mean_anomaly;
@@ -237,12 +198,17 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
          var mean_anomaly = mean_motion*elapsed_time;
          var l=mean_anomaly;
        }
-       if(l>360){l=l%360}
+       if(l>360){
+         l=l%360
+       }
+       if(l<0){
+         l=360-(Math.abs(l)%360)
+       }
        l = deg2rad(l)
-       var b = Math.atan(2/3*l);
-       if(rad2deg(b)<0){b = deg2rad(rad2deg(b)+360)}
-	   var g = Math.atan(Math.pow(b/2,1/3));
-	   var f = Math.atan(2/Math.tan(2*g))*2;
+       var b = Math.atan(2/(3*l));
+	   var g = Math.atan(Math.pow(Math.tan(b/2),1/3));
+     var v = 2.0/Math.tan(2*g)
+     var f = Math.atan(v)*2
 	   var r = (2*perihelion_distance)/(1+Math.cos(f))
        var orbital_plane= {
          x:r*Math.cos(f),
@@ -252,15 +218,28 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
 	   return orbital_plane;
 	 }
 
+
     var HyperbolicOrbit = function(orbital_elements,time){
-       if(orbital_elements.semi_major_axis){
+       if(Math.cosh == undefined){
+         Math.cosh = function(x) {
+          var y = Math.exp(x);
+          return (y + 1 / y) / 2;
+        }
+       }
+       if(Math.sinh == undefined){
+         Math.sinh = function(x) {
+           var y = Math.exp(x);
+           return (y - 1/y) / 2;
+        }
+       }
+        if(orbital_elements.semi_major_axis && orbital_elements.semi_major_axis>0){
          var semi_major_axis = orbital_elements.semi_major_axis;
        }else if(orbital_elements.perihelion_distance){
-         var semi_major_axis = orbital_elements.perihelion_distance/(orbital_elements.eccentricity-1);
+         var semi_major_axis = orbital_elements.perihelion_distance/(eccentricity-1);
        }
        var mean_motion = rad2deg(Math.sqrt(gm/(semi_major_axis*semi_major_axis*semi_major_axis)));
-       var elapsed_time = Number(time.jd()+time.hours/24+time.minutes/(24*60)+time.seconds/(24*60*60))-Number(orbital_elements.epoch);
-       if(orbital_elements.mean_anomaly){
+       var elapsed_time = Number(time.jd())-Number(epoch);
+       if(orbital_elements.mean_anomaly && orbital_elements.epoch){
          var mean_anomaly = Number(orbital_elements.mean_anomaly);
          var l=mean_motion*elapsed_time+mean_anomaly;
        }else{
@@ -273,21 +252,22 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
        var i=0;
        do{
          var ut=u;
-         var delta_u=(l-(eccentricity*Math.sin(u))+u)/((eccentricity*Math.cos(u))-1);
+         var delta_u=(l-(eccentricity*Math.sinh(u))+u)/((eccentricity*Math.cosh(u))-1);
          u=u+delta_u;
 		 if(i++>100000){
 		   break
 		 }
        }while (Math.abs(ut-u)>0.00001);
-       if(rad2deg(u)<0){u = deg2rad(rad2deg(u)+360)}
+       //if(rad2deg(u)<0){u = deg2rad(rad2deg(u)+360)}
        var orbital_plane= {
-         x:semi_major_axis*(eccentricity-Math.cos(u)),
-         y:semi_major_axis*Math.sqrt(Math.pow(eccentricity,2)-1)*Math.sin(u),
-         r:semi_major_axis*(1-(eccentricity*Math.cos(u)))
+         x:semi_major_axis*(eccentricity-Math.cosh(u)),
+         y:semi_major_axis*Math.sqrt(Math.pow(eccentricity,2)-1)*Math.sinh(u),
+         r:semi_major_axis*(1-(eccentricity*Math.cosh(u)))
        }
 	   return orbital_plane;
      }
 
+   
      var ecliptic_rectangular = function(orbital_elements,orbital_plane,time){
        var lan = deg2rad(Number(orbital_elements.longitude_of_ascending_node));
        var ap = deg2rad(Number(orbital_elements.argument_of_periapsis));
@@ -303,13 +283,14 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
        };
      }
 
-	 if(eccentricity<1){
+	 if(eccentricity<1.0){
 	   var orbital_plane = EllipticalOrbit(orbital_elements,time);
-	 }else if(eccentricity>1){
+	 }else if(eccentricity>1.0){
 	   var orbital_plane = HyperbolicOrbit(orbital_elements,time);
-	 }else if(eccentricity == 1){
-	   var orbital_plane = ParabolicOrbit(orbital_elements,time); 
-	 
+	 }else if(eccentricity == 1.0){
+      eccentricity = 1.0000001; // Fallback: Parabolic Orbit not working properly. 
+     var orbital_plane = HyperbolicOrbit(orbital_elements,time);
+     //var orbital_plane = ParabolicOrbit(orbital_elements,time); 
 	 }
      var position = ecliptic_rectangular(orbital_elements,orbital_plane,time);
      return {
@@ -332,10 +313,9 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
   }
 
   var SunPosition = function(time){
-    var time_in_day=time.hours/24+time.minutes/1440+time.seconds/86400;
     //var dt = DeltaT()/86400;
     //var dt = 64/86400;
-    var jd = time.jd() + time_in_day;// + dt;
+    var jd = time.jd();// + dt;
     var t = (jd -2451545.0)/36525;
     //geometric_mean_longitude
     var mean_longitude = 280.46646 + 36000.76983*t + 0.0003032*t*t;
@@ -366,7 +346,7 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     //declination of the Sun
     var dec = Math.asin(Math.sin(obliquity*rad)*Math.sin(longitude*rad));
     dec=dec/rad;
-    var distance=radius*149597870.691;
+    var distance=radius // *149597870.691;
     //rectanger
     var x = distance*Math.cos(longitude*rad);
     var y = distance*(Math.sin(longitude*rad)*Math.cos(obliquity*rad));
@@ -380,46 +360,23 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     z : z
     }
   }
-  
-  var SunPosition2 = function(time){
-    var earth = EarthPosition(time);
-    var true_longitude = round_angle(earth.longitude/rad+180);
-    var latitude = round_angle(-earth.latitude/rad);
 
-    var nao = new NutationAndObliquity(time)
-    var nutation = nao.nutation;
-    var obliquity = nao.obliquity;
-    var apparent_longitude = true_longitude + nutation;
-    var longitude = apparent_longitude;
-
-    var radius = earth.radius;
-    var distance=radius*149597870;
-    var ra = Math.atan2(Math.sin(longitude*rad)*Math.cos(obliquity*rad)-Math.tan(latitude*rad)*Math.sin(obliquity*rad),Math.cos(longitude*rad))/rad;
-    ra = round_angle(ra)/15;
-    var dec = Math.asin(Math.sin(latitude*rad)*Math.cos(obliquity*rad) + Math.cos(latitude*rad)*Math.sin(obliquity*rad)*Math.sin(longitude*rad))/rad;      
-    var x = distance*Math.cos(longitude*rad);
-    var y = distance*(Math.sin(longitude*rad)*Math.cos(obliquity*rad));
-    var z = distance*(Math.sin(longitude*rad)*Math.sin(obliquity*rad));
-    
+  var SolarSystemBarycenter = function(time){
+    var vsop_sun =  PlanetLoader("vsop87e_sun.json");
+    var sun = new PlanetPositionEcliptic(time,vsop_sun);
     return {
-      ra : ra,
-      dec : dec,
-      distance : distance,
-      x : x,
-      y : y,
-      z : z
+     x: 0-sun.x,
+     y: 0-sun.y,
+     z: 0-sun.z
     }
-
   }
-
+  
   var MoonPosition = function(time){
-      var time_in_day=time.hours/24+time.minutes/1440+time.seconds/86400;
       var rad=Math.PI/180;
       var deg=180/Math.PI;
 	    //var dt = DeltaT()/86400;
 	    //var dt = 64/86400;
-      var jd = time.jd() + time_in_day; // + dt;
-
+      var jd = time.jd(); // + dt;
       //ephemeris days from the epch J2000.0
       var t = (jd -2451545.0)/36525;
   	  var t2 = t*t;
@@ -690,8 +647,7 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
         },        
         phase : function(){
           var now = time.date;
-          var time_in_day=time.hours/24+time.minutes/1440+time.seconds/86400;
-          var jd = time.jd() + time_in_day;
+          var jd = time.jd();
           var date_first = new Date(time.year, 0, 1, 0, 0, 0);
           var date_last = new Date(time.year, 11, 31, 11, 59, 59, 999);
           var since_new_year = (now - date_first)/(date_last-date_first);
@@ -805,35 +761,61 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
       }
     },
     Sun2:function(){
+      var data = PlanetLoader("vsop87a_ear.json");
       return {
         position:{
           equatorial:function(time){
-            var sun = SunPosition2(time);
-            return {
-              ra : sun.ra,
-              dec : sun.dec,
-              distance : sun.distance,
-              x : sun.x,
-              y : sun.y,
-              z : sun.z
-            }
+            var planet = new PlanetPositionEcliptic(time,data);
+            var from = {x:0,y:0,z:0}
+            var equatorial = EclipticToEquatorial(from,planet)
+            return  {
+              x: 0-equatorial.x,
+              y: 0-equatorial.y,
+              z: 0-equatorial.z,
+              ra:equatorial.ra,
+              dec:equatorial.dec,
+              distance:equatorial.distance
+            };
           }
         },
         "radius":"6.955E+5",
         "mass":"1.9891E+30"
       }
     },
-    Mercury:function(){
-      var data = PlanetLoader(vsop_dir + "vsop87d_mer.json");
+    Barycenter:function(){
       return {
         position:{
           ecliptic:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEcliptic(planet);
+            var sun = new SolarSystemBarycenter(time);
+            return {
+             x: 0-sun.x,
+             y: 0-sun.y,
+             z: 0-sun.z
+            }
+          }
+        }
+      }
+    },
+    Mercury:function(){
+      var data = PlanetLoader("vsop87a_mer.json");
+      return {
+        position:{
+          ecliptic:function(time){
+            var planet = new PlanetPositionEcliptic(time,data);
+            return  planet;
           },
           equatorial:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEquatorial(time,planet);          
+            var from = new PlanetPositionEcliptic(time,data);
+            var to = new EarthPosition(time);
+            var equatorial = EclipticToEquatorial(from,to)
+            return {
+              x: equatorial.x,
+              y: equatorial.y,
+              z: equatorial.z,
+              ra : equatorial.ra,
+              dec : equatorial.dec,
+              distance : equatorial.distance
+            }
           }
         },
         "orbital_period":"87.969", 
@@ -843,18 +825,27 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     },
 
     Venus:function(){
-      var data = PlanetLoader(vsop_dir + "vsop87d_ven.json");
+      var data = PlanetLoader("vsop87a_ven.json");
       return {
         position:{
           ecliptic:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEcliptic(planet);
+            var planet = new PlanetPositionEcliptic(time,data);
+            return  planet;
           },
           equatorial:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEquatorial(time,planet);          
+            var from = new PlanetPositionEcliptic(time,data);
+            var to = new EarthPosition(time);
+            var equatorial = EclipticToEquatorial(from,to)
+            return {
+              x: equatorial.x,
+              y: equatorial.y,
+              z: equatorial.z,
+              ra : equatorial.ra,
+              dec : equatorial.dec,
+              distance : equatorial.distance
+            }
           }
-        },
+       },
       "orbital_period":"224.70069",  
       "radius":"6051.8",
       "mass":"4.8685E+24"
@@ -862,12 +853,25 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     },
 
     Earth:function(){
-      var data = PlanetLoader(vsop_dir + "vsop87d_ear.json");
+      var data = PlanetLoader("vsop87a_ear.json");
       return {
         position:{
           ecliptic:function(time){
-            var planet = new PlanetPosition(time,data);
-            return  ToEcliptic(planet);
+            var planet = new PlanetPositionEcliptic(time,data);
+            return  planet;
+          },
+          equatorial:function(time){
+            var from = new PlanetPositionEcliptic(time,data);
+            var to = new EarthPosition(time);
+            var equatorial = EclipticToEquatorial(from,to)
+            return {
+              x: equatorial.x,
+              y: equatorial.y,
+              z: equatorial.z,
+              ra : equatorial.ra,
+              dec : equatorial.dec,
+              distance : equatorial.distance
+            }
           }
         },
        "orbital_period":"365.256363004",  
@@ -876,16 +880,25 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
       }
     },
     Mars:function(){
-      var data = PlanetLoader(vsop_dir + "vsop87d_mar.json");
+      var data = PlanetLoader("vsop87a_mar.json");
       return {
         position:{
           ecliptic:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEcliptic(planet);
+            var planet = new PlanetPositionEcliptic(time,data);
+            return  planet;
           },
           equatorial:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEquatorial(time,planet);          
+            var from = new PlanetPositionEcliptic(time,data);
+            var to = new EarthPosition(time);
+            var equatorial = EclipticToEquatorial(from,to)
+            return {
+              x: equatorial.x,
+              y: equatorial.y,
+              z: equatorial.z,
+              ra : equatorial.ra,
+              dec : equatorial.dec,
+              distance : equatorial.distance
+            }
           }
         },
         "orbital_period":"686.971",  
@@ -895,16 +908,25 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     },
 
     Jupiter:function(){
-      var data = PlanetLoader(vsop_dir + "vsop87d_jup.json");
+      var data = PlanetLoader("vsop87a_jup.json");
       return {
         position:{
           ecliptic:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEcliptic(planet);
+            var planet = new PlanetPositionEcliptic(time,data);
+            return planet
           },
           equatorial:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEquatorial(time,planet);          
+            var from = new PlanetPositionEcliptic(time,data);
+            var to = new EarthPosition(time);
+            var equatorial = EclipticToEquatorial(from,to)
+            return {
+              x: equatorial.x,
+              y: equatorial.y,
+              z: equatorial.z,
+              ra : equatorial.ra,
+              dec : equatorial.dec,
+              distance : equatorial.distance
+            }
           }
         },
       "orbital_period":"4331.572",  
@@ -914,16 +936,25 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     },
 
     Saturn:function(){
-      var data = PlanetLoader(vsop_dir + "vsop87d_sat.json");
+      var data = PlanetLoader("vsop87a_sat.json");
       return {
         position:{
           ecliptic:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEcliptic(planet);
+            var planet = new PlanetPositionEcliptic(time,data);
+            return  planet;
           },
           equatorial:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEquatorial(time,planet);          
+            var from = new PlanetPositionEcliptic(time,data);
+            var to = new EarthPosition(time);
+            var equatorial = EclipticToEquatorial(from,to)
+            return {
+              x: equatorial.x,
+              y: equatorial.y,
+              z: equatorial.z,
+              ra : equatorial.ra,
+              dec : equatorial.dec,
+              distance : equatorial.distance
+            }
           }
         },
       "orbital_period":"10759.22",  
@@ -933,16 +964,25 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     },
 
     Uranus:function(){
-      var data = PlanetLoader(vsop_dir + "vsop87d_ura.json");
+      var data = PlanetLoader("vsop87a_ura.json");
       return {
         position:{
           ecliptic:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEcliptic(planet);
+            var planet = new PlanetPositionEcliptic(time,data);
+            return  planet;
           },
           equatorial:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEquatorial(time,planet);          
+            var from = new PlanetPositionEcliptic(time,data);
+            var to = new EarthPosition(time);
+            var equatorial = EclipticToEquatorial(from,to)
+            return {
+              x: equatorial.x,
+              y: equatorial.y,
+              z: equatorial.z,
+              ra : equatorial.ra,
+              dec : equatorial.dec,
+              distance : equatorial.distance
+            }
           }
         },
       "orbital_period":"30799.095",  
@@ -952,16 +992,25 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     },
 
     Neptune:function(){
-      var data = PlanetLoader(vsop_dir + "vsop87d_nep.json");
+      var data = PlanetLoader("vsop87a_nep.json");
       return {
         position:{
           ecliptic:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEcliptic(planet);
+            var planet = new PlanetPositionEcliptic(time,data);
+            return  planet;
           },
           equatorial:function(time){
-            var planet = new PlanetPosition(time,data);
-            return ToEquatorial(time,planet);          
+            var from = new PlanetPositionEcliptic(time,data);
+            var to = new EarthPosition(time);
+            var equatorial = EclipticToEquatorial(from,to)
+            return {
+              x: equatorial.x,
+              y: equatorial.y,
+              z: equatorial.z,
+              ra : equatorial.ra,
+              dec : equatorial.dec,
+              distance : equatorial.distance
+            }
           }
         },
       "orbital_period":"60190",  
