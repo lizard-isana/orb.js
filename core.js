@@ -30,7 +30,6 @@ Orb = Orb || {
   "use strict";
 Orb.Storage = Orb.Storage || {}
 Orb.Tool = Orb.Tool || {
-  
   DataLoader : function(option){
     var XMLhttpObject;
     var createXMLhttpObject = function(){
@@ -101,7 +100,6 @@ Orb.Tool = Orb.Tool || {
 (function (global) {
   "use strict";
 Orb.Time = function(date){
-
   if(!date){
     var _date = new Date();
   }else{
@@ -120,7 +118,9 @@ Orb.Time = function(date){
   }
   
   var _utc = _getUTCArray(_date);
- 
+  var _time_in_day = function(){
+      return _utc.hours/24 + _utc.minutes/1440 + _utc.seconds/86400
+  }  
   var _jd = function(){
       var year = _utc.year;
       var month = _utc.month;;
@@ -145,7 +145,7 @@ Orb.Time = function(date){
         var tmp = Math.floor(year/100);
         var transition_offset=2-tmp+Math.floor(tmp/4);
       }
-      var jd=julian_day+transition_offset;
+      var jd=julian_day+transition_offset ;
       return jd;
   }
   var _gmst = function(){
@@ -178,7 +178,7 @@ Orb.Time = function(date){
   }
  
   var _tjd = function(){
-      var jd = jd();
+      var jd = _jd();
       var tjd=jd - 2440000.5;
       return tjd;
   }
@@ -243,11 +243,40 @@ Orb.Time = function(date){
 
     var _et = function(){
       var et = new Date();
-      et.setTime(_date.getTime() + DeltaT());
+      et.setTime(_date.getTime() + _delta_t());
       var time = new Orb.Time(et);
       return time;
     }
-  
+    
+    var _utc_string = function FormatUTCDate(){
+    return _utc.year +"-"+ZeroFill(_utc.month) + "-" + ZeroFill(_utc.day)  + " " + ZeroFill(_utc.hours) + ":" + ZeroFill(_utc.minutes) + ":" + ZeroFill(_utc.seconds);// + "." + ZeroFill((milliseconds/10).toFixed(0))
+  }
+
+  var _local_string = function FormatLocalDate(date){
+    var date = _date
+    var year = date.getFullYear()
+    var month = date.getUTCMonth()+1
+    if(month>12){
+      year = year +1;
+      month = 12-month;
+    }
+    var day = date.getDate() 
+    var hours = date.getHours()
+    var minutes = date.getMinutes() 
+    var seconds = date.getSeconds()
+    //var milliseconds = date.getMilliseconds()
+    return year +"-"+ZeroFill(month) + "-" + ZeroFill(day)  + " " + ZeroFill(hours) + ":" + ZeroFill(minutes) + ":" + ZeroFill(seconds); //+ "." + ZeroFill((milliseconds/10).toFixed(0))
+  }
+
+  function ZeroFill(num){
+    if(num<10){
+     var str = "0" + num;
+    }else{
+     var str = num;
+    }
+    return str;
+  }
+
   return {
     date : _date,
     year: Number(_utc.year),
@@ -256,8 +285,14 @@ Orb.Time = function(date){
     hours: Number(_utc.hours),
     minutes: Number(_utc.minutes),
     seconds: Number(_utc.seconds),
+    time_in_day: _time_in_day,
     timezone: _date.getTimezoneOffset()/60,
-    jd : _jd,
+    utc_string:_utc_string(),
+    local_string:_local_string(),
+    jd : function(){
+      return _jd()+ _time_in_day()
+    },
+    
     gmst: _gmst,
     mjd: _mjd,
     tjd: _tjd,
@@ -265,6 +300,7 @@ Orb.Time = function(date){
     et: _et
   } // end of return Orb.Time
 } // end of Orb.Time
+
 
 }(this));
 
