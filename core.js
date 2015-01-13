@@ -386,43 +386,88 @@ Orb.Observer = Orb.Observer || function(position){
     latitude: position.latitude,
     longitude: position.longitude,
     altitude: position.altitude,
-    toRectangular: function(){
+    rectangular: function(time){
+      var lat = position.latitude;
+      var lng = position.longitude;
+      var gmst = time.gmst();
+      var lst = gmst*15 + lng;
+      var a = 6378.135  //Earth's equational radius in WGS-72 (km)
+      var f = 0.00335277945 //Earth's flattening term in WGS-72 (= 1/298.26)
+      var sin_lat =Math.sin(lat*rad);
+      var c = 1/Math.sqrt(1+f*(f-2)*sin_lat*sin_lat);
+      var s = (1-f)*(1-f)*c;  
       return {
-        x: (n+position.altitude)*Math.cos(position.latitude*rad)*Math.cos(position.longitude*rad),
-        y: (n+position.altitude)*Math.cos(position.latitude*rad)*Math.sin(position.longitude*rad),
-        z: (n*(1-e2)+position.altitude)*Math.sin(position.latitude*rad)
+        x: a*c*Math.cos(lat*rad)*Math.cos(lst*rad),
+        y: a*c*Math.cos(lat*rad)*Math.sin(lst*rad),
+        z: a*s*Math.sin(lat*rad)
       }
     }
   }
 }
 
-Orb.Observation = Orb.Observation || function(observer,target){
-  // Private members.
+Orb.Observation = Orb.Observation || function(param){
+  var observer = param.observer;
+  var target = param.target;
   var rad=Math.PI/180;
-  var ra = Number(target.ra);
-  var dec = Number(target.dec);
-
-  var latitude = Number(observer.latitude);
-  var longitude = Number(observer.longitude);
-  var altitutude = Number(observer.altitutude);
-
-  var _horizontal = function(time){
-    dec = dec*rad
-    var gmst = time.gmst();
-    var hour_angle = (gmst*15 + longitude - (ra*15));
-    var h = hour_angle*rad;
-    var lat = latitude*rad;
-    var azimuth = (Math.atan2(-Math.cos(dec)*Math.sin(h),Math.sin(dec)*Math.cos(lat)-Math.cos(dec)*Math.sin(lat)*Math.cos(h)))/rad;
-    var elevation = (Math.asin(Math.sin(dec)*Math.sin(lat)+Math.cos(lat)*Math.cos(dec)*Math.cos(h)))/rad;
-    if (azimuth<0){azimuth = azimuth%360 +360}
-    return {
+  var _radec2horizontal = function(time,target,observer){
+      var ra = Number(target.ra);
+      var dec = Number(target.dec);
+      var latitude = Number(observer.latitude);
+      var longitude = Number(observer.longitude);
+      var altitutude = Number(observer.altitutude);
+      dec = dec*rad
+      var gmst = time.gmst();
+      var hour_angle = (gmst*15 + longitude - (ra*15));
+      var h = hour_angle*rad;
+      var lat = latitude*rad;
+      var azimuth = (Math.atan2(-Math.cos(dec)*Math.sin(h),Math.sin(dec)*Math.cos(lat)-Math.cos(dec)*Math.sin(lat)*Math.cos(h)))/rad;
+      var elevation = (Math.asin(Math.sin(dec)*Math.sin(lat)+Math.cos(lat)*Math.cos(dec)*Math.cos(h)))/rad;
+      if (azimuth<0){
+        azimuth = azimuth%360 +360
+      }
+      return {
       azimuth : azimuth,
       elevation : elevation,
-      hour_angle : hour_angle
-    };
+     }
+  }
+  var _rect2horizontal = function(time,rect,observer){
+      var lat = observer.latitude;
+      var lng = observer.longitude;
+      var obsv = new Orb.Observer(observer);
+      var ob  =obsv.rectangular(time)
+      var rx0= rect.x - ob.x;
+      var ry0= rect.y - ob.y
+      var rz0= rect.z - ob.z
+      var gmst = time.gmst();
+      var lst = gmst*15 + lng;
+      var rs = Math.sin(lat*rad)*Math.cos(lst*rad)*rx0 + Math.sin(lat*rad)*Math.sin(lst*rad)*ry0-Math.cos(lat*rad)*rz0;
+      var re = -Math.sin(lst*rad)*rx0 + Math.cos(lst*rad)*ry0;
+      var rz = Math.cos(lat*rad)*Math.cos(lst*rad)*rx0+Math.cos(lat*rad)*Math.sin(lst*rad)*ry0 + Math.sin(lat*rad)*rz0;
+      var range = Math.sqrt(rs*rs+re*re+rz*rz);
+      var elevation = Math.asin(rz/range);
+      var azimuth  = Math.atan2(-re,rs);
+      azimuth = azimuth/rad+180;
+      if (azimuth>360){
+        azimuth = azimuth%360;
+      }
+      return {
+      azimuth : azimuth,
+      elevation : elevation,
+     }
+  }
+  var _horizontal = function(time){
+    if(target.ra && target.dec){
+      var horizontal = _radec2horizontal(time,target,observer)
+    }else if(target.position.equatorial){
+      var radec = target.position.equatorial(time)
+      var horizontal = _radec2horizontal(time,radec,observer)
+    }else if(target.position.rectangular){
+      var rect = target.position.rectangular(time);
+      var horizontal = _rect2horizontal(time,rect,observer)
+    }
+    return horizontal
   }
   return {
-  // Public members.
     // equatorial to horizontal
     horizontal: function(time){
         return _horizontal(time);
