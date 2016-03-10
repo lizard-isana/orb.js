@@ -13,7 +13,7 @@ Demo Site
 http://www.lizard-tail.com/isana/lab/orb/
 
 Gist
- Introduction to orb.js
+ Introduction to orb.js *Japanese
  https://gist.github.com/lizard-isana/83dbe9e5fc230c4fc389
 
  How to calc the position of satellites with Orb.js *English
@@ -25,8 +25,6 @@ Gist
  Orb.js: How to convert RA/Dec to horizontal coodinates  *Japanese
  https://gist.github.com/lizard-isana/2418098
 
- 
-
 License
 ----------
 Copyright (c) 2012 Isana Kashiwai
@@ -36,5 +34,3 @@ Administrator
 ----
   Isana Kashiwai
   email: isana.k at gmail.com
-  facebook: isana.kashiwai
-  twitter: lizard_isana
