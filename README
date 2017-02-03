@@ -4,7 +4,7 @@ Description
 ----------
 JavaScript libraries for Astronomical Calclations
 
-*No documentation : Sorry for inconvenient.
+No documentation, sorry. But there are bref examples on Gist. See below.
 
 Source Codes
 https://github.com/lizard-isana/orb.js/
@@ -13,6 +13,9 @@ Demo Site
 http://www.lizard-tail.com/isana/lab/orb/
 
 Gist
+ Introduction to orb.js *English
+ https://gist.github.com/lizard-isana/79153aaaef1533072bf47195acc95445
+
  Introduction to orb.js *Japanese
  https://gist.github.com/lizard-isana/83dbe9e5fc230c4fc389
 
