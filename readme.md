@@ -161,8 +161,6 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     };
 
 
---- 
-
 ## 月の位置(Orb.Luna)
 地球から見た月の位置を計算します。
 
@@ -170,16 +168,12 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     var rectangular = luna.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
     var spherical = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
---- 
-
 ## 太陽の視位置（Orb.Sun）
 地球から見た太陽の位置を計算します。xyz()の戻り値が地心赤道座標であることに注意してください。
 
     var sun = new Orb.Sun();
     var rectangular = sun.xyz(date); // x, y, z -> equatorial rectangular coordinates (Earth centered)
     var spherical = sun.radec(date); // ra, dec, distance -> equatorial coordinates
-
---- 
 
 ## ケプラー軌道要素による太陽系内天体の位置(Orb.Kepler)
 
@@ -194,8 +188,6 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     });
     var rectangular = asteroid.xyz(date); // x, y, z -> ecliptic rectangular coordinates
     var spherical = asteroid.radec(date); // ra, dec, distance -> equatorial spherical coordinates
-
---- 
 
 ## 二行軌道要素による人工衛星の位置(Orb.SGP4)
 2行軌道要素(TLE)から地球周回軌道の人工衛星の位置を計算します。
@@ -243,8 +235,6 @@ TLEを以下のようにオブジェクトとしてOrb.SGP4()に渡して初期�
      "coodinate_keywords":["geographic","spherical"],
      "unit_keywords":["degree","km"]
     }
-
---- 
 
 ## 地平座標への変換(Orb.Observation)
 
@@ -314,8 +304,6 @@ Orb.Observationは、地理座標で指定されたobserverに対して、任意
 
   戻り値の距離の単位はターゲットの距離単位に揃えられます。
 
---- 
-
 ## 時刻の計算(Orb.Time)
 天文計算に必要な各種の時刻の計算を行います。
 
@@ -342,8 +330,6 @@ Orb.Observationは、地理座標で指定されたobserverに対して、任意
 
 なお、以下の実際の位置計算では、通常の日付オブジェクト（Date）を受け取ることに注意してください。
 orb.jsの各メソッドは日付オブジェクトを受け取り、内部的にこの関数を使って日付を変換しています。
-
---- 
 
 ## 座標変換
 天文計算に必要な各種の時刻の計算を行います。
@@ -413,7 +399,7 @@ orb.jsの各メソッドは日付オブジェクトを受け取り、内部的�
 
 なお、位置情報に"coodinate_keywords"や"date"が付加されていても無視され、渡された座標を渡された日付の黄道直交座標とみなして変換します。
 
---- 
+---
 
 ## 対象天体による直交座標の違い
   orb.jsのメソッド名は出力する値を元につけられています。たとえばxyz()は、x,y,zのベクトルを返し、radec()は赤経(ra),赤緯(dec)を返し、azel()は方位角(azimuth)と高度(elevation)を返します。
