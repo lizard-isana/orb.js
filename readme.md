@@ -111,10 +111,10 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     var day_of_year = time.doy();
 
     //座標変換
-    var equatorial_rectangeler = Orb.RadecToXYZ(sirius)
-    var ecliptic_rectangeler = Orb.EquatorialToEcliptic({"date":date,"equatorial":equatorial_rectangeler})
-    var equatorial_rectangeler = Orb.EclipticToEquatorial({"date":date,"ecliptic":ecliptic_rectangeler})
-    var equatoria_spherical = Orb.XYZtoRadec(equatorial_rectangeler)
+    var equatorial_rectanguler = Orb.RadecToXYZ(sirius)
+    var ecliptic_rectanguler = Orb.EquatorialToEcliptic({"date":date,"equatorial":equatorial_rectanguler})
+    var equatorial_rectanguler = Orb.EclipticToEquatorial({"date":date,"ecliptic":ecliptic_rectanguler})
+    var equatoria_spherical = Orb.XYZtoRadec(equatorial_rectanguler)
 
 --- 
 
