@@ -17,23 +17,23 @@ https://gist.github.com/lizard-isana/36ed368eca0ac8c6f2fd4fdab5641bf9
 ## スクリプト
 
 ### Main
-**orb.v2.js**:
+**orb.v2.js**:  
 すべての関数が含まれた全部入りバージョンです
 
-**orb-core.v2.js**:
+**orb-core.v2.js**:  
 orb.v2.jsから各関数が依存している関数だけを抜き出したもの。以下のorb-satellite.v2.jsやorb-planetary.v2.jsはこのファイルに依存します。
 
-**orb-satellite.v2.js**:
+**orb-satellite.v2.js**:  
 orb.v2.jsから人工衛星の計算に必要な関数を抜き出したもの。"orb-core.v2.js"と同時に使う必要があります。
 
-**orb-planetary.v2.js**:
+**orb-planetary.v2.js**:  
 orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関数を抜き出したもの。"orb-core.v2.js"と同時に使う必要があります。
 
 ### Supplemental
-**orb-data-handler.js**
+**orb-data-handler.js**  
 外部ファイルを非同期通信で読み込むための関数です。"Orb."のプリフィックスがついていますが、orb.v2.jsと依存関係はありません。
 
-**orb-date-handler.js**
+**orb-date-handler.js**  
 文字列と日付を相互変換するための関数です。"Orb."のプリフィックスがついていますが、orb.v2.jsと依存関係はありません。
 
 ## Examples
