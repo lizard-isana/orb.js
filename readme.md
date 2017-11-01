@@ -11,7 +11,7 @@ https://gist.github.com/lizard-isana/36ed368eca0ac8c6f2fd4fdab5641bf9
 - 時刻系変換(GMST/ユリウス日/年通日 等)
 - 座標変換(赤道座標/黄道座標/地平座標 等)
 
---- 
+---
 
 ## スクリプト
 
@@ -35,7 +35,7 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 **orb-date-handler.js**  
 文字列と日付を相互変換するための関数です。"Orb."のプリフィックスがついていますが、orb.v2.jsと依存関係はありません。
 
---- 
+---
 
 ## Examples
 
@@ -116,7 +116,7 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     var equatorial_rectanguler = Orb.EclipticToEquatorial({"date":date,"ecliptic":ecliptic_rectanguler})
     var equatoria_spherical = Orb.XYZtoRadec(equatorial_rectanguler)
 
---- 
+---
 
 ## 惑星の位置(Orb.VSOP)
 惑星の位置の計算アルゴリズムにはVSOP87(VSOP87A)を使っています。出力されるのはJ2000.0を分点とする日心黄道直交座標です。
@@ -139,9 +139,9 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 返り値は以下のようになります。coodinate_keywords、unit_keywordsは、orb.jsがこれらの値が再利用された際に座標系を識別するために付加したキーワードです。→ 詳しくは「座標系と単位系の識別」を参照してください。
 
     rectangular = {
-      "x":0
-      "y":0,
-      "z":0,
+      "x":<Number>,
+      "y":<Number>,
+      "z":<Number>,
       "date":<日付オブジェクト>,
       "coodinate_keywords":"ecliptic rectangular",
       "unit_keywords":"au"
@@ -152,9 +152,9 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     var spherical = mars.radec(date);
 
     spherical = {
-      "ra":0
-      "dec":0,
-      "distance":0,
+      "ra":<Number>
+      "dec":<Number>,
+      "distance":<Number>,
       "date":<日付オブジェクト>,
       "coodinate_keywords":"equatorial spherical",
       "unit_keywords":"hour degree au"
@@ -218,8 +218,8 @@ TLEを以下のようにオブジェクトとしてOrb.SGP4()に渡して初期�
      "ydot":<Number>,
      "zdot":<Number>,
      "date":<日付オブジェクト>,
-     "coodinate_keywords":["geographic","rectangular"],
-     "unit_keywords":["km","km/s"]
+     "coodinate_keywords":"geographic rectangular",
+     "unit_keywords":"km km/s"
     }
 
 地理座標（緯度経度）を計算する場合は以下のようにlatlng()を使います。
@@ -227,13 +227,13 @@ TLEを以下のようにオブジェクトとしてOrb.SGP4()に渡して初期�
     var spherical = satellite.latlng(date);
 
     //返り値
-    p8 = {
+    spherical = {
      "latitude":0,
      "longitude":0,
      "distance":0,
      "date":<日付オブジェクト>,
-     "coodinate_keywords":["geographic","spherical"],
-     "unit_keywords":["degree","km"]
+     "coodinate_keywords":"geographic spherical",
+     "unit_keywords":"degree km"]
     }
 
 ## 地平座標への変換(Orb.Observation)
@@ -447,7 +447,7 @@ Orb.Kepler(ケプラー軌道要素による位置計算)は重力定数(gm)を�
   orb.jsは、このキーワードを参照し、必要に応じて値を変換してから必要な計算を行います。orb.jsが出力する値をそのまま使っている場合は意識する必要はありませんが、手作業で座標系の変換を行った場合に、実際の内容と異なるキーワードが付けられていると、正しい値が出力されない場合があります。
   具体的には、Orb.XYXtoRadecとOrb.Observationで入力された直交座標に対してキーワードによる黄道座標/赤道座標の判別をしています。
 
---- 
+---
 
 ## Reference
 - Bretagnon, P.; Francou, G. "Planetary theories in rectangular and spherical variables - VSOP 87 solutions". Astronomy & Astrophysics,1988
