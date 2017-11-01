@@ -1,2 +1,4 @@
+.ftpignore
+.ftpconfig
 .DS_Store
 *.html
