@@ -3,16 +3,16 @@
 Please note: There is no compatibility v1 and v2.
 
 ## Files
-**orb.v2.js**:
+**orb.v2.js**:  
 all-in-one package
 
-**orb-core.v2.js**:
+**orb-core.v2.js**:  
 Truncated version of orb.js. Core functions for orb-satellite.v2.js or orb-planetary.v2.js.
 
-**orb-satellite.v2.js**:
+**orb-satellite.v2.js**:  
 Truncated version of orb.js. If you only need calculations for artificial satellites or space debris, you use this .js file with orb-core.v2.js.
 
-**orb-planetary.v2.js**:
+**orb-planetary.v2.js**:  
 Truncated version of orb.js. If you only need calculations for planetary objects such as planets or asteroids, you use this .js file with orb-core.v2.js.
 
 ## Example
@@ -291,12 +291,9 @@ Calc obliquity of Earth. This is wrapper function of Orb.NutationAndObliquity()
     var xyz = satellite.xyz(date); // equatorial rectangular coordinates (Earth centered): x, y, z
     var latlng = satellite.latlng(date); // geographic spherical coordinates :  latitude, longitude, altitude
 
-### Orb.DecodeTLE()
-
 ## orb-planetary.v2.js (require orb-core.v2.js)
-This is truncated version of orb.js. If you only need calculations for planetary objects such as planets, asteroids and so on, you use this .js file with orb-core.v2.js.
 
-### Orb.kepler()
+### Orb.Kepler()
 
     //initialize
     var asteroid = new Orb.Kepler({
@@ -352,6 +349,7 @@ Please note: xyz() returns Earth centered "equatorial" rectangular coordinates n
 # sapplemental
 
 ## orb-data-handler.js
+
 ### Orb.DataLoader()
 
     var data = Orb.DataLoader({
@@ -365,6 +363,7 @@ Please note: xyz() returns Earth centered "equatorial" rectangular coordinates n
     })
 
 ## orb-date-handler.js
+
 ### Orb.DigitsToDate()
 
     var date = Orb.DigitsToDate("20170101120000"); // return date object 2017.01.01 12:00:00 UTC
