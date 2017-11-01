@@ -1,18 +1,19 @@
-# orb.js examples
+# orb.v2.js examples
 
-## Builds
-**orb.v2.js**: all-in-one package(orb-core, orb-satellite, orb-planetary)
+Please note: There is no compatibility v1 and v2.
 
-**orb.v2.min.js**: minified version of orb.v2.js
+## Files
+**orb.v2.js**:
+all-in-one package
 
-**orb-core.v2.js**: truncated version of orb.js.
-  core functions for orb-satellite.v2.js or orb-planetary.v2.js.
+**orb-core.v2.js**:
+Truncated version of orb.js. Core functions for orb-satellite.v2.js or orb-planetary.v2.js.
 
-**orb-satellite.v2.js**: truncated version of orb.js.
-  If you only need calculations for artificial satellites or space debris, you use this .js file with orb-core.v2.js.
+**orb-satellite.v2.js**:
+Truncated version of orb.js. If you only need calculations for artificial satellites or space debris, you use this .js file with orb-core.v2.js.
 
-**orb-planetary.v2.js**: truncated version of orb.js.
-If you only need calculations for planetary objects such as planets or asteroids, you use this .js file with orb-core.v2.js.
+**orb-planetary.v2.js**:
+Truncated version of orb.js. If you only need calculations for planetary objects such as planets or asteroids, you use this .js file with orb-core.v2.js.
 
 ## orb-core.v2.js
 
