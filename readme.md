@@ -342,7 +342,7 @@ orb.jsの各メソッドは日付オブジェクトを受け取り、内部的�
       dec:-16.7131,
       distance:543300
     }
-    var xyz = Orb.RadecToXYZ(sirius) // return Equatorial Rectangeler
+    var xyz = Orb.RadecToXYZ(sirius) // return Equatorial Rectanguler
 
 ### 赤道（黄道）直交座標から赤道球面座標（Orb.XYZtoRadec）
 直交座標(x,y,z)から赤道球面座標(RA,Dec)に変換します。デフォルトでは入力値を赤道直交座標とみなします。
