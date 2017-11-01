@@ -114,7 +114,7 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     var equatorial_rectanguler = Orb.RadecToXYZ(sirius)
     var ecliptic_rectanguler = Orb.EquatorialToEcliptic({"date":date,"equatorial":equatorial_rectanguler})
     var equatorial_rectanguler = Orb.EclipticToEquatorial({"date":date,"ecliptic":ecliptic_rectanguler})
-    var equatoria_spherical = Orb.XYZtoRadec(equatorial_rectanguler)
+    var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectanguler)
 
 ---
 
@@ -228,9 +228,9 @@ TLEを以下のようにオブジェクトとしてOrb.SGP4()に渡して初期�
 
     //返り値
     spherical = {
-     "latitude":0,
-     "longitude":0,
-     "distance":0,
+     "latitude":<Number>,
+     "longitude":<Number>,
+     "distance":<Number>,
      "date":<日付オブジェクト>,
      "coodinate_keywords":"geographic spherical",
      "unit_keywords":"degree km"]
