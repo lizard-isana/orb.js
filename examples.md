@@ -1,6 +1,6 @@
 # orb.v2.js examples
 
-Please note: There is no compatibility v1 and v2.
+***Please note: There is no compatibility v1 and v2.***
 
 ## Files
 **orb.v2.js**:  
@@ -33,7 +33,7 @@ Truncated version of orb.js. If you only need calculations for planetary objects
     var rectangular = sun.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
     var spherical = sun.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
-    //Kepler orbital elements
+    // Kepler orbital elements
     var asteroid = new Orb.Kepler({
       "gm": 2.9591220828559093*Math.pow(10,-4); //(au^3/d^2) default value is the sun, so you can omit this line.
       "eccentricity":"0.08728849329001058",
@@ -46,7 +46,7 @@ Truncated version of orb.js. If you only need calculations for planetary objects
     var rectangular = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z)
     var spherical = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
-    //Position of artificial satellites from Two Line Elements(TLE)
+    // Position of artificial satellites from Two Line Elements(TLE)
     var tle = {
       first_line:"1 25544U 98067A   15012.59173611  .00014829  00000-0  23845-3 0  7179",
       second_line:"2 25544 051.6466 140.7335 0006107 243.2909 291.5211 15.53213268923827"
@@ -55,7 +55,7 @@ Truncated version of orb.js. If you only need calculations for planetary objects
     var rectangular = satellite.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
     var spherical = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude)
 
-    //Azimuth and Elevation
+    // Azimuth and Elevation
     var your_location = {
       "latitude":35.658,
       "longitude":139.741,
@@ -80,14 +80,14 @@ Truncated version of orb.js. If you only need calculations for planetary objects
     });
     var horizontal = observe_star.azel(date); // horizontal coordinates(azimuth, elevation)
 
-    //Time conversion
+    // Time conversion
     var time = new Orb.Time(date);
     var gmst = time.gmst();
     var julian_date = time.jd();
     var time_in_day = time.time_in_day();
     var day_of_year = time.doy();
 
-    //Coordinates conversion
+    // Coordinates conversion
     var equatorial_rectangular = Orb.RadecToXYZ(sirius)
     var ecliptic_rectangular = Orb.EquatorialToEcliptic({"date":date,"equatorial":equatorial_rectangular})
     var equatorial_rectangular = Orb.EclipticToEquatorial({"date":date,"ecliptic":ecliptic_rectangular})
@@ -122,10 +122,10 @@ Various numerical constants for astronomical calculations
 ### Orb.Time()
 Convert Date to the astronomical time units
 
-    //initialize
+    // initialize
     var date = new Date();
     var time = new Orb.Time(date);
-    //if you omit date object, you get value of now.
+    // if you omit date object, you get value of now.
 
     var gmst = time.gmst();
     var julian_date = time.jd();
@@ -135,7 +135,7 @@ Convert Date to the astronomical time units
 ## Orb.Observation()
 Calc horizontal coordinates of target from observer.
 
-    //initialize
+    // initialize
     var date = new Date()
     var your_location = {
       "latitude":35.658,
@@ -148,7 +148,7 @@ Calc horizontal coordinates of target from observer.
     var obs = new Orb.Observation({"observer":your_location,"target":mars});
     var azel = obs.azel(date); // azimuth, elevation -> horizontal coordinates
 
-    //for artificial satellites (see Orb.SGP4)
+    // for artificial satellites (see Orb.SGP4)
     var tle = {
       first_line:"1 25544U 98067A   15012.59173611  .00014829  00000-0  23845-3 0  7179",
       second_line:"2 25544 051.6466 140.7335 0006107 243.2909 291.5211 15.53213268923827"
@@ -157,14 +157,14 @@ Calc horizontal coordinates of target from observer.
     var obs = new Orb.Observation({"observer":your_location,"target":satellite});
     var azel = obs.azel(date); // azimuth, elevation -> horizontal coordinates
 
-    //for equatorial sphirical coordinates (RA,Dec)
+    // for equatorial sphirical coordinates (RA,Dec)
     var obs = new Orb.Observation({
       "observer":your_location ,
       "target":{"ra":0,"dec":0}
     });
     var azel = obs.azel(date); // azimuth, elevation
 
-    //for equatorial rectangular coordinates (x,y,z)
+    // for equatorial rectangular coordinates (x,y,z)
     var obs = new Orb.Observation({
       "observer":your_location ,
       "target":{"x":0,"y":0,"z":0}
@@ -172,7 +172,7 @@ Calc horizontal coordinates of target from observer.
 
     var azel = obs.azel(date); // azimuth, elevation
 
-    //if target includes "coorinate_keywords" with "ecliptic", orb.js automatically convert coordinates.
+    // if target includes "coorinate_keywords" with "ecliptic", orb.js automatically convert coordinates.
     // "coorinate_keywords":"ecliptic rectangular"
 
         var obs = new Orb.Observation({
@@ -376,7 +376,7 @@ Please note: xyz() returns Earth centered "equatorial" rectangular coordinates n
 
 ### Orb.StringToDate()
 
-    //var str = "2017-01-01T12:00:00"    
+    var str = "2017-01-01T12:00:00"    
     //date separator should be "." or "-", time and date separator should be " " or "T" and time separator should be ":"
 
     var date = Orb.StringToDate(str)

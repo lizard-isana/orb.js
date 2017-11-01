@@ -571,8 +571,8 @@ Orb.VSOP = Orb.VSOP || function(target){
     radec:function(date){
       var vsop_target = Orb.Terms.VSOP87A[target];
       var target_pos = exec_vsop(vsop_target,date)
-      var equatorial_rectangeler = Orb.EclipticToEquatorial({ecliptic:target_pos,date:date})
-      var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangeler)
+      var equatorial_rectangular = Orb.EclipticToEquatorial({ecliptic:target_pos,date:date})
+      var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
       return equatorial_spherical
     }
   }
@@ -1104,8 +1104,8 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
     radec:function(date){
       var op = orbital_plane(date)
       var xyz = ecliptic_rectangular(orbital_elements,op,date);
-      var equatorial_rectangeler = Orb.EclipticToEquatorial({ecliptic:xyz,date:date})
-      var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangeler)
+      var equatorial_rectangular = Orb.EclipticToEquatorial({ecliptic:xyz,date:date})
+      var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
       return {
         'ra':equatorial_spherical.ra,
         'dec':equatorial_spherical.dec,

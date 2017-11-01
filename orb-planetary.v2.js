@@ -32,8 +32,8 @@ Orb.VSOP = Orb.VSOP || function(target){
     radec:function(date){
       var vsop_target = Orb.Terms.VSOP87A[target];
       var target_pos = exec_vsop(vsop_target,date)
-      var equatorial_rectangeler = Orb.EclipticToEquatorial({ecliptic:target_pos,date:date})
-      var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangeler)
+      var equatorial_rectangular = Orb.EclipticToEquatorial({ecliptic:target_pos,date:date})
+      var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
       return equatorial_spherical
     }
   }
@@ -281,7 +281,7 @@ Orb.Luna = Orb.Luna ||  function(){
     }
   }
   function calc_xyz(latlng,date){
-    //rectanger
+    //rectangular
     var rad = Orb.Constant.RAD
     var latitude = latlng.latitude
     var longitude = latlng.longitude
@@ -368,8 +368,8 @@ Orb.Sun = Orb.Sun || function(date){
       distance:distance
     }
   }
-  function spherical_to_rectangler(longitude,distance,obliquity){
-    //rectanger
+  function spherical_to_rectangular(longitude,distance,obliquity){
+    //rectangular
     var x = distance*Math.cos(longitude*rad);
     var y = distance*(Math.sin(longitude*rad)*Math.cos(obliquity*rad));
     var z = distance*(Math.sin(longitude*rad)*Math.sin(obliquity*rad));
@@ -395,7 +395,7 @@ Orb.Sun = Orb.Sun || function(date){
     },
     xyz:function(date){
       var ecliptic = ecliptic(date)
-      var xyz = spherical_to_rectangler(ecliptic.longitude,ecliptic.distance,ecliptic.obliquity)
+      var xyz = spherical_to_rectangular(ecliptic.longitude,ecliptic.distance,ecliptic.obliquity)
       return{
         x:xyz.x,
         y:xyz.y,
@@ -565,8 +565,8 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
     radec:function(date){
       var op = orbital_plane(date)
       var xyz = ecliptic_rectangular(orbital_elements,op,date);
-      var equatorial_rectangeler = Orb.EclipticToEquatorial({ecliptic:xyz,date:date})
-      var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangeler)
+      var equatorial_rectangular = Orb.EclipticToEquatorial({ecliptic:xyz,date:date})
+      var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
       return {
         'ra':equatorial_spherical.ra,
         'dec':equatorial_spherical.dec,

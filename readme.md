@@ -111,10 +111,10 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     var day_of_year = time.doy();
 
     //座標変換
-    var equatorial_rectanguler = Orb.RadecToXYZ(sirius)
-    var ecliptic_rectanguler = Orb.EquatorialToEcliptic({"date":date,"equatorial":equatorial_rectanguler})
-    var equatorial_rectanguler = Orb.EclipticToEquatorial({"date":date,"ecliptic":ecliptic_rectanguler})
-    var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectanguler)
+    var equatorial_rectangular = Orb.RadecToXYZ(sirius)
+    var ecliptic_rectangular = Orb.EquatorialToEcliptic({"date":date,"equatorial":equatorial_rectangular})
+    var equatorial_rectangular = Orb.EclipticToEquatorial({"date":date,"ecliptic":ecliptic_rectangular})
+    var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
 
 ---
 
@@ -342,7 +342,7 @@ orb.jsの各メソッドは日付オブジェクトを受け取り、内部的�
       dec:-16.7131,
       distance:543300
     }
-    var xyz = Orb.RadecToXYZ(sirius) // return Equatorial Rectanguler
+    var xyz = Orb.RadecToXYZ(sirius) // return Equatorial Rectangular
 
 ### 赤道（黄道）直交座標から赤道球面座標（Orb.XYZtoRadec）
 直交座標(x,y,z)から赤道球面座標(RA,Dec)に変換します。デフォルトでは入力値を赤道直交座標とみなします。
