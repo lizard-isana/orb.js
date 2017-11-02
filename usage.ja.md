@@ -112,6 +112,8 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
 
 
+## orb-planetary.v2.js
+
 ## 惑星の位置(Orb.VSOP)
 惑星の位置の計算アルゴリズムにはVSOP87(VSOP87A)を使っています。出力されるのはJ2000.0を分点とする日心黄道直交座標です。
 
@@ -183,7 +185,10 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     var rectangular = asteroid.xyz(date); // x, y, z -> ecliptic rectangular coordinates
     var spherical = asteroid.radec(date); // ra, dec, distance -> equatorial spherical coordinates
 
-## 二行軌道要素による人工衛星の位置(Orb.SGP4)
+
+## orb-satelite.v2.js
+
+### 二行軌道要素による人工衛星の位置(Orb.SGP4)
 2行軌道要素(TLE)から地球周回軌道の人工衛星の位置を計算します。
 
 TLEを以下のようにオブジェクトとしてOrb.SGP4()に渡して初期化します。
@@ -230,7 +235,9 @@ Dateをメソッドに渡して位置を計算します。以下の例ではxyz(
      "unit_keywords":"degree km"]
     }
 
-## 地平座標への変換(Orb.Observation)
+## orb-core.v2.js
+
+### 地平座標への変換(Orb.Observation)
 
 観測者（observer）と観測対象（target）を指定して地平座標を計算します
 
@@ -298,7 +305,8 @@ Orb.Observationは、地理座標で指定されたobserverに対して、任意
 
   戻り値の距離の単位はターゲットの距離単位に揃えられます。
 
-## 時刻の計算(Orb.Time)
+
+### 時刻の計算(Orb.Time)
 天文計算に必要な各種の時刻の計算を行います。
 
 まず、Dateを渡して初期化します。
@@ -325,10 +333,10 @@ Orb.Observationは、地理座標で指定されたobserverに対して、任意
 なお、以下の実際の位置計算では、通常のDate（Date）を受け取ることに注意してください。
 orb.jsの各メソッドはDateを受け取り、内部的にこの関数を使って日付を変換しています。
 
-## 座標変換
+### 座標変換
 天文計算に必要な各種の時刻の計算を行います。
 
-### 赤道球面座標から赤道直交座標（Orb.RadecToXYZ）
+#### 赤道球面座標から赤道直交座標（Orb.RadecToXYZ）
 赤道球面座標(RA,Dec)から赤道直交座標(x,y,z)に変換します。
 
     var sirius = {
@@ -338,7 +346,7 @@ orb.jsの各メソッドはDateを受け取り、内部的にこの関数を使�
     }
     var xyz = Orb.RadecToXYZ(sirius) // return Equatorial Rectangular
 
-### 赤道（黄道）直交座標から赤道球面座標（Orb.XYZtoRadec）
+#### 赤道（黄道）直交座標から赤道球面座標（Orb.XYZtoRadec）
 直交座標(x,y,z)から赤道球面座標(RA,Dec)に変換します。デフォルトでは入力値を赤道直交座標とみなします。
 
     var sirius = {
@@ -363,7 +371,7 @@ orb.jsの各メソッドはDateを受け取り、内部的にこの関数を使�
 
 Date(date)を省略すると、現在の位置とみなして計算します。上記の例では省略しても値は変わりません。
 
-### 赤道直交座標から黄道直交座標（Orb.EquatorialToEcliptic）
+#### 赤道直交座標から黄道直交座標（Orb.EquatorialToEcliptic）
 赤道直交座標(x,y,z)から黄道直交座標(x,y,z)に変換します
 
     var sirius = {
@@ -378,7 +386,7 @@ Date(date)を省略すると、現在の位置とみなして計算します。�
 
 なお、位置情報に"coordinate_keywords"や"date"が付加されていても無視され、渡された座標を渡された日付の赤道直交座標とみなして変換します。
 
-### 黄道直交座標から赤道直交座標（Orb.EclipticToEquatorial）
+#### 黄道直交座標から赤道直交座標（Orb.EclipticToEquatorial）
 黄道直交座標(x,y,z)から赤道直交座標(x,y,z)に変換します
 
      var sirius = {
@@ -440,6 +448,52 @@ Orb.Kepler(ケプラー軌道要素による位置計算)は重力定数(gm)を�
   orb.jsは、このキーワードを参照し、必要に応じて値を変換してから必要な計算を行います。orb.jsが出力する値をそのまま使っている場合は意識する必要はありませんが、手作業で座標系の変換を行った場合に、実際の内容と異なるキーワードが付けられていると、正しい値が出力されない場合があります。
   具体的には、Orb.XYXtoRadecとOrb.Observationで入力された直交座標に対してキーワードによる黄道座標/赤道座標の判別をしています。
 
+## Supplemental
+
+### orb-data-handler.js
+
+#### Orb.DataLoader()
+
+    var data = Orb.DataLoader({
+      format:"text", // or "json" or "xml"
+      path: <path_to_data>,
+      id:"id",
+      ajax:true, // or "false"
+      callback:function(data,id){
+      // do something
+      }
+    })
+
+### orb-date-handler.js
+
+#### Orb.DigitsToDate()
+
+    var date = Orb.DigitsToDate("20170101120000"); // return date object 2017.01.01 12:00:00 UTC
+
+#### Orb.DateToDigits()
+
+    var date = new Date();
+    date.setTime(Date.UTC(2017,0,1,12,0,0))    
+    var digits = Orb.DateToDigits(date); //return "20170101120000"
+
+#### Orb.StringToDate()
+
+    var str = "2017-01-01T12:00:00"    
+    //date separator should be "." or "-", time and date separator should be " " or "T" and time separator should be ":"
+
+    var date = Orb.StringToDate(str)
+
+#### Orb.FormatUTCDate()
+
+    var date = new Date();
+    date.setTime(Date.UTC(2017,0,1,12,0,0))  
+    var str = Orb.FormatUTCDate(date) // return "2017.01.01 12:00:00"
+
+#### Orb.FormatLocalDate()
+
+    var date = new Date();
+    date.setTime(Date.UTC(2017,0,1,12,0,0))  
+    var str = Orb.FormatUTCDate(date) // return "2017.01.01 21:00:00" in timezone GMT+9:00
 
 
 ## Reference
