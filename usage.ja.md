@@ -1,6 +1,6 @@
 # orb.js（v2）- JavaScript library for astronomical calculations
 
-**orb.jsはJavaScriptで手軽に天体の位置計算を行うことを目的としたライブラリです。**  
+**orb.jsは主にブラウザ上で手軽に天体の位置計算を行うことを目的としたJavaScriptライブラリです。**  
 **※v1とv2ではメソッドや引数に大幅な修正が入っているため互換性がありません。くれぐれもご注意ください。**
 - 8惑星(VSOP87)および月・太陽位置
 - ケプラー軌道要素からの天体位置
@@ -217,7 +217,7 @@ Dateをメソッドに渡して位置を計算します。以下の例ではxyz(
      "ydot":<Number>,
      "zdot":<Number>,
      "date":<Date>,
-     "coordinate_keywords":"geographic rectangular",
+     "coordinate_keywords":"equatorial rectangular",
      "unit_keywords":"km km/s"
     }
 
