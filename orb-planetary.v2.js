@@ -18,7 +18,7 @@ Orb.VSOP = Orb.VSOP || function(target){
       y:v[1],
       z:v[2],
       "date":date,
-      "coodinate_keywords":"ecliptic rectangular",
+      "coordinate_keywords":"ecliptic rectangular",
       "unit_keywords":"au"
     }
   }
@@ -257,7 +257,7 @@ Orb.Luna = Orb.Luna ||  function(){
       distance:distance,
       obliquity:obliquity,
       "date":date,
-      "coodinate_keywords":"ecliptic spherical",
+      "coordinate_keywords":"ecliptic spherical",
       "unit_keywords":"degree km"
     }
   }
@@ -276,7 +276,7 @@ Orb.Luna = Orb.Luna ||  function(){
       distance:distance,
       obliquity:obliquity,
       "date":date,
-      "coodinate_keywords":"equatoria spherical",
+      "coordinate_keywords":"equatoria spherical",
       "unit_keywords":"degree hour km"
     }
   }
@@ -294,7 +294,7 @@ Orb.Luna = Orb.Luna ||  function(){
       y:y,
       z:z,
       "date":date,
-      "coodinate_keywords":"equatorial rectangular",
+      "coordinate_keywords":"equatorial rectangular",
       "unit_keywords":"km"
     }
   }
@@ -389,7 +389,7 @@ Orb.Sun = Orb.Sun || function(date){
         "dec":radec.dec,
         "distance":radec.distance,
         "date":date,
-        "coodinate_keywords":"equatorial spherical",
+        "coordinate_keywords":"equatorial spherical",
         "unit_keywords":"degree hour au"
       }
     },
@@ -401,7 +401,7 @@ Orb.Sun = Orb.Sun || function(date){
         y:xyz.y,
         z:xyz.z,
         "date":date,
-        "coodinate_keywords":"equatorial rectangular",
+        "coordinate_keywords":"equatorial rectangular",
         "unit_keywords":"au"
       }
     }
@@ -458,12 +458,10 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
      }else{
        var l = mean_motion*elapsed_time;
      }
-     var tan2b=2/(3*l)
-     var b= Math.atan(tan2b)/2
+     var b= Math.atan2(2,(3*l))/2
      var tanb = Math.tan(b)
      var tang = Math.pow(tanb,(1/3))
-     var tanf2=(1-tang*tang)/tang
-     var true_anomary = Math.atan(tanf2)*2
+     var true_anomary = Math.atan2((1-tang*tang),tang)*2
      var cosf= Math.cos(true_anomary)
      var sinf=Math.sin(true_anomary)
      var r =(2*perihelion_distance)/(1+cosf)
@@ -558,7 +556,7 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
         'z':position.z,
         'orbital_plane':op,
        "date":date,
-       "coodinate_keywords":"ecliptic rectangular",
+       "coordinate_keywords":"ecliptic rectangular",
        "unit_keywords":"au"
       };
     },
@@ -572,7 +570,7 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
         'dec':equatorial_spherical.dec,
         'distance':equatorial_spherical.distance,
         "date":date,
-        "coodinate_keywords":"equatorial spherical",
+        "coordinate_keywords":"equatorial spherical",
         "unit_keywords":"hour degree au"
       }
     }

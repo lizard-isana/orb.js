@@ -1,4 +1,4 @@
-# orb.js（v2）- JavaScript Library for Astronomical Calculations
+# orb.js（v2）- JavaScript library for astronomical calculations
 
 *Sorry, currently no English readme. see examlpes.md or gist below.*  
 https://gist.github.com/lizard-isana/36ed368eca0ac8c6f2fd4fdab5641bf9
@@ -10,8 +10,6 @@ https://gist.github.com/lizard-isana/36ed368eca0ac8c6f2fd4fdab5641bf9
 - 2行軌道要素からの人工衛星位置(SGP4)
 - 時刻系変換(GMST/ユリウス日/年通日 等)
 - 座標変換(赤道座標/黄道座標/地平座標 等)
-
----
 
 ## スクリプト
 
@@ -35,7 +33,7 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 **orb-date-handler.js**  
 文字列と日付を相互変換するための関数です。"Orb."のプリフィックスがついていますが、orb.v2.jsと依存関係はありません。
 
----
+
 
 ## Examples
 
@@ -116,7 +114,6 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     var equatorial_rectangular = Orb.EclipticToEquatorial({"date":date,"ecliptic":ecliptic_rectangular})
     var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
 
----
 
 ## 惑星の位置(Orb.VSOP)
 惑星の位置の計算アルゴリズムにはVSOP87(VSOP87A)を使っています。出力されるのはJ2000.0を分点とする日心黄道直交座標です。
@@ -132,18 +129,18 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 惑星名の指定には以下のキーワードが使えます。頭文字が大文字であることに注意してください。
 ["Mercury","Venus","Earth","Mars","Jupiter","Saturn","Uranus","Neptune"]
 
-メソッドに日付オブジェクトを渡して位置を計算します。以下の例ではxyz()に渡して黄道直交座標を計算しています。
+メソッドにDateを渡して位置を計算します。以下の例ではxyz()に渡して黄道直交座標を計算しています。
 
     var rectangular = mars.xyz(date);
 
-返り値は以下のようになります。coodinate_keywords、unit_keywordsは、orb.jsがこれらの値が再利用された際に座標系を識別するために付加したキーワードです。→ 詳しくは「座標系と単位系の識別」を参照してください。
+返り値は以下のようになります。coordinate_keywords、unit_keywordsは、orb.jsがこれらの値が再利用された際に座標系を識別するために付加したキーワードです。→ 詳しくは「座標系と単位系の識別」を参照してください。
 
     rectangular = {
       "x":<Number>,
       "y":<Number>,
       "z":<Number>,
-      "date":<日付オブジェクト>,
-      "coodinate_keywords":"ecliptic rectangular",
+      "date":<Date>,
+      "coordinate_keywords":"ecliptic rectangular",
       "unit_keywords":"au"
     }
 
@@ -155,8 +152,8 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
       "ra":<Number>
       "dec":<Number>,
       "distance":<Number>,
-      "date":<日付オブジェクト>,
-      "coodinate_keywords":"equatorial spherical",
+      "date":<Date>,
+      "coordinate_keywords":"equatorial spherical",
       "unit_keywords":"hour degree au"
     };
 
@@ -204,7 +201,7 @@ TLEを以下のようにオブジェクトとしてOrb.SGP4()に渡して初期�
 
     var satellite = new Orb.Satellite(tle);
 
-日付オブジェクトをメソッドに渡して位置を計算します。以下の例ではxyz()で地心直交座標で計算します。
+Dateをメソッドに渡して位置を計算します。以下の例ではxyz()で地心直交座標で計算します。
 
     var date = new Date();
     var rectangular = satellite.xyz(date);
@@ -217,8 +214,8 @@ TLEを以下のようにオブジェクトとしてOrb.SGP4()に渡して初期�
      "xdot":<Number>,
      "ydot":<Number>,
      "zdot":<Number>,
-     "date":<日付オブジェクト>,
-     "coodinate_keywords":"geographic rectangular",
+     "date":<Date>,
+     "coordinate_keywords":"geographic rectangular",
      "unit_keywords":"km km/s"
     }
 
@@ -231,8 +228,8 @@ TLEを以下のようにオブジェクトとしてOrb.SGP4()に渡して初期�
      "latitude":<Number>,
      "longitude":<Number>,
      "distance":<Number>,
-     "date":<日付オブジェクト>,
-     "coodinate_keywords":"geographic spherical",
+     "date":<Date>,
+     "coordinate_keywords":"geographic spherical",
      "unit_keywords":"degree km"]
     }
 
@@ -286,28 +283,28 @@ Orb.Observationは、地理座標で指定されたobserverに対して、任意
     Orb.Lunaオブジェクト
       var target = new Orb.Luna()
 
-    赤道球面座標の固定値(distance,coodinate_origin,coodinate_keywords,unit_keywordsは省略可)
+    赤道球面座標の固定値(distance,coordinate_origin,coordinate_keywords,unit_keywordsは省略可)
       var target = {
         "ra":0,"dec":0,"distance":0,
-        "coodinate_keywords":"equatorial spherical",
+        "coordinate_keywords":"equatorial spherical",
         "unit_keywords":"hour degree km"
       }
 
-    直交座標の固定値(coodinate_origin,coodinate_keywords,unit_keywordsは省略可)
+    直交座標の固定値(coordinate_origin,coordinate_keywords,unit_keywordsは省略可)
       var target = {
         "x":0,"y":0,"z":0,
-        "coodinate_keywords":"equatorial rectangular", //or "ecliptic rectangular"
+        "coordinate_keywords":"equatorial rectangular", //or "ecliptic rectangular"
         "unit_keywords":"km" //or "au"
       }
-    coodinate_keywordsを省略すると、赤道直交座標とみなして地平座標を計算します。  
-    coodinate_keywordsに"ecliptic"が入っていると、黄道直交座標とみなして、赤道直交座標に変換してから計算します。
+    coordinate_keywordsを省略すると、赤道直交座標とみなして地平座標を計算します。  
+    coordinate_keywordsに"ecliptic"が入っていると、黄道直交座標とみなして、赤道直交座標に変換してから計算します。
 
   戻り値の距離の単位はターゲットの距離単位に揃えられます。
 
 ## 時刻の計算(Orb.Time)
 天文計算に必要な各種の時刻の計算を行います。
 
-まず、日付オブジェクトを渡して初期化します。
+まず、Dateを渡して初期化します。
 
     var date = new Date();
     var time = new Orb.Time(date);
@@ -328,8 +325,8 @@ Orb.Observationは、地理座標で指定されたobserverに対して、任意
 
     var day_of_year = time.doy();
 
-なお、以下の実際の位置計算では、通常の日付オブジェクト（Date）を受け取ることに注意してください。
-orb.jsの各メソッドは日付オブジェクトを受け取り、内部的にこの関数を使って日付を変換しています。
+なお、以下の実際の位置計算では、通常のDate（Date）を受け取ることに注意してください。
+orb.jsの各メソッドはDateを受け取り、内部的にこの関数を使って日付を変換しています。
 
 ## 座標変換
 天文計算に必要な各種の時刻の計算を行います。
@@ -354,8 +351,8 @@ orb.jsの各メソッドは日付オブジェクトを受け取り、内部的�
     }
     var radec = Orb.XYZtoRadec(xyz) // return Equatorial Spherical
 
-位置情報に"ecliptic"を含む"coodinate_keywords"が入っていると、黄道座標から赤道座標への変換を行ってから球面座標に変換します。
-→"coodinate_keywords"については「座標系と単位系の識別」を参照してください。
+位置情報に"ecliptic"を含む"coordinate_keywords"が入っていると、黄道座標から赤道座標への変換を行ってから球面座標に変換します。
+→"coordinate_keywords"については「座標系と単位系の識別」を参照してください。
 
     var sirius = {
       "x": -101858.45670898016,
@@ -367,7 +364,7 @@ orb.jsの各メソッドは日付オブジェクトを受け取り、内部的�
 
     var radec = Orb.XYZtoRadec(sirius)
 
-日付オブジェクト(date)を省略すると、現在の位置とみなして計算します。上記の例では省略しても値は変わりません。
+Date(date)を省略すると、現在の位置とみなして計算します。上記の例では省略しても値は変わりません。
 
 ### 赤道直交座標から黄道直交座標（Orb.EquatorialToEcliptic）
 赤道直交座標(x,y,z)から黄道直交座標(x,y,z)に変換します
@@ -382,7 +379,7 @@ orb.jsの各メソッドは日付オブジェクトを受け取り、内部的�
       "date":date
     })
 
-なお、位置情報に"coodinate_keywords"や"date"が付加されていても無視され、渡された座標を渡された日付の赤道直交座標とみなして変換します。
+なお、位置情報に"coordinate_keywords"や"date"が付加されていても無視され、渡された座標を渡された日付の赤道直交座標とみなして変換します。
 
 ### 黄道直交座標から赤道直交座標（Orb.EclipticToEquatorial）
 黄道直交座標(x,y,z)から赤道直交座標(x,y,z)に変換します
@@ -397,16 +394,15 @@ orb.jsの各メソッドは日付オブジェクトを受け取り、内部的�
       "date":date
     })
 
-なお、位置情報に"coodinate_keywords"や"date"が付加されていても無視され、渡された座標を渡された日付の黄道直交座標とみなして変換します。
+なお、位置情報に"coordinate_keywords"や"date"が付加されていても無視され、渡された座標を渡された日付の黄道直交座標とみなして変換します。
 
----
 
 ## 対象天体による直交座標の違い
   orb.jsのメソッド名は出力する値を元につけられています。たとえばxyz()は、x,y,zのベクトルを返し、radec()は赤経(ra),赤緯(dec)を返し、azel()は方位角(azimuth)と高度(elevation)を返します。
 
   そのため、天体の位置を返すメソッドのうち、直交座標を返すxyz()は、関数によって返す値の内容と単位が変わります。基本的に太陽が中心の場合は日心黄道直交座標を返し、地球が中心の場合は地心赤道直交座標を返します。
 
-  そのままでは帰ってきた値がどの座標系に基づくものかが分からないので、orb.jsは出力に座標系と単位系を表すキーワード"coodinate_keywords"と"unit_keywords"を付加します。→「座標系と単位系の識別」を参照してください。
+  そのままでは帰ってきた値がどの座標系に基づくものかが分からないので、orb.jsは出力に座標系と単位系を表すキーワード"coordinate_keywords"と"unit_keywords"を付加します。→「座標系と単位系の識別」を参照してください。
 
   なお、radec()は常に赤道球面座標を、latlng()は常に地理座標を、azel()は常に地平座標を返します。
 
@@ -447,7 +443,7 @@ Orb.Kepler(ケプラー軌道要素による位置計算)は重力定数(gm)を�
   orb.jsは、このキーワードを参照し、必要に応じて値を変換してから必要な計算を行います。orb.jsが出力する値をそのまま使っている場合は意識する必要はありませんが、手作業で座標系の変換を行った場合に、実際の内容と異なるキーワードが付けられていると、正しい値が出力されない場合があります。
   具体的には、Orb.XYXtoRadecとOrb.Observationで入力された直交座標に対してキーワードによる黄道座標/赤道座標の判別をしています。
 
----
+
 
 ## Reference
 - Bretagnon, P.; Francou, G. "Planetary theories in rectangular and spherical variables - VSOP 87 solutions". Astronomy & Astrophysics,1988

@@ -299,14 +299,14 @@ Orb.RadecToXYZ = function (parameter){
     'x':xyz.x,
     'y':xyz.y,
     'z':xyz.z,
-    "coodinate_keywords":"equatorial rectangular",
+    "coordinate_keywords":"equatorial rectangular",
     "unit_keywords":""
   }
 }
 
 Orb.XYZtoRadec = function (parameter){
   // equatorial rectangular(x,y,z) to spherical(ra,dec)
-  if(parameter.coodinate_keywords && parameter.coodinate_keywords.match(/ecliptic/)){
+  if(parameter.coordinate_keywords && parameter.coordinate_keywords.match(/ecliptic/)){
     if(parameter.date){
       var date = parameter.date
     }else{
@@ -334,7 +334,7 @@ Orb.XYZtoRadec = function (parameter){
     "ra":ra,
     "dec":dec,
     "distance":distance,
-    "coodinate_keywords":"equatorial spherical",
+    "coordinate_keywords":"equatorial spherical",
     "unit_keywords":"hours degree"
  };
 }
@@ -355,7 +355,7 @@ Orb.EquatorialToEcliptic = function (parameter){
     'y':ecliptic.y,
     'z':ecliptic.z,
     'date':date,
-    "coodinate_keywords":"ecliptic rectangular",
+    "coordinate_keywords":"ecliptic rectangular",
     "unit_keywords":""
   }
 }
@@ -382,7 +382,7 @@ Orb.EclipticToEquatorial = function(parameter){
     'y':equatorial.y,
     'z':equatorial.z,
     'date':date,
-    "coodinate_keywords":"equatorial rectangular",
+    "coordinate_keywords":"equatorial rectangular",
     "unit_keywords":""
   }
 }
@@ -490,7 +490,7 @@ Orb.Observation = Orb.Observation || function(param){
       var horizontal = _radec2horizontal(time,target,observer)
       var distance_unit = "au"
     }else if(target.x != undefined && target.y != undefined && target.z != undefined){
-      if(target.coodinate_keywords.match(/ecliptic/)){
+      if(target.coordinate_keywords.match(/ecliptic/)){
         if(target.date != undefined ){
           var target_date = target.date;
         }else{
@@ -518,7 +518,7 @@ Orb.Observation = Orb.Observation || function(param){
       "distance": horizontal.distance,
       "date":date,
       "coodinate_origin":"Earth",
-      "coodinate_keywords":"horizontal spherical",
+      "coordinate_keywords":"horizontal spherical",
       "unit_keywords": "degree" + " " + distance_unit
     }
   }

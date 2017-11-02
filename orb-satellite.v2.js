@@ -378,7 +378,7 @@ Orb.SGP4 = Orb.SGP4 || function(tle){
          "ydot": rect.ydot,
          "zdot": rect.zdot,
          "date":date,
-         "coodinate_keywords":"equatorial rectangular",
+         "coordinate_keywords":"equatorial rectangular",
          "unit_keywords":"km"
        }
     },
@@ -391,7 +391,7 @@ Orb.SGP4 = Orb.SGP4 || function(tle){
         "longitude" : geo.longitude,
         "altitude" : geo.altitude,
         "date":date,
-        "coodinate_keywords":"geographic spherical",
+        "coordinate_keywords":"geographic spherical",
         "unit_keywords":"degree km"
       }
     }
