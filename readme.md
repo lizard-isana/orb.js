@@ -95,7 +95,7 @@ orb.js has methods for the ...
 
 ## License
  Copyright (c) 2012-2017 Isana Kashiwai  
- Dual licensed under the MIT (MIT-LICENSE) and GPL (GPL-LICENSE) licenses.
+ Licensed under the [MIT license](/MIT-LICENSE).
 
 ## Administrator
   Isana Kashiwai  
