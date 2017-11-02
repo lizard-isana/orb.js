@@ -114,7 +114,7 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 
 ## orb-planetary.v2.js
 
-## 惑星の位置(Orb.VSOP)
+### 惑星の位置(Orb.VSOP)
 惑星の位置の計算アルゴリズムにはVSOP87(VSOP87A)を使っています。出力されるのはJ2000.0を分点とする日心黄道直交座標です。
 
 まず惑星名を指定して初期化します。
@@ -157,21 +157,21 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     };
 
 
-## 月の位置(Orb.Luna)
+### 月の位置(Orb.Luna)
 地球から見た月の位置を計算します。
 
     var luna = new Orb.Luna();
     var rectangular = luna.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
     var spherical = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
-## 太陽の視位置（Orb.Sun）
+### 太陽の視位置（Orb.Sun）
 地球から見た太陽の位置を計算します。xyz()の戻り値が地心赤道座標であることに注意してください。
 
     var sun = new Orb.Sun();
     var rectangular = sun.xyz(date); // x, y, z -> equatorial rectangular coordinates (Earth centered)
     var spherical = sun.radec(date); // ra, dec, distance -> equatorial coordinates
 
-## ケプラー軌道要素による太陽系内天体の位置(Orb.Kepler)
+### ケプラー軌道要素による太陽系内天体の位置(Orb.Kepler)
 
     var asteroid = new Orb.Kepler({
       "gm": 2.9591220828559093*Math.pow(10,-4); //au^3/d^2 中心天体が太陽の場合は省略可
