@@ -287,14 +287,14 @@ Orb.Observationは、地理座標で指定されたobserverに対して、任意
     Orb.Lunaオブジェクト
       var target = new Orb.Luna()
 
-    赤道球面座標の固定値(distance,coodinate_origin,coordinate_keywords,unit_keywordsは省略可)
+    赤道球面座標の固定値(distance,coordinate_keywords,unit_keywordsは省略可)
       var target = {
         "ra":0,"dec":0,"distance":0,
         "coordinate_keywords":"equatorial spherical",
         "unit_keywords":"hour degree km"
       }
 
-    直交座標の固定値(coodinate_origin,coordinate_keywords,unit_keywordsは省略可)
+    直交座標の固定値(coordinate_keywords,unit_keywordsは省略可)
       var target = {
         "x":0,"y":0,"z":0,
         "coordinate_keywords":"equatorial rectangular", //or "ecliptic rectangular"
@@ -369,7 +369,7 @@ orb.jsの各メソッドはDateを受け取り、内部的にこの関数を使�
 
     var radec = Orb.XYZtoRadec(sirius)
 
-Date(date)を省略すると、現在の位置とみなして計算します。上記の例では省略しても値は変わりません。
+"date"を省略すると、現在の位置とみなして計算します。上記の例では省略しても値は変わりません。
 
 #### 赤道直交座標から黄道直交座標（Orb.EquatorialToEcliptic）
 赤道直交座標(x,y,z)から黄道直交座標(x,y,z)に変換します
