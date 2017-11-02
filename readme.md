@@ -1,5 +1,15 @@
 # orb.js（v2）- JavaScript library for astronomical calculations
 
+***Please note: There is no compatibility orb.js v1 and v2.***
+
+orb.js has methods for the ...
+- Position of 8 planets(VSOP87), sun and moon
+- Keplerian orbital elements
+- Position of artificial satellites(SGP4)
+- Apparent position of celestial objects
+- Time conversions
+- Coordinates conversions
+
 ## Example
     var date = new Date();
 
