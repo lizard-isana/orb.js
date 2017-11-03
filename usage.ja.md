@@ -1,6 +1,6 @@
 # orb.js（v2）- JavaScript library for astronomical calculations
 
-**orb.jsはJavaScriptで手軽に天体の位置計算を行うことを目的としたライブラリです。**  
+**orb.jsは主にブラウザ上で手軽に天体の位置計算を行うことを目的としたJavaScriptライブラリです。**  
 **※v1とv2ではメソッドや引数に大幅な修正が入っているため互換性がありません。くれぐれもご注意ください。**
 - 8惑星(VSOP87)および月・太陽位置
 - ケプラー軌道要素からの天体位置
@@ -43,12 +43,12 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 
     // 月位置
     var luna = new Orb.Luna();
-    var rectangular = luna.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+    var rectangular = luna.xyz(date); // equatorial rectangular coordinates (x, y, z)
     var spherical = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     // 太陽視位置
     var sun = new Orb.Sun();
-    var rectangular = sun.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+    var rectangular = sun.xyz(date); // equatorial rectangular coordinates (x, y, z)
     var spherical = sun.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     //ケプラー軌道要素から太陽系内天体の位置
@@ -70,7 +70,7 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
       second_line:"2 25544 051.6466 140.7335 0006107 243.2909 291.5211 15.53213268923827"
     }
     var satellite = new Orb.SGP4(tle);
-    var rectangular = satellite.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+    var rectangular = satellite.xyz(date); // equatorial rectangular coordinates (x, y, z)
     var spherical = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude)
 
     //方位、高度の計算
@@ -161,15 +161,15 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 地球から見た月の位置を計算します。
 
     var luna = new Orb.Luna();
-    var rectangular = luna.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+    var rectangular = luna.xyz(date); // equatorial rectangular coordinates (x, y, z)
     var spherical = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
 ### 太陽の視位置（Orb.Sun）
 地球から見た太陽の位置を計算します。xyz()の戻り値が地心赤道座標であることに注意してください。
 
     var sun = new Orb.Sun();
-    var rectangular = sun.xyz(date); // x, y, z -> equatorial rectangular coordinates (Earth centered)
-    var spherical = sun.radec(date); // ra, dec, distance -> equatorial coordinates
+    var rectangular = sun.xyz(date); // equatorial rectangular coordinates (x, y, z)
+    var spherical = sun.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
 ### ケプラー軌道要素による太陽系内天体の位置(Orb.Kepler)
 
@@ -182,8 +182,8 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
       "time_of_periapsis":"2456918.756066796",
       "semi_major_axis":"1.001911878091084"
     });
-    var rectangular = asteroid.xyz(date); // x, y, z -> ecliptic rectangular coordinates
-    var spherical = asteroid.radec(date); // ra, dec, distance -> equatorial spherical coordinates
+    var rectangular = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z)
+    var spherical = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
 
 ## orb-satelite.v2.js
@@ -217,7 +217,7 @@ Dateをメソッドに渡して位置を計算します。以下の例ではxyz(
      "ydot":<Number>,
      "zdot":<Number>,
      "date":<Date>,
-     "coordinate_keywords":"geographic rectangular",
+     "coordinate_keywords":"equatorial rectangular",
      "unit_keywords":"km km/s"
     }
 
@@ -250,7 +250,7 @@ Dateをメソッドに渡して位置を計算します。以下の例ではxyz(
     }
 
     var observe_mars = new Orb.Observation({"observer":your_location,"target":mars});
-    var horizontal = observe_mars.azel(date); // azimuth, elevation -> horizontal coordinates
+    var horizontal = observe_mars.azel(date); // horizontal coordinates(azimuth, elevation)
 
 人工衛星の場合も同じです
 
@@ -261,7 +261,7 @@ Dateをメソッドに渡して位置を計算します。以下の例ではxyz(
     var satellite = new Orb.SGP4(tle);
 
     var observe_satellite = new Orb.Observation({"observer":your_location,"target":satellite});
-    var horizontal = observe_satellite.azel(date); // azimuth, elevation -> horizontal coordinates
+    var horizontal = observe_satellite.azel(date); // horizontal coordinates(azimuth, elevation)
 
 恒星などの視位置を計算する場合に、赤道座標を直接指定しても計算できます。
 
@@ -270,7 +270,7 @@ Dateをメソッドに渡して位置を計算します。以下の例ではxyz(
       "target":{"ra":0,"dec":0}
     });
 
-    var horizontal = observe_star.azel(date); // azimuth, elevation
+    var horizontal = observe_star.azel(date); // horizontal coordinates(azimuth, elevation)
 
 
 Orb.Observationは、地理座標で指定されたobserverに対して、任意のターゲットを指定すると、ターゲットに応じて位置を計算して変換してから地平座標を計算して返します。Orb.Observationに渡せるオブジェクトは以下のとおりです。
@@ -344,7 +344,7 @@ orb.jsの各メソッドはDateを受け取り、内部的にこの関数を使�
       dec:-16.7131,
       distance:543300
     }
-    var xyz = Orb.RadecToXYZ(sirius) // return Equatorial Rectangular
+    var xyz = Orb.RadecToXYZ(sirius) // return equatorial rectangular(x, y, z)
 
 #### 赤道（黄道）直交座標から赤道球面座標（Orb.XYZtoRadec）
 直交座標(x,y,z)から赤道球面座標(RA,Dec)に変換します。デフォルトでは入力値を赤道直交座標とみなします。
@@ -354,7 +354,7 @@ orb.jsの各メソッドはDateを受け取り、内部的にこの関数を使�
       "y": 406051.12168323726,
       "z": -346297.893982406
     }
-    var radec = Orb.XYZtoRadec(xyz) // return Equatorial Spherical
+    var radec = Orb.XYZtoRadec(sirius); // return equatorial spherical(ra, dec, distance)
 
 位置情報に"ecliptic"を含む"coordinate_keywords"が入っていると、黄道座標から赤道座標への変換を行ってから球面座標に変換します。
 →"coordinate_keywords"については「座標系と単位系の識別」を参照してください。
@@ -367,9 +367,9 @@ orb.jsの各メソッドはDateを受け取り、内部的にこの関数を使�
       "coorinate_keywords":"ecliptic rectangular"
     }
 
-    var radec = Orb.XYZtoRadec(sirius)
+    var radec = Orb.XYZtoRadec(sirius); // return equatorial spherical(ra, dec, distance)
 
-"date"を省略すると、現在の位置とみなして計算します。上記の例では省略しても値は変わりません。
+座標の変換時に日付を指定しているのは、黄道傾斜角の時間変化を考慮に入れているからです。ただし、変動はごく僅か(年に0.01度程度)なので直近の大雑把な位置が知りたいだけなら省略してもほとんど問題ありません。"date"を省略すると、現在の位置とみなして計算します。上記の例では省略しても値は変わりません。
 
 #### 赤道直交座標から黄道直交座標（Orb.EquatorialToEcliptic）
 赤道直交座標(x,y,z)から黄道直交座標(x,y,z)に変換します
@@ -382,7 +382,7 @@ orb.jsの各メソッドはDateを受け取り、内部的にこの関数を使�
     var ecliptic = Orb.EquatorialToEcliptic({
       "equatorial": sirius,
       "date":date
-    })
+    }); // return ecliptic rectangular(x, y, z)
 
 なお、位置情報に"coordinate_keywords"や"date"が付加されていても無視され、渡された座標を渡された日付の赤道直交座標とみなして変換します。
 
@@ -397,7 +397,7 @@ orb.jsの各メソッドはDateを受け取り、内部的にこの関数を使�
     var equatorial = Orb.EclipticToEquatorial({
       "ecliptic": sirius,
       "date":date
-    })
+    }); // return equatorial rectangular(x, y, z)
 
 なお、位置情報に"coordinate_keywords"や"date"が付加されていても無視され、渡された座標を渡された日付の黄道直交座標とみなして変換します。
 
@@ -502,8 +502,8 @@ Orb.Kepler(ケプラー軌道要素による位置計算)は重力定数(gm)を�
 - 長澤 工. 天体の位置計算 増補版. 地人書館, 1985
 
 ## License
- Copyright (c) 2012 Isana Kashiwai
- Dual licensed under the MIT (MIT-LICENSE) and GPL (GPL-LICENSE) licenses.
+ Copyright (c) 2012-2017 Isana Kashiwai  
+ Licensed under the [MIT license](/MIT-LICENSE).
 
 ## Administrator
   Isana Kashiwai

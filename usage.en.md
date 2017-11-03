@@ -392,3 +392,16 @@ Please note: xyz() returns Earth centered "equatorial" rectangular coordinates n
     var date = new Date();
     date.setTime(Date.UTC(2017,0,1,12,0,0))  
     var str = Orb.FormatUTCDate(date) // return "2017.01.01 21:00:00" in timezone GMT+9:00
+
+## Reference
+- Bretagnon, P.; Francou, G. "Planetary theories in rectangular and spherical variables - VSOP 87 solutions". Astronomy & Astrophysics,1988
+- Jean Meeus. Astronomical Algorithms second edition. Willmann-Bell, 1999
+- 長澤 工. 天体の位置計算 増補版. 地人書館, 1985
+
+## License
+ Copyright (c) 2012-2017 Isana Kashiwai  
+ Licensed under the [MIT license](/MIT-LICENSE).
+
+## Administrator
+  Isana Kashiwai
+  email: isana.k at gmail.com
