@@ -10,6 +10,10 @@ orb.js has methods for the ...
 - Time conversions
 - Coordinates conversions
 
+## Usage
+  English: [usage.en.md](/usage.en.md)  
+  日本語: [usage.ja.md](/usage.ja.md)
+
 ## Example
     var date = new Date();
 
@@ -87,10 +91,6 @@ orb.js has methods for the ...
     var ecliptic_rectangular = Orb.EquatorialToEcliptic({"date":date,"equatorial":equatorial_rectangular})
     var equatorial_rectangular = Orb.EclipticToEquatorial({"date":date,"ecliptic":ecliptic_rectangular})
     var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
-
-## Usage
-  English: [usage.en.md](/usage.en.md)  
-  日本語: [usage.ja.md](/usage.ja.md)
 
 
 ## License
