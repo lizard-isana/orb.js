@@ -38,22 +38,22 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 
     // 惑星位置
     var mars = new Orb.VSOP("Mars");
-    var rectangular = mars.xyz(date); // ecliptic rectangular coordinates(x, y, z)
-    var spherical = mars.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+    var xyz = mars.xyz(date); // ecliptic rectangular coordinates(x, y, z)
+    var radec = mars.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     // 月位置
     var luna = new Orb.Luna();
-    var rectangular = luna.xyz(date); // equatorial rectangular coordinates (x, y, z)
-    var spherical = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+    var xyz = luna.xyz(date); // equatorial rectangular coordinates (x, y, z)
+    var radec = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     // 太陽視位置
     var sun = new Orb.Sun();
-    var rectangular = sun.xyz(date); // equatorial rectangular coordinates (x, y, z)
-    var spherical = sun.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+    var xyz = sun.xyz(date); // equatorial rectangular coordinates (x, y, z)
+    var radec = sun.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
-    //ケプラー軌道要素から太陽系内天体の位置
+    //ケプラー軌道要素から太陽系内天体の直交座標への変換
     var asteroid = new Orb.Kepler({
-      "gm": 2.9591220828559093*Math.pow(10,-4); //au^3/d^2 中心天体が太陽の場合は省略可
+      "gm": 2.9591220828559093*Math.pow(10,-4), //au^3/d^2 中心天体が太陽の場合は省略可
       "eccentricity":"0.08728849329001058",
       "inclination":"6.812676631845272",
       "longitude_of_ascending_node":"250.5660658100269",
@@ -61,8 +61,11 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
       "time_of_periapsis":"2456918.756066796",
       "semi_major_axis":"1.001911878091084"
     });
-    var rectangular = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
-    var spherical = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+    var xyz = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
+    var radec = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+
+    //直交座標（デカルト軌道要素）からケプラー軌道要素への変換
+    var orbital_elements = new Orb.Cartesian(xyz)
 
     //二行軌道要素から人工衛星の位置
     var tle = {
@@ -70,8 +73,8 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
       second_line:"2 25544 051.6466 140.7335 0006107 243.2909 291.5211 15.53213268923827"
     }
     var satellite = new Orb.SGP4(tle);
-    var rectangular = satellite.xyz(date); // equatorial rectangular coordinates (x, y, z ,xdot, ydot, zdot)
-    var spherical = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude)
+    var xyz = satellite.xyz(date); // equatorial rectangular coordinates (x, y, z ,xdot, ydot, zdot)
+    var latlng = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude)
 
     //方位、高度の計算
     var your_location = {
@@ -130,11 +133,11 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 
 メソッドにDateを渡して位置を計算します。以下の例ではxyz()に渡して黄道直交座標を計算しています。
 
-    var rectangular = mars.xyz(date);
+    var xyz = mars.xyz(date);
 
 返り値は以下のようになります。coordinate_keywords、unit_keywordsは、orb.jsがこれらの値が再利用された際に座標系を識別するために付加したキーワードです。→ 詳しくは「座標系と単位系の識別」を参照してください。
 
-    rectangular = {
+    xyz = {
       "x":<Number>,
       "y":<Number>,
       "z":<Number>,
@@ -145,9 +148,9 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 
 赤道座標の場合は radec()を使います。赤経の単位が時(hour)であることに注意してください
 
-    var spherical = mars.radec(date);
+    var radec = mars.radec(date);
 
-    spherical = {
+    radec = {
       "ra":<Number>
       "dec":<Number>,
       "distance":<Number>,
@@ -161,20 +164,22 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 地球から見た月の位置を計算します。
 
     var luna = new Orb.Luna();
-    var rectangular = luna.xyz(date); // equatorial rectangular coordinates (x, y, z)
-    var spherical = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+    var xyz = luna.xyz(date); // equatorial rectangular coordinates (x, y, z)
+    var radec = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
 ### 太陽の視位置（Orb.Sun）
 地球から見た太陽の位置を計算します。xyz()の戻り値が地心赤道座標であることに注意してください。
 
     var sun = new Orb.Sun();
-    var rectangular = sun.xyz(date); // equatorial rectangular coordinates (x, y, z)
-    var spherical = sun.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+    var xyz = sun.xyz(date); // equatorial rectangular coordinates (x, y, z)
+    var radec = sun.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
-### ケプラー軌道要素による太陽系内天体の位置(Orb.Kepler)
+### ケプラー軌道要素による太陽系内天体の位置(Orb.Kepler/Orb.KeplerianToCartesian)
+ケプラー軌道要素で指定された天体の直交座標（デカルト軌道要素）を計算します。
+Orb.KeplerianToCartesian()と書いても同じです。
 
     var asteroid = new Orb.Kepler({
-      "gm": 2.9591220828559093*Math.pow(10,-4); //au^3/d^2 中心天体が太陽の場合は省略可
+      "gm": 2.9591220828559093*Math.pow(10,-4), //au^3/d^2 中心天体が太陽の場合は省略可
       "eccentricity":"0.08728849329001058",
       "inclination":"6.812676631845272",
       "longitude_of_ascending_node":"250.5660658100269",
@@ -182,9 +187,43 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
       "time_of_periapsis":"2456918.756066796",
       "semi_major_axis":"1.001911878091084"
     });
-    var rectangular = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
-    var spherical = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+    var xyz = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
+    var radec = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
+
+### 直交座標からケプラー軌道要素への変換(Orb.Cartesian/Orb.CartesianToKeplerian)
+直交座標（デカルト軌道要素)からケプラー軌道要素への変換を行います。Orb.Keplerの逆を行う関数です。
+Orb.CartesianToKeplerian()と書いても同じです。
+
+    var date = new Date();
+    date.setTime(Date.UTC(2017,0,1,0,0,0))   
+
+    //initialize
+    var asteroid_eros_elements = new Orb.Cartesian({
+      "gm": 2.9591220828559093*Math.pow(10,-4), //au^3/d^2 中心天体が太陽の場合は省略可
+      "date":date // or epoch: 2457754.5,
+      "x": 0.0830237594569403,
+      "y": -3.1268511124864538,
+      "z": 4.499475953917434,
+      "xdot": -0.002473803722068218,
+      "ydot": 0.009696903602742064,
+      "zdot": -0.015396150337498575
+    }
+
+    // 上記のコードは以下のような軌道要素を返します
+
+    asteroid_eros_elements = {
+      epoch: 2457754.5,
+      semi_major_axis: -1.2911100416899044,
+      eccentricity: 1.197095803399395,
+      inclination: 122.60100166153163,
+      longitude_of_ascending_node: 24.598195301118153,
+      true_anomaly: 221.3987070271094,
+      mean_anomaly: 191.04774671275925,
+      mean_motion: 0.6718296791172355,
+      time_of_periapsis: 2458005.9807823156,
+      argument_of_periapsis: 241.53003549784427
+    }
 
 ## orb-satelite.v2.js
 
@@ -206,10 +245,10 @@ TLEを以下のようにオブジェクトとしてOrb.SGP4()に渡して初期�
 Dateをメソッドに渡して位置を計算します。以下の例ではxyz()で地心直交座標で計算します。
 
     var date = new Date();
-    var rectangular = satellite.xyz(date);
+    var xyz = satellite.xyz(date);
 
     //返り値
-    rectangular = {
+    xyz = {
      "x":<Number>,
      "y":<Number>,
      "z":<Number>,
@@ -223,10 +262,10 @@ Dateをメソッドに渡して位置を計算します。以下の例ではxyz(
 
 地理座標（緯度経度）を計算する場合は以下のようにlatlng()を使います。
 
-    var spherical = satellite.latlng(date);
+    var latlng = satellite.latlng(date);
 
     //返り値
-    spherical = {
+    latlng = {
      "latitude":<Number>,
      "longitude":<Number>,
      "distance":<Number>,
@@ -303,7 +342,7 @@ Orb.Observationは、地理座標で指定されたobserverに対して、任意
     coordinate_keywordsを省略すると、赤道直交座標とみなして地平座標を計算します。  
     coordinate_keywordsに"ecliptic"が入っていると、黄道直交座標とみなして、赤道直交座標に変換してから計算します。
 
-  戻り値の距離の単位はターゲットの距離単位に揃えられます。
+  返り値の距離の単位はターゲットの距離単位に揃えられます。
 
 
 ### 時刻の計算(Orb.Time)

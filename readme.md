@@ -10,6 +10,19 @@ orb.js has methods for the ...
 - Time conversions
 - Coordinates conversions
 
+## Files
+**orb.v2.js**:  
+all-in-one package
+
+**orb-core.v2.js**:  
+Truncated version of orb.js. Core functions for orb-satellite.v2.js or orb-planetary.v2.js.
+
+**orb-satellite.v2.js**:  
+Truncated version of orb.js. If you only need calculations for artificial satellites or space debris, you use this .js file with orb-core.v2.js.
+
+**orb-planetary.v2.js**:  
+Truncated version of orb.js. If you only need calculations for planetary objects such as planets or asteroids, you use this .js file with orb-core.v2.js.
+
 ## Usage
   English: [usage.en.md](/usage.en.md)  
   日本語: [usage.ja.md](/usage.ja.md)
@@ -19,22 +32,22 @@ orb.js has methods for the ...
 
     // Position of planets
     var mars = new Orb.VSOP("Mars");
-    var rectangular = mars.xyz(date); // ecliptic rectangular coordinates(x, y, z)
-    var spherical = mars.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+    var xyz = mars.xyz(date); // ecliptic rectangular coordinates(x, y, z)
+    var radec = mars.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     // Position of the moon
     var luna = new Orb.Luna();
-    var rectangular = luna.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
-    var spherical = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+    var xyz = luna.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+    var radec = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     // Apparent position of the Sun
     var sun = new Orb.Sun();
-    var rectangular = sun.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
-    var spherical = sun.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+    var xyz = sun.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+    var radec = sun.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     // Kepler orbital elements
     var asteroid = new Orb.Kepler({
-      "gm": 2.9591220828559093*Math.pow(10,-4); //(au^3/d^2) default value is the sun, so you can omit this line.
+      "gm": 2.9591220828559093*Math.pow(10,-4), //(au^3/d^2) default value is the sun, so you can omit this line.
       "eccentricity":"0.08728849329001058",
       "inclination":"6.812676631845272",
       "longitude_of_ascending_node":"250.5660658100269",
@@ -42,8 +55,11 @@ orb.js has methods for the ...
       "time_of_periapsis":"2456918.756066796",
       "semi_major_axis":"1.001911878091084"
     });
-    var rectangular = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
-    var spherical = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+    var xyz = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
+    var radec = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+
+    // Cartesian state vectors to Kepler orbital elements
+    var orbital_elements = new Orb.Cartesian(xyz)
 
     // Position of artificial satellites from Two Line Elements(TLE)
     var tle = {
@@ -51,8 +67,8 @@ orb.js has methods for the ...
       second_line:"2 25544 051.6466 140.7335 0006107 243.2909 291.5211 15.53213268923827"
     }
     var satellite = new Orb.SGP4(tle);
-    var rectangular = satellite.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z, xdot, ydot, zdot)
-    var spherical = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude)
+    var xyz = satellite.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z, xdot, ydot, zdot)
+    var latlng = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude)
 
     // Azimuth and Elevation
     var your_location = {
