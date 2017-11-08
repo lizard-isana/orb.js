@@ -42,7 +42,7 @@ orb.js has methods for the ...
       "time_of_periapsis":"2456918.756066796",
       "semi_major_axis":"1.001911878091084"
     });
-    var rectangular = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z)
+    var rectangular = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
     var spherical = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     // Position of artificial satellites from Two Line Elements(TLE)
@@ -51,7 +51,7 @@ orb.js has methods for the ...
       second_line:"2 25544 051.6466 140.7335 0006107 243.2909 291.5211 15.53213268923827"
     }
     var satellite = new Orb.SGP4(tle);
-    var rectangular = satellite.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+    var rectangular = satellite.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z, xdot, ydot, zdot)
     var spherical = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude)
 
     // Azimuth and Elevation
