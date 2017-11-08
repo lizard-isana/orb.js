@@ -43,7 +43,7 @@ Truncated version of orb.js. If you only need calculations for planetary objects
       "time_of_periapsis":"2456918.756066796",
       "semi_major_axis":"1.001911878091084"
     });
-    var rectangular = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z)
+    var rectangular = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
     var spherical = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     // Position of artificial satellites from Two Line Elements(TLE)
@@ -52,7 +52,7 @@ Truncated version of orb.js. If you only need calculations for planetary objects
       second_line:"2 25544 051.6466 140.7335 0006107 243.2909 291.5211 15.53213268923827"
     }
     var satellite = new Orb.SGP4(tle);
-    var rectangular = satellite.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+    var rectangular = satellite.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z, xdot, ydot, zdot)
     var spherical = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude)
 
     // Azimuth and Elevation
@@ -288,7 +288,7 @@ Calc obliquity of Earth. This is wrapper function of Orb.NutationAndObliquity()
     }
     var satellite = new Orb.SGP4(tle);
 
-    var xyz = satellite.xyz(date); // equatorial rectangular coordinates (Earth centered): x, y, z
+    var xyz = satellite.xyz(date); // equatorial rectangular coordinates (Earth centered): x, y, z, xdot, ydot, zdot
     var latlng = satellite.latlng(date); // geographic spherical coordinates :  latitude, longitude, altitude
 
 ## orb-planetary.v2.js (require orb-core.v2.js)
@@ -306,7 +306,7 @@ Calc obliquity of Earth. This is wrapper function of Orb.NutationAndObliquity()
       "semi_major_axis":"1.001911878091084" //in au
     });
 
-    var xyz = asteroid.xyz(date); // x, y, z -> ecliptic rectangular coordinates in au
+    var xyz = asteroid.xyz(date); // x, y, z, xdot, ydot, zdot -> ecliptic rectangular coordinates in au and au/d
     var radec = asteroid.radec(date); // ra, dec, distance -> equatorial spherical coordinates, distance in au
 
 "gm" has default value "2.9591220828559093E-4" so you can omit "gm" for the Sun.

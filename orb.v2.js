@@ -22,6 +22,7 @@ Orb.Constant = Orb.Constant ||  {
   "LY": Number("9.46073E+12"), //LIGHT_YEAR(km)
   "PC":Number("3.08568E+13"), //PARSEC(km)
   "G":Number("6.6740831E-11"), //GRAVITATIONAL_CONSTANT
+  "GM":2.9591220828559093*Math.pow(10,-4),
   "Planets":["Sun","Mercury","Venus","Earth","Moon","Mars","Jupiter","Saturn","Uranus","Neptune"],
   "Sun":{
     "radius":1392038/2,
@@ -948,10 +949,22 @@ Orb.Sun = Orb.Sun || function(date){
 }
 
 //kepler.js
-
 Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
-   var rad = Orb.Const.RAD
-   var au = 149597870.691;
+   var rad = Orb.Const.RAD;
+   var au = Orb.Const.AU;
+
+   var eccentricity = Number(orbital_elements.eccentricity);
+   if(orbital_elements.gm){
+     var gm = Number(orbital_elements.gm);
+   }else{
+     var gm = Orb.Const.GM;
+   }
+   if(orbital_elements.time_of_periapsis){
+     var epoch = orbital_elements.time_of_periapsis;
+   }else{
+     var epoch = orbital_elements.epoch;
+   }
+
 
    var EllipticalOrbit = function(orbital_elements,time){
      if(orbital_elements.semi_major_axis){
@@ -979,11 +992,17 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
        if(i>1000000){break;}
        i++
      }while (Math.abs(ut-u)>0.0000001);
-     var orbital_plane= {
-       x:semi_major_axis*(Math.cos(u)-eccentricity),
-       y:semi_major_axis*Math.sqrt(1-Math.pow(eccentricity,2))*Math.sin(u),
-       r:semi_major_axis*(1-(eccentricity*Math.cos(u)))
-     }
+     var eccentric_anomaly = u;
+     var p = Math.abs(semi_major_axis * (1 - eccentricity*eccentricity))
+     var true_anomaly = 2 * Math.atan( Math.sqrt((1 + eccentricity) / (1 - eccentricity)) * Math.tan(eccentric_anomaly / 2) );
+     var r = p / (1 + eccentricity * Math.cos(true_anomaly));
+     var orbital_plane = {
+       r:r,
+       x:r* Math.cos(true_anomaly),
+       y:r* Math.sin(true_anomaly),
+       xdot:-Math.sqrt(gm / p) * Math.sin(true_anomaly),
+       ydot:Math.sqrt(gm / p) * (eccentricity + Math.cos(true_anomaly))
+     };
    return orbital_plane;
    }
 
@@ -1006,10 +1025,14 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
      var r =(2*perihelion_distance)/(1+cosf)
      var x = r*cosf
      var y = r*sinf
+     var p = Math.abs(semi_major_axis * (1 - eccentricity*eccentricity))
+     var semi_major_axis = (orbital_elements.perihelion_distance)/(1-eccentricity)
      var orbital_plane= {
        x:x,
        y:y,
-       r:r
+       r:r,
+       xdot:-Math.sqrt(gm / p) * Math.sin(true_anomaly),
+       ydot:Math.sqrt(gm / p) * (eccentricity + Math.cos(true_anomaly))
      }
      return orbital_plane;
     }
@@ -1023,7 +1046,17 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
           var y = Math.exp(x);
           return (y - 1 / y) / 2;
         };
-        if(orbital_elements.semi_major_axis && orbital_elements.semi_major_axis>0){
+        Math.tanh = Math.tanh || function(x) {
+          if (x === Infinity) {
+            return 1;
+          } else if (x === -Infinity) {
+            return -1;
+          } else {
+            var y = Math.exp(2 * x);
+            return (y - 1) / (y + 1);
+          }
+        }
+      if(orbital_elements.semi_major_axis && orbital_elements.semi_major_axis>0){
          var semi_major_axis = orbital_elements.semi_major_axis;
        }else if(orbital_elements.perihelion_distance){
          var semi_major_axis = orbital_elements.perihelion_distance/(eccentricity-1);
@@ -1042,36 +1075,43 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
     		   break
     		 }
        }while (Math.abs(ut-u)>0.0000001);
+       var eccentric_anomaly = u;
+       var p = Math.abs(semi_major_axis * (1 - eccentricity*eccentricity))
+       var true_anomaly = 2*Math.atan(Math.sqrt((eccentricity+1)/(eccentricity-1))*Math.tanh(eccentric_anomaly/2));
        var orbital_plane= {
          x:semi_major_axis*(eccentricity-Math.cosh(u)),
          y:semi_major_axis*Math.sqrt(Math.pow(eccentricity,2)-1)*Math.sinh(u),
-         r:semi_major_axis*(1-(eccentricity*Math.cosh(u)))
+         r:semi_major_axis*(1-(eccentricity*Math.cosh(u))),
+         xdot:-Math.sqrt(gm/p)*Math.sin(true_anomaly),
+         ydot:Math.sqrt(gm/p)*(eccentricity+Math.cos(true_anomaly))
        }
 	   return orbital_plane;
      }
+
 
    var ecliptic_rectangular = function(orbital_elements,orbital_plane,date){
      var time = new Orb.Time(date)
      var lan = Number(orbital_elements.longitude_of_ascending_node)*rad;
      var ap = Number(orbital_elements.argument_of_periapsis)*rad;
      var inc = Number(orbital_elements.inclination)*rad;
-     var x  = orbital_plane.x*(Math.cos(lan)*Math.cos(ap)-Math.sin(lan)*Math.cos(inc)*Math.sin(ap))-orbital_plane.y*(Math.cos(lan)*Math.sin(ap)+Math.sin(lan)*Math.cos(inc)*Math.cos(ap));
-     var y = orbital_plane.x*(Math.sin(lan)*Math.cos(ap)+Math.cos(lan)*Math.cos(inc)*Math.sin(ap))-orbital_plane.y*(Math.sin(lan)*Math.sin(ap)-Math.cos(lan)*Math.cos(inc)*Math.cos(ap))
-     var z = orbital_plane.x*Math.sin(inc)*Math.sin(ap)+orbital_plane.y*Math.sin(inc)*Math.cos(ap);
+     var op2xyz = function(opx,opy,lan,ap,inc){
+       return {
+         x: opx*(Math.cos(lan)*Math.cos(ap)-Math.sin(lan)*Math.cos(inc)*Math.sin(ap))-opy*(Math.cos(lan)*Math.sin(ap)+Math.sin(lan)*Math.cos(inc)*Math.cos(ap)),
+         y: opx*(Math.sin(lan)*Math.cos(ap)+Math.cos(lan)*Math.cos(inc)*Math.sin(ap))-opy*(Math.sin(lan)*Math.sin(ap)-Math.cos(lan)*Math.cos(inc)*Math.cos(ap)),
+         z: opx*Math.sin(inc)*Math.sin(ap)+opy*Math.sin(inc)*Math.cos(ap)
+     }
+     }
+     var vec = op2xyz(orbital_plane.x,orbital_plane.y,lan,ap,inc)
+     var dotvec = op2xyz(orbital_plane.xdot,orbital_plane.ydot,lan,ap,inc)
    return {
-       x:x,
-       y:y,
-       z:z,
+       x:vec.x,
+       y:vec.y,
+       z:vec.z,
+       xdot:dotvec.x,
+       ydot:dotvec.y,
+       zdot:dotvec.z,
        orbital_plane:orbital_plane
      };
-   }
-
-   var eccentricity = Number(orbital_elements.eccentricity);
-   var gm = 2.9591220828559093*Math.pow(10,-4);
-   if(orbital_elements.time_of_periapsis){
-     var epoch = orbital_elements.time_of_periapsis;
-   }else{
-     var epoch = orbital_elements.epoch;
    }
 
   function orbital_plane(date){
@@ -1093,10 +1133,13 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
         'x':position.x,
         'y':position.y,
         'z':position.z,
+        'xdot':position.xdot,
+        'ydot':position.ydot,
+        'zdot':position.zdot,
         'orbital_plane':op,
        "date":date,
        "coordinate_keywords":"ecliptic rectangular",
-       "unit_keywords":"au"
+       "unit_keywords":"au au/d"
       };
     },
     radec:function(date){
