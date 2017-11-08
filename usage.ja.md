@@ -61,7 +61,7 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
       "time_of_periapsis":"2456918.756066796",
       "semi_major_axis":"1.001911878091084"
     });
-    var rectangular = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z)
+    var rectangular = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
     var spherical = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     //二行軌道要素から人工衛星の位置
@@ -70,7 +70,7 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
       second_line:"2 25544 051.6466 140.7335 0006107 243.2909 291.5211 15.53213268923827"
     }
     var satellite = new Orb.SGP4(tle);
-    var rectangular = satellite.xyz(date); // equatorial rectangular coordinates (x, y, z)
+    var rectangular = satellite.xyz(date); // equatorial rectangular coordinates (x, y, z ,xdot, ydot, zdot)
     var spherical = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude)
 
     //方位、高度の計算
@@ -182,7 +182,7 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
       "time_of_periapsis":"2456918.756066796",
       "semi_major_axis":"1.001911878091084"
     });
-    var rectangular = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z)
+    var rectangular = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
     var spherical = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
 
