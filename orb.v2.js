@@ -22,6 +22,7 @@ Orb.Constant = Orb.Constant ||  {
   "LY": Number("9.46073E+12"), //LIGHT_YEAR(km)
   "PC":Number("3.08568E+13"), //PARSEC(km)
   "G":Number("6.6740831E-11"), //GRAVITATIONAL_CONSTANT
+  "GM":2.9591220828559093*Math.pow(10,-4),
   "Planets":["Sun","Mercury","Venus","Earth","Moon","Mars","Jupiter","Saturn","Uranus","Neptune"],
   "Sun":{
     "radius":1392038/2,
@@ -948,8 +949,6 @@ Orb.Sun = Orb.Sun || function(date){
 }
 
 //kepler.js
-
-//kepler.js
 Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
    var rad = Orb.Const.RAD;
    var au = Orb.Const.AU;
@@ -1057,7 +1056,7 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
             return (y - 1) / (y + 1);
           }
         }
-       if(orbital_elements.semi_major_axis && orbital_elements.semi_major_axis>0){
+      if(orbital_elements.semi_major_axis && orbital_elements.semi_major_axis>0){
          var semi_major_axis = orbital_elements.semi_major_axis;
        }else if(orbital_elements.perihelion_distance){
          var semi_major_axis = orbital_elements.perihelion_distance/(eccentricity-1);
@@ -1088,6 +1087,7 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
        }
 	   return orbital_plane;
      }
+
 
    var ecliptic_rectangular = function(orbital_elements,orbital_plane,date){
      var time = new Orb.Time(date)
@@ -1158,6 +1158,7 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
     }
   }
 }
+
 
 //sgp4.js
 Orb.SGP4 = Orb.SGP4 || function(tle){

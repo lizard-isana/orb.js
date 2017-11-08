@@ -14,6 +14,7 @@ Orb.Constant = Orb.Constant ||  {
   "LY": Number("9.46073E+12"), //LIGHT_YEAR(km)
   "PC":Number("3.08568E+13"), //PARSEC(km)
   "G":Number("6.6740831E-11"), //GRAVITATIONAL_CONSTANT
+  "GM":2.9591220828559093*Math.pow(10,-4),
   "Planets":["Sun","Mercury","Venus","Earth","Moon","Mars","Jupiter","Saturn","Uranus","Neptune"],
   "Sun":{
     "radius":1392038/2,
