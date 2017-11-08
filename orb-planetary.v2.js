@@ -410,6 +410,28 @@ Orb.Sun = Orb.Sun || function(date){
 
 //kepler.js
 
+Math.cosh = Math.cosh || function(x) {
+  var y = Math.exp(x);
+  return (y + 1 / y) / 2;
+};
+Math.sinh = Math.sinh || function(x) {
+  var y = Math.exp(x);
+  return (y - 1 / y) / 2;
+};
+Math.tanh = Math.tanh || function(x) {
+  if (x === Infinity) {
+    return 1;
+  } else if (x === -Infinity) {
+    return -1;
+  } else {
+    var y = Math.exp(2 * x);
+    return (y - 1) / (y + 1);
+  }
+}
+Math.atanh = Math.atanh || function(x) {
+  return Math.log((1+x)/(1-x)) / 2;
+};
+
 Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
    var rad = Orb.Const.RAD;
    var au = Orb.Const.AU;
@@ -455,7 +477,7 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
      }while (Math.abs(ut-u)>0.0000001);
      var eccentric_anomaly = u;
      var p = Math.abs(semi_major_axis * (1 - eccentricity*eccentricity))
-     var true_anomaly = 2 * Math.atan( Math.sqrt((1 + eccentricity) / (1 - eccentricity)) * Math.tan(eccentric_anomaly / 2) );
+     var true_anomaly = 2*Math.atan(Math.sqrt((1+eccentricity)/(1-eccentricity))*Math.tan(eccentric_anomaly/2));
      var r = p / (1 + eccentricity * Math.cos(true_anomaly));
      var orbital_plane = {
        r:r,
@@ -499,24 +521,6 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
     }
 
     var HyperbolicOrbit = function(orbital_elements,time){
-        Math.cosh = Math.cosh || function(x) {
-          var y = Math.exp(x);
-          return (y + 1 / y) / 2;
-        };
-        Math.sinh = Math.sinh || function(x) {
-          var y = Math.exp(x);
-          return (y - 1 / y) / 2;
-        };
-        Math.tanh = Math.tanh || function(x) {
-          if (x === Infinity) {
-            return 1;
-          } else if (x === -Infinity) {
-            return -1;
-          } else {
-            var y = Math.exp(2 * x);
-            return (y - 1) / (y + 1);
-          }
-        }
       if(orbital_elements.semi_major_axis && orbital_elements.semi_major_axis>0){
          var semi_major_axis = orbital_elements.semi_major_axis;
        }else if(orbital_elements.perihelion_distance){
@@ -619,7 +623,100 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
     }
   }
 }
+Orb.KeplerianToCartesian = Orb.KeplerianToCartesian || Orb.Kepler
 
+Orb.CartesianToKeplerian = Orb.CartesianToKeplerian ||function(cartesian){
+  var rad = Math.PI/180;
+  if(cartesian.gm){
+    var gm = cartesian.gm
+  }else{
+    var gm = 2.9591220828559093*Math.pow(10,-4);
+  }
+  if(cartesian.epoch){
+    var epoch = cartesian.epoch
+  }else if(cartesian.date){
+    var time = new Orb.Time(cartesian.date)
+    var epoch = time.jd()
+  }else{
+    var date = new Date()
+    var time = new Orb.Time(date)
+    var epoch = time.jd()
+  }
+  var vector = [cartesian.x,cartesian.y,cartesian.z]
+  var vectordot = [cartesian.xdot,cartesian.ydot,cartesian.zdot]
+
+  function normalize(v){
+    return Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2])
+  }
+
+  function cross(v1,v2){
+    var c = []
+    c[0] = v1[1] * v2[2] - v1[2] * v2[1]
+    c[1] = v1[2] * v2[0] - v1[0] * v2[2]
+    c[2] = v1[0] * v2[1] - v1[1] * v2[0]
+     return [c[0],c[1],c[2]]
+  }
+
+  function dot(v1,v2){
+   return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2]
+  }
+
+  var radius = normalize(vector)
+  var velocity = normalize(vectordot)
+
+  var energy =  ((velocity*velocity)/2)-(gm/radius)
+  var semi_major_axis = -gm/(2*energy)
+  var cv = cross(vector,vectordot)
+  var normcv = normalize(cv)
+  var eccentricity = Math.sqrt(1-((normcv*normcv)/(semi_major_axis*gm)))
+  var normcvxy = Math.sqrt(cv[0]*cv[0]+cv[1]*cv[1])
+  var inclination = Math.atan2(normcvxy, cv[2])
+  var vz = [0,0,1]
+  var tc = cross(vz,cv);
+  var omega = Math.atan2(tc[1],tc[0])
+  var dotrv = dot(vector,vectordot)
+  if(dotrv <0){
+    var p = Math.abs(semi_major_axis * (1 - eccentricity*eccentricity))
+    //var p = semi_major_axis * (1 - eccentricity*eccentricity)
+    var true_anomaly = Math.atan2( Math.sqrt(p/gm)*dotrv, p-radius)
+  }else{
+    var true_anomaly = Math.acos((semi_major_axis*(1-eccentricity*eccentricity)-radius)/(eccentricity*radius))
+  }
+  var argument_of_latitude = Math.atan2(vector[2]/Math.sin(inclination),vector[0]*Math.cos(omega)+vector[1]*Math.sin(omega))
+  var argument_of_periapsis = argument_of_latitude - true_anomaly;
+
+  if(eccentricity>1.0){
+    var eccentric_anomaly = 2*Math.atanh(Math.sqrt((eccentricity-1)/(eccentricity+1))*Math.tan(true_anomaly/2));
+    var mean_motion = Math.sqrt(gm/-(semi_major_axis*semi_major_axis*semi_major_axis))
+    var mean_anomaly = eccentricity*Math.sinh(eccentric_anomaly) - eccentric_anomaly;
+  }else{
+    var eccentric_anomaly = 2*Math.atan(Math.sqrt((1-eccentricity)/(1+eccentricity))*Math.tan(true_anomaly/2))
+    var mean_motion = Math.sqrt(gm/(semi_major_axis*semi_major_axis*semi_major_axis))
+    var mean_anomaly = eccentric_anomaly-eccentricity*Math.sin(eccentric_anomaly);
+  }
+
+  var time_of_periapsis = epoch - (mean_anomaly/mean_motion)
+  function to_deg(num){
+    var rad = Math.PI/180;
+    var deg = num/rad
+    if(deg<0){deg = deg+360}
+    if(deg>360){deg=deg%360}
+    return deg
+  }
+  return{
+    epoch:epoch,
+    semi_major_axis:semi_major_axis,
+    eccentricity:eccentricity,
+    inclination:to_deg(inclination),
+    longitude_of_ascending_node:to_deg(omega),
+    true_anomaly:to_deg(true_anomaly),
+    mean_anomaly:to_deg(mean_anomaly),
+    mean_motion:to_deg(mean_motion),
+    time_of_periapsis:time_of_periapsis,
+    argument_of_periapsis:to_deg(argument_of_periapsis)
+  }
+}
+Orb.Cartesian = Orb.Cartesian || Orb.CartesianToKeplerian;
 
 Orb.Terms ={}
 Orb.Terms.VSOP87A = {
