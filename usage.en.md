@@ -47,7 +47,7 @@ Truncated version of orb.js. If you only need calculations for planetary objects
     var radec = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     // Cartesian state vectors to Kepler orbital elements
-    var orbital_elements = new Orb.Cartesian(xyz)
+    var orbital_elements = new Orb.CartesianToKeplerian(xyz)
 
     // Position of artificial satellites from Two Line Elements(TLE)
     var tle = {
@@ -296,7 +296,8 @@ Calc obliquity of Earth. This is wrapper function of Orb.NutationAndObliquity()
 
 ## orb-planetary.v2.js (require orb-core.v2.js)
 
-### Orb.Kepler() / Orb.KeplerianToCartesian()
+### Orb.Kepler()
+Orb.KeplerianToCartesian() is same as above
 
     //initialize
     var asteroid = new Orb.Kepler({
@@ -315,13 +316,13 @@ Calc obliquity of Earth. This is wrapper function of Orb.NutationAndObliquity()
 "gm" has default value "2.9591220828559093E-4" so you can omit "gm" for the Sun.
 
 
-## Orb.Cartesian() / Orb.CartesianToKeplerian()
-
+## Orb.CartesianToKeplerian()
+Orb.Cartesian() is same as above
     var date = new Date();
     date.setTime(Date.UTC(2017,0,1,0,0,0))   
 
     //initialize
-    var orbital_elements = new Orb.Cartesian({
+    var orbital_elements = new Orb.CartesianToKeplerian({
       "gm": 2.9591220828559093*Math.pow(10,-4), //au^3/d^2
       "date":date // or epoch: 2457754.5,
       "x": 0.0830237594569403,

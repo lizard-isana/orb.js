@@ -65,7 +65,7 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     var radec = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     //直交座標（デカルト軌道要素）からケプラー軌道要素への変換
-    var orbital_elements = new Orb.Cartesian(xyz)
+    var orbital_elements = new Orb.CartesianToKeplerian(xyz)
 
     //二行軌道要素から人工衛星の位置
     var tle = {
@@ -174,7 +174,7 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     var xyz = sun.xyz(date); // equatorial rectangular coordinates (x, y, z)
     var radec = sun.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
-### ケプラー軌道要素による太陽系内天体の位置(Orb.Kepler/Orb.KeplerianToCartesian)
+### ケプラー軌道要素による太陽系内天体の位置(Orb.Kepler)
 ケプラー軌道要素で指定された天体の直交座標（デカルト軌道要素）を計算します。
 Orb.KeplerianToCartesian()と書いても同じです。
 
@@ -191,15 +191,15 @@ Orb.KeplerianToCartesian()と書いても同じです。
     var radec = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
 
-### 直交座標からケプラー軌道要素への変換(Orb.Cartesian/Orb.CartesianToKeplerian)
+### 直交座標からケプラー軌道要素への変換(Orb.CartesianToKeplerian)
 直交座標（デカルト軌道要素)からケプラー軌道要素への変換を行います。Orb.Keplerの逆を行う関数です。
-Orb.CartesianToKeplerian()と書いても同じです。
+Orb.Cartesian()と書いても同じです。
 
     var date = new Date();
     date.setTime(Date.UTC(2017,0,1,0,0,0))   
 
     //initialize
-    var asteroid_eros_elements = new Orb.Cartesian({
+    var asteroid_eros_elements = new Orb.CartesianToKeplerian({
       "gm": 2.9591220828559093*Math.pow(10,-4), //au^3/d^2 中心天体が太陽の場合は省略可
       "date":date // or epoch: 2457754.5,
       "x": 0.0830237594569403,

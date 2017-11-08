@@ -59,7 +59,7 @@ Truncated version of orb.js. If you only need calculations for planetary objects
     var radec = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     // Cartesian state vectors to Kepler orbital elements
-    var orbital_elements = new Orb.Cartesian(xyz)
+    var orbital_elements = new Orb.CartesianToKeplerian(xyz)
 
     // Position of artificial satellites from Two Line Elements(TLE)
     var tle = {

@@ -625,7 +625,7 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
 }
 Orb.KeplerianToCartesian = Orb.KeplerianToCartesian || Orb.Kepler
 
-Orb.Cartesian = Orb.Cartesian ||function(cartesian){
+Orb.CartesianToKeplerian = Orb.CartesianToKeplerian ||function(cartesian){
   var rad = Math.PI/180;
   if(cartesian.gm){
     var gm = cartesian.gm
@@ -716,7 +716,7 @@ Orb.Cartesian = Orb.Cartesian ||function(cartesian){
     argument_of_periapsis:to_deg(argument_of_periapsis)
   }
 }
-Orb.CartesianToKeplerian = Orb.CartesianToKeplerian || Orb.Cartesian;
+Orb.Cartesian = Orb.Cartesian || Orb.CartesianToKeplerian;
 
 Orb.Terms ={}
 Orb.Terms.VSOP87A = {
