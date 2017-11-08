@@ -410,7 +410,7 @@ Orb.Sun = Orb.Sun || function(date){
 
 //kepler.js
 
-Orb.KepleOrb.Kepler = Orb.Kepler || function(orbital_elements,date){
+Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
    var rad = Orb.Const.RAD;
    var au = Orb.Const.AU;
 
