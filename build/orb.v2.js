@@ -293,6 +293,250 @@ Orb.Time = Orb.Time || function(date){
   } // end of return Orb.Time
 } // end of Orb.Time
 
+//coodinates.js
+Orb.RadecToXYZ = function (parameter){
+  // equatorial spherical(ra,dec) to rectangular(x,y,z)
+  var rad=Orb.Const.RAD;
+  var ra = parameter.ra*15
+  var dec = parameter.dec
+  var distance = parameter.distance
+  var xyz = {
+   "x": distance*Math.cos(dec*rad)*Math.cos(ra*rad),
+   "y": distance*Math.cos(dec*rad)*Math.sin(ra*rad),
+   "z": distance*Math.sin(dec*rad)
+  }
+  return {
+    'x':xyz.x,
+    'y':xyz.y,
+    'z':xyz.z,
+    "coordinate_keywords":"equatorial rectangular",
+    "unit_keywords":""
+  }
+}
+
+Orb.XYZtoRadec = function (parameter){
+  // equatorial rectangular(x,y,z) to spherical(ra,dec)
+  if(parameter.coordinate_keywords && parameter.coordinate_keywords.match(/ecliptic/)){
+    if(parameter.date){
+      var date = parameter.date
+    }else{
+      var date = new Date()
+    }
+    var rect = Orb.EclipticToEquatorial({"date":date,"ecliptic":parameter})
+  }else{
+    var rect = parameter
+  }
+  var rad=Math.PI/180;
+  var eqx = rect.x;
+  var eqy = rect.y;
+  var eqz = rect.z;
+  var ra = Math.atan2(eqy,eqx)/rad;
+  if (ra <0){
+    ra = ra%360+360
+  }
+  if(ra >360){
+    ra = ra%360
+  }
+  ra=ra/15
+  var dec = Math.atan2(eqz,Math.sqrt(eqx*eqx + eqy*eqy))/rad;
+  var distance = Math.sqrt(eqx*eqx + eqy*eqy + eqz*eqz);
+  return {
+    "ra":ra,
+    "dec":dec,
+    "distance":distance,
+    "coordinate_keywords":"equatorial spherical",
+    "unit_keywords":"hours degree"
+ };
+}
+
+Orb.EquatorialToEcliptic = function (parameter){
+  // equatorial rectangular(x,y,z) to ecliptic rectangular(x,y,z)
+  var date = parameter.date
+  var obliquity = Orb.Obliquity(date)
+  var equatorial = parameter.equatorial
+  var rad=Orb.Const.RAD;
+  var ecliptic = {
+      x: equatorial.x,
+      y: Math.cos(obliquity*rad)*equatorial.y+Math.sin(obliquity*rad)*equatorial.z,
+      z: -Math.sin(obliquity*rad)*equatorial.y+Math.cos(obliquity*rad)*equatorial.z
+  }
+  return  {
+    'x':ecliptic.x,
+    'y':ecliptic.y,
+    'z':ecliptic.z,
+    'date':date,
+    "coordinate_keywords":"ecliptic rectangular",
+    "unit_keywords":""
+  }
+}
+
+Orb.EclipticToEquatorial = function(parameter){
+  // ecliptic rectangular(x,y,z) to equatorial rectangular(x,y,z)
+  var date = parameter.date
+  var ecliptic = parameter.ecliptic
+  var rad=Orb.Const.RAD;
+  var earth = new Orb.VSOP("Earth")
+  var ep = earth.xyz(date)
+  var gcx = ecliptic.x-ep.x;
+  var gcy = ecliptic.y-ep.y;
+  var gcz = ecliptic.z-ep.z;
+  var obliquity = Orb.Obliquity(parameter.date)
+  var ecl = obliquity;
+  var equatorial = {
+    x: gcx,
+    y: gcy*Math.cos(ecl*rad) - gcz * Math.sin(ecl*rad),
+    z: gcy*Math.sin(ecl*rad) + gcz * Math.cos(ecl*rad)
+  }
+  return  {
+    'x':equatorial.x,
+    'y':equatorial.y,
+    'z':equatorial.z,
+    'date':date,
+    "coordinate_keywords":"equatorial rectangular",
+    "unit_keywords":""
+  }
+}
+
+//observation.js
+Orb.Observer = Orb.Observer ||  function(position){
+  var rad = Orb.Constant.RAD;
+  var a = 6377.39715500; // earth radius
+  var e2 = 0.006674372230614;
+  var n = a/(Math.sqrt(1-e2*Math.cos(position.latitude*rad)))
+  return {
+    latitude: position.latitude,
+    longitude: position.longitude,
+    altitude: position.altitude,
+    rectangular: function(time){
+      var lat = position.latitude;
+      var lng = position.longitude;
+      var gmst = time.gmst();
+      var lst = gmst*15 + lng;
+      var a = 6378.135  //Earth's equational radius in WGS-72 (km)
+      var f = 0.00335277945 //Earth's flattening term in WGS-72 (= 1/298.26)
+      var sin_lat =Math.sin(lat*rad);
+      var c = 1/Math.sqrt(1+f*(f-2)*sin_lat*sin_lat);
+      var s = (1-f)*(1-f)*c;
+      return {
+        x: a*c*Math.cos(lat*rad)*Math.cos(lst*rad),
+        y: a*c*Math.cos(lat*rad)*Math.sin(lst*rad),
+        z: a*s*Math.sin(lat*rad)
+      }
+    }
+  }
+}
+
+Orb.Observation = Orb.Observation || function(param){
+  var observer = param.observer;
+  var target = param.target;
+  var rad = Orb.Constant.RAD;
+  var _radec2horizontal = function(time,target,observer){
+      var ra = Number(target.ra);
+      var dec = Number(target.dec);
+      if(target.distance != undefined){
+      var distance = Number(target.distance);
+    }else{
+      var distance = undefined
+    }
+      var latitude = Number(observer.latitude);
+      var longitude = Number(observer.longitude);
+      var altitutude = Number(observer.altitutude);
+      dec = dec*rad
+      var gmst = time.gmst();
+      var hour_angle = (gmst*15 + longitude - (ra*15));
+      var h = hour_angle*rad;
+      var lat = latitude*rad;
+      var azimuth = (Math.atan2(-Math.cos(dec)*Math.sin(h),Math.sin(dec)*Math.cos(lat)-Math.cos(dec)*Math.sin(lat)*Math.cos(h)))/rad;
+      var elevation = (Math.asin(Math.sin(dec)*Math.sin(lat)+Math.cos(lat)*Math.cos(dec)*Math.cos(h)))/rad;
+      if (azimuth<0){
+        azimuth = azimuth%360 +360
+      }
+      return {
+      "azimuth" : azimuth,
+      "elevation" : elevation,
+      "distance": distance
+     }
+  }
+  var _rect2horizontal = function(time,rect,observer){
+      var lat = observer.latitude;
+      var lng = observer.longitude;
+      var obsv = new Orb.Observer(observer);
+      var ob = obsv.rectangular(time)
+      var rx0 = rect.x - ob.x;
+      var ry0 = rect.y - ob.y
+      var rz0 = rect.z - ob.z
+      var gmst = time.gmst();
+      var lst = gmst*15 + lng;
+      var rs = Math.sin(lat*rad)*Math.cos(lst*rad)*rx0 + Math.sin(lat*rad)*Math.sin(lst*rad)*ry0-Math.cos(lat*rad)*rz0;
+      var re = -Math.sin(lst*rad)*rx0 + Math.cos(lst*rad)*ry0;
+      var rz = Math.cos(lat*rad)*Math.cos(lst*rad)*rx0+Math.cos(lat*rad)*Math.sin(lst*rad)*ry0 + Math.sin(lat*rad)*rz0;
+      var range = Math.sqrt(rs*rs+re*re+rz*rz);
+      var elevation = Math.asin(rz/range);
+      var azimuth  = Math.atan2(-re,rs);
+      azimuth = azimuth/rad+180;
+      if (azimuth>360){
+        azimuth = azimuth%360;
+      }
+      return {
+      "azimuth" : azimuth,
+      "elevation" : elevation,
+      "distance": range
+     }
+  }
+  var _horizontal = function(date){
+    var time = new Orb.Time(date)
+
+    function get_distance_unit(target){
+      if(target.unit_keywords.match(/km/)){
+        return "km"
+      }else if(target.unit_keywords.match(/au/)){
+        return "au"
+      }
+    }
+
+    if(target.ra != undefined && target.dec != undefined){
+      var horizontal = _radec2horizontal(time,target,observer)
+      var distance_unit = "au"
+    }else if(target.x != undefined && target.y != undefined && target.z != undefined){
+      if(target.coordinate_keywords.match(/ecliptic/)){
+        if(target.date != undefined ){
+          var target_date = target.date;
+        }else{
+          var target_date = date;
+        }
+        var rect = Orb.EclipticToEquatorial({"date":target_date,"ecliptic":target})
+      }else{
+        var rect = target
+      }
+      var horizontal = _rect2horizontal(time,rect,observer)
+      var distance_unit = get_distance_unit(rect)
+    }else if(target.radec != undefined){
+      var radec = target.radec(date)
+      var horizontal = _radec2horizontal(time,radec,observer)
+      var distance_unit = get_distance_unit(radec)
+    }else if(target.xyz != undefined){
+      var rect = target.xyz(date);
+      var horizontal = _rect2horizontal(time,rect,observer)
+      var distance_unit = get_distance_unit(rect)
+    }
+
+    return {
+      "azimuth" : horizontal.azimuth,
+      "elevation" : horizontal.elevation,
+      "distance": horizontal.distance,
+      "date":date,
+      "coordinate_keywords":"horizontal spherical",
+      "unit_keywords": "degree" + " " + distance_unit
+    }
+  }
+  return {
+    // equatorial to horizontal
+    azel: function(date){
+        return _horizontal(date);
+    } // end Orb.Observation.horizontal
+  } // end of return
+} //
+
 //sgp4.js
 Orb.SGP4 = Orb.SGP4 || function(tle){
 
