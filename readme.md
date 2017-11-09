@@ -11,6 +11,8 @@ orb.js has methods for the ...
 - Coordinates conversions
 
 ## Files
+You can find merged files in [build](/build/), and minified files in [build/min/](/build/min/)
+
 **orb.v2.js**:  
 all-in-one package
 
