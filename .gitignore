@@ -3,3 +3,8 @@
 .DS_Store
 *.html
 memo.txt
+node_modules/
+package.json
+package-lock.json
+index.js
+gulpfile.js
