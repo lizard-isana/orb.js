@@ -1,5 +1,4 @@
 // constant.js
-
 Orb.Constant = Orb.Constant ||  {
   "PI":Math.PI,
   "RAD":Math.PI/180, //RADIAN

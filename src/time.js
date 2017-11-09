@@ -1,5 +1,4 @@
 //time.js
-
 Orb.Time = Orb.Time || function(date){
   if(!date){
     var _date = new Date();

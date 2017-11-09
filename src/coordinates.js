@@ -1,5 +1,4 @@
 //coodinates.js
-
 Orb.RadecToXYZ = function (parameter){
   // equatorial spherical(ra,dec) to rectangular(x,y,z)
   var rad=Orb.Const.RAD;

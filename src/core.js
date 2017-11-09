@@ -1,5 +1,4 @@
 // core.js
-
 Orb.RoundAngle = Orb.RoundAngle || function(degree){
   var angle = degree%360
   if(angle<0){

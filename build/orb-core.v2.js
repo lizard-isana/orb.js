@@ -1,6 +1,6 @@
 // orb.js
 //
-// Orb 2.0.0 - Javascript Library for Astronomical Calcrations
+// Orb 2.1.0 - Javascript Library for Astronomical Calcrations
 //
 // Copyright (c) 2017 KASHIWAI, Isana
 // Licensed under the MIT license (MIT-LICENSE.txt),
@@ -13,7 +13,6 @@ Orb = Orb || {};
 Orb.Storage = Orb.Storage ||  {}
 
 // constant.js
-
 Orb.Constant = Orb.Constant ||  {
   "PI":Math.PI,
   "RAD":Math.PI/180, //RADIAN
@@ -89,7 +88,6 @@ Orb.Constant = Orb.Constant ||  {
 Orb.Const = Orb.Constant
 
 // core.js
-
 Orb.RoundAngle = Orb.RoundAngle || function(degree){
   var angle = degree%360
   if(angle<0){
@@ -127,7 +125,6 @@ Orb.Obliquity  = Orb.Obliquity || function(date){
 }
 
 //time.js
-
 Orb.Time = Orb.Time || function(date){
   if(!date){
     var _date = new Date();

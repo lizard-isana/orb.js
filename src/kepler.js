@@ -1,13 +1,14 @@
-
-
+//kepler.js
 Math.cosh = Math.cosh || function(x) {
   var y = Math.exp(x);
   return (y + 1 / y) / 2;
 };
+
 Math.sinh = Math.sinh || function(x) {
   var y = Math.exp(x);
   return (y - 1 / y) / 2;
 };
+
 Math.tanh = Math.tanh || function(x) {
   if (x === Infinity) {
     return 1;
@@ -18,9 +19,11 @@ Math.tanh = Math.tanh || function(x) {
     return (y - 1) / (y + 1);
   }
 }
+
 Math.atanh = Math.atanh || function(x) {
   return Math.log((1+x)/(1-x)) / 2;
 };
+
 Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
    var rad = Orb.Const.RAD;
    var au = Orb.Const.AU;
