@@ -4,39 +4,41 @@ Orb.VSOP = Orb.VSOP || function(target){
   this.target = target;
 }
 
-Orb.VSOP.prototype.exec_vsop = function exec_vsop(target_data,date){
-  var time = new Orb.Time(date)
-  var jd = time.jd();
-  var t = ((jd -2451545.0)/365250);
-  var v = [0,0,0];
-  for(var i=0,ln = target_data.length; i<ln; i++){
-    var tmp_data = target_data[i];
-    var n = tmp_data[0];
-    var sum = Math.pow(t,Number(tmp_data[1]))*Number(tmp_data[2]) * Math.cos(Number(tmp_data[3]) + Number(tmp_data[4]) * t);
-    v[n] = v[n]  + sum;
-  }
-  return {
-    x:v[0],
-    y:v[1],
-    z:v[2],
-    "date":date,
-    "coordinate_keywords":"ecliptic rectangular",
-    "unit_keywords":"au"
-  }
-}
+Orb.VSOP.prototype = {
+  exec_vsop: function(target_data,date){
+    var time = new Orb.Time(date)
+    var jd = time.jd();
+    var t = ((jd -2451545.0)/365250);
+    var v = [0,0,0];
+    for(var i=0,ln = target_data.length; i<ln; i++){
+      var tmp_data = target_data[i];
+      var n = tmp_data[0];
+      var sum = Math.pow(t,Number(tmp_data[1]))*Number(tmp_data[2]) * Math.cos(Number(tmp_data[3]) + Number(tmp_data[4]) * t);
+      v[n] = v[n]  + sum;
+    }
+    return {
+      x:v[0],
+      y:v[1],
+      z:v[2],
+      "date":date,
+      "coordinate_keywords":"ecliptic rectangular",
+      "unit_keywords":"au"
+    }
+  },
 
-Orb.VSOP.prototype.xyz = function xyz(date){
-  var vsop_target = Orb.Terms.VSOP87A[this.target];
-  var pos = this.exec_vsop(vsop_target,date);
-  return pos;
-}
+  xyz: function(date){
+    var vsop_target = Orb.Terms.VSOP87A[this.target];
+    var pos = this.exec_vsop(vsop_target,date);
+    return pos;
+  },
 
-Orb.VSOP.prototype.radec = function radec(date){
-  var vsop_target = Orb.Terms.VSOP87A[this.target];
-  var target_pos = this.exec_vsop(vsop_target,date);
-  var rectangular = Orb.EclipticToEquatorial({ecliptic:target_pos,date:date});
-  var spherical = Orb.XYZtoRadec(rectangular);
-  return spherical;
+  radec: function(date){
+    var vsop_target = Orb.Terms.VSOP87A[this.target];
+    var target_pos = this.exec_vsop(vsop_target,date);
+    var rectangular = Orb.EclipticToEquatorial({ecliptic:target_pos,date:date});
+    var spherical = Orb.XYZtoRadec(rectangular);
+    return spherical;
+  }
 }
 
 Orb.Mercury=function(){return Orb.VSOP("Mercury")};

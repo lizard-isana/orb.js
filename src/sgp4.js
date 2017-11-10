@@ -1,7 +1,58 @@
 //sgp4.js
 Orb.SGP4 = Orb.SGP4 || function(tle){
+  this.tle = tle;
+  this.orbital_elements = this.DecodeTLE();
+  this.sgp4 = this.SetSGP4()
+  this.orbital_period = this.sgp4.orbital_period;
+  this.apogee = this.sgp4.apogee;
+  this.perigee= this.sgp4.perigee;
+}
 
-  var _setSGP4 = function(orbital_elements){
+Orb.SGP4.prototype ={
+
+  DecodeTLE: function(){
+    var tle = this.tle;
+    var name = tle.name;
+    var line1 = tle.first_line;
+    var line2 = tle.second_line;
+    var epy = Number(line1.slice(18,20));
+    //epoch_year should be smaller than 2057.
+    if(epy<57){var epoch_year=epy+2000}else{var epoch_year=epy+1900};
+    var bstar_mantissa = Number(line1.substring(53,59))*1e-5;
+    var bstar_exponent = Number("1e" + Number(line1.substring(59,61)));
+    var bstar = bstar_mantissa*bstar_exponent
+    var orbital_elements={
+      name: name,
+      line_number_1 :   Number(line1.slice(0,0)),
+      catalog_no_1 :  Number(line1.slice(2,6)),
+      security_classification :  Number(line1.slice(7,7)),
+      international_identification : Number(line1.slice(9,17)),
+      epoch_year : epoch_year,
+      epoch : Number(line1.substring(20,32)),
+      first_derivative_mean_motion : Number(line1.substring(33,43)),
+      second_derivative_mean_motion : Number(line1.substring(44,52)),
+      bstar_mantissa: bstar_mantissa,
+      bstar_exponent :bstar_exponent,
+      bstar :bstar,
+      ephemeris_type :  Number(line1.substring(62,63)),
+      element_number :  Number(line1.substring(64,68)),
+      check_sum_1 :   Number(line1.substring(69,69)),
+      line_number_2 :   Number(line1.slice(0,0)),
+      catalog_no_2 :  Number(line2.slice(2,7)),
+      inclination : Number(line2.substring(8,16)),
+      right_ascension : Number(line2.substring(17,25)),
+      eccentricity : Number(line2.substring(26,33)),
+      argument_of_perigee : Number(line2.substring(34,42)),
+      mean_anomaly : Number(line2.substring(43,51)),
+      mean_motion : Number(line2.substring(52,63)),
+      rev_number_at_epoch : Number(line2.substring(64,68)),
+      check_sum_2 :   Number(line1.substring(68,69))
+    }
+    return orbital_elements
+  },
+
+  SetSGP4: function(){
+    var orbital_elements = this.orbital_elements;
     var torad = Math.PI/180;
     var ck2 = 5.413080e-4;
     var ck4 = 0.62098875e-6;
@@ -149,11 +200,12 @@ Orb.SGP4 = Orb.SGP4 || function(tle){
       x7thm1: x7thm1,
       xkmper: xkmper
     }
-  }
+  },
 
-  var _execSGP4 = function(time,sgp4){
+  ExecSGP4: function(time){
     var rad = Orb.Constant.RAD
-    var orbital_elements = sgp4.orbital_elements;
+    var sgp4 = this.sgp4;
+    var orbital_elements = this.orbital_elements;
     var tsince = (function(time,orbital_elements){
       var epoch_year = orbital_elements.epoch_year;
       var epoch = orbital_elements.epoch;
@@ -320,9 +372,9 @@ Orb.SGP4 = Orb.SGP4 || function(tle){
       ydot: ydotkmps,
       zdot: zdotkmps,
     }
-  }
+  },
 
-  var _toGeographic = function(time,rect){
+  RectangularToGeographic: function(time,rect){
     var time = time;
     var xkm = rect.x;
     var ykm = rect.y;
@@ -357,84 +409,38 @@ Orb.SGP4 = Orb.SGP4 || function(tle){
       altitude : alt,
       velocity : v
     }
-  }
-  //initialize;
-  var elements = Orb.DecodeTLE(tle);
-  var sgp4 = _setSGP4(elements);
-  return {
-    "orbital_elements": elements,
-    "orbital_period": sgp4.orbital_period,
-    "apogee":sgp4.apogee,
-    "perigee":sgp4.perigee,
-    "xyz": function(date){
-       var time = new Orb.Time(date)
-       var rect = _execSGP4(time,sgp4);
-       return {
-         "x": rect.x,
-         "y": rect.y,
-         "z": rect.z,
-         "xdot": rect.xdot,
-         "ydot": rect.ydot,
-         "zdot": rect.zdot,
-         "date":date,
-         "coordinate_keywords":"equational rectangular",
-         "unit_keywords":"km"
-       }
-    },
-    "latlng": function(date){
-      var time = new Orb.Time(date)
-      var rect = _execSGP4(time,sgp4);
-      var geo = _toGeographic(time,rect);
-      return {
-        "latitude" : geo.latitude,
-        "longitude" : geo.longitude,
-        "altitude" : geo.altitude,
-        "date":date,
-        "coordinate_keywords":"geographic spherical",
-        "unit_keywords":"degree km"
-      }
+  },
+
+  xyz:function(date){
+    var time = new Orb.Time(date)
+    var rect = this.ExecSGP4(time);
+    return {
+      "x": rect.x,
+      "y": rect.y,
+      "z": rect.z,
+      "xdot": rect.xdot,
+      "ydot": rect.ydot,
+      "zdot": rect.zdot,
+      "date":date,
+      "coordinate_keywords":"equational rectangular",
+      "unit_keywords":"km"
     }
+  },
 
-  } //end return Orb.SGP4.
-}
-Orb.Satellite = Orb.Satellite || Orb.SGP4
-
-Orb.DecodeTLE = Orb.DecodeTLE || function(tle){
-  var name = tle.name;
-  var line1 = tle.first_line;
-  var line2 = tle.second_line;
-  var epy = Number(line1.slice(18,20));
-  //epoch_year should be smaller than 2057.
-  if(epy<57){var epoch_year=epy+2000}else{var epoch_year=epy+1900};
-  var bstar_mantissa = Number(line1.substring(53,59))*1e-5;
-  var bstar_exponent = Number("1e" + Number(line1.substring(59,61)));
-  var bstar = bstar_mantissa*bstar_exponent
-  var orbital_elements={
-    name: name,
-    line_number_1 :   Number(line1.slice(0,0)),
-    catalog_no_1 :  Number(line1.slice(2,6)),
-    security_classification :  Number(line1.slice(7,7)),
-    international_identification : Number(line1.slice(9,17)),
-    epoch_year : epoch_year,
-    epoch : Number(line1.substring(20,32)),
-    first_derivative_mean_motion : Number(line1.substring(33,43)),
-    second_derivative_mean_motion : Number(line1.substring(44,52)),
-    bstar_mantissa: bstar_mantissa,
-    bstar_exponent :bstar_exponent,
-    bstar :bstar,
-    ephemeris_type :  Number(line1.substring(62,63)),
-    element_number :  Number(line1.substring(64,68)),
-    check_sum_1 :   Number(line1.substring(69,69)),
-    line_number_2 :   Number(line1.slice(0,0)),
-    catalog_no_2 :  Number(line2.slice(2,7)),
-    inclination : Number(line2.substring(8,16)),
-    right_ascension : Number(line2.substring(17,25)),
-    eccentricity : Number(line2.substring(26,33)),
-    argument_of_perigee : Number(line2.substring(34,42)),
-    mean_anomaly : Number(line2.substring(43,51)),
-    mean_motion : Number(line2.substring(52,63)),
-    rev_number_at_epoch : Number(line2.substring(64,68)),
-    check_sum_2 :   Number(line1.substring(68,69))
+  latlng:function(date){
+    var time = new Orb.Time(date)
+    var rect = this.ExecSGP4(time);
+    var geo = this.RectangularToGeographic(time,rect);
+    return {
+      "latitude" : geo.latitude,
+      "longitude" : geo.longitude,
+      "altitude" : geo.altitude,
+      "date":date,
+      "coordinate_keywords":"geographic spherical",
+      "unit_keywords":"degree km"
+    }
   }
-  return orbital_elements
+
 }
+
+Orb.Satellite = Orb.Satellite || Orb.SGP4
