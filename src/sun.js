@@ -1,4 +1,5 @@
 //sun.js
+//require core.js, time.js
 Orb.Sun = Orb.Sun || function(){}
 
 Orb.Sun.prototype = {

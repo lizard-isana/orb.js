@@ -1,4 +1,5 @@
 //time.js
+//require core.js
 Orb.Time = Orb.Time || function(date){
   if(!date){
     var d = new Date();
