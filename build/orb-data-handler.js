@@ -1,4 +1,3 @@
-
 // This script includes "json2.js" on the last part of the file.
 // "json2.js" creates a global JSON object
 // Copyright/License: Public Domain
@@ -6,7 +5,6 @@
 Orb = Orb || {};
 
 Orb.DataLoader = Orb.DataLoader ||   function(option){
-
 /*
   var data = Orb.DataLoader({
     format:"text", // or "json" or "xml"
@@ -17,7 +15,6 @@ Orb.DataLoader = Orb.DataLoader ||   function(option){
       // do something
     }
   })
-
 */
 
   var XMLhttpObject;

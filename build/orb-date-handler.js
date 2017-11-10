@@ -1,6 +1,5 @@
 Orb = Orb || {};
 // orb-date-handler.js
-
 Orb.DigitsToDate = Orb.DigitsToDate || function(digits){
   var year =Number(digits.substring(0,4));
   var month = Number(digits.substring(4,6));

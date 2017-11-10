@@ -10,7 +10,9 @@ orb.js has methods for the ...
 - Time conversions
 - Coordinates conversions
 
-## Files
+## Library files
+You can find these files in **[build](/build/)**, and minified files in **[build/min](/build/min/)**
+
 **orb.v2.js**:  
 all-in-one package
 
