@@ -172,6 +172,7 @@ Orb.Luna.prototype.parallax = function parallax(date){
 }
 
 Orb.Luna.prototype.phase = function phase(date){
+  var rad = Orb.Constant.RAD
   var time = new Orb.Time(date)
   var now = date;
   var jd = time.jd();
