@@ -1,5 +1,5 @@
 //kepler.js
-//require core.js, time.js
+//require core.js, time.js, coordinates.js, earth.js
 Math.cosh = Math.cosh || function(x) {
   var y = Math.exp(x);
   return (y + 1 / y) / 2;

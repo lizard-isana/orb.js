@@ -1,5 +1,5 @@
 //luna.js
-//require core.js, time.js
+//require core.js, time.js, earth.js
 Orb.Luna = Orb.Luna ||  function(){}
 
 Orb.Luna.prototype = {

@@ -1,5 +1,5 @@
 //kepler.js
-//require core.js, time.js
+//require core.js, time.js, coordinates.js, earth.js
 Math.cosh = Math.cosh || function(x) {
   var y = Math.exp(x);
   return (y + 1 / y) / 2;
@@ -331,7 +331,7 @@ Orb.CartesianToKeplerian = Orb.CartesianToKeplerian ||function(cartesian){
 Orb.Cartesian = Orb.Cartesian || Orb.CartesianToKeplerian;
 
 //sun.js
-//require core.js, time.js
+//require core.js, time.js, earth.js
 Orb.Sun = Orb.Sun || function(){}
 
 Orb.Sun.prototype = {
@@ -425,7 +425,7 @@ Orb.Sun.prototype = {
 }
 
 //luna.js
-//require core.js, time.js
+//require core.js, time.js, earth.js
 Orb.Luna = Orb.Luna ||  function(){}
 
 Orb.Luna.prototype = {
@@ -821,7 +821,7 @@ Orb.Terms.Luna = {
 }
 
 //vsop.js
-//requre core.js, time.js, coordinates.js
+//requre core.js, time.js, earth.js ,coordinates.js
 Orb.VSOP = Orb.VSOP || function(target){
   //target = ["Mercury","Venus","Earth","Moon","Mars","Jupiter","Saturn","Uranus","Neptune"],
   this.target = target;
@@ -868,7 +868,7 @@ Orb.VSOP.prototype = {
     return spherical;
   }
 }
-//Orb.Earth is defined in core.js
+//Orb.Earth is defined in earth.js
 Orb.Mercury=function(){return Orb.VSOP("Mercury")};
 Orb.Venus=function(){return Orb.VSOP("Venus")};
 Orb.Mars=function(){return Orb.VSOP("Mars")};
