@@ -1,5 +1,5 @@
 //coodinates.js
-//require core.js, time.js, vsop.js
+//require core.js, time.js
 Orb.RadecToXYZ = function (parameter){
   // equatorial spherical(ra,dec) to rectangular(x,y,z)
   var rad=Orb.Const.RAD;
@@ -81,7 +81,7 @@ Orb.EclipticToEquatorial = function(parameter){
   var date = parameter.date
   var ecliptic = parameter.ecliptic
   var rad=Orb.Const.RAD;
-  var earth = new Orb.VSOP("Earth")
+  var earth = new Orb.Earth();
   var ep = earth.xyz(date)
   var gcx = ecliptic.x-ep.x;
   var gcy = ecliptic.y-ep.y;

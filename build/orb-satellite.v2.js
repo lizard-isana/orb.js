@@ -1,4 +1,5 @@
 //sgp4.js
+//require core.js, time.js
 Orb.SGP4 = Orb.SGP4 || function(tle){
   this.tle = tle;
   this.orbital_elements = this.DecodeTLE();
