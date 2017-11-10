@@ -1,4 +1,5 @@
 //luna.js
+//require core.js, time.js
 Orb.Luna = Orb.Luna ||  function(){}
 
 Orb.Luna.prototype = {
@@ -103,7 +104,6 @@ Orb.Luna.prototype = {
       result += -115*Math.sin(L1+M1)
       return result;
     }
-
 
     var sigma_l = SigmaL();
     var sigma_r = SigmaR();

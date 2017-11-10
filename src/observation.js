@@ -1,4 +1,5 @@
 //observation.js
+//require core.js, time.js, coordinates.js
 Orb.Observer = Orb.Observer ||  function(position){
   var rad = Orb.Constant.RAD;
   var a = 6377.39715500; // earth radius

@@ -1,4 +1,5 @@
 //vsop.js
+//requre core.js, time.js, coordinates.js
 Orb.VSOP = Orb.VSOP || function(target){
   //target = ["Mercury","Venus","Earth","Moon","Mars","Jupiter","Saturn","Uranus","Neptune"],
   this.target = target;

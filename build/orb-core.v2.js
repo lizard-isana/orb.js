@@ -8,7 +8,6 @@
 // for Name Space
 var Orb = Orb || {};
 
-// constant.js
 Orb.Constant = Orb.Constant ||  {
   "PI":Math.PI,
   "RAD":Math.PI/180, //RADIAN
@@ -83,7 +82,6 @@ Orb.Constant = Orb.Constant ||  {
 }
 Orb.Const = Orb.Constant
 
-// core.js
 Orb.RoundAngle = Orb.RoundAngle || function(degree){
   var angle = degree%360
   if(angle<0){
@@ -115,6 +113,7 @@ Orb.NutationAndObliquity  = Orb.NutationAndObliquity || function(date){
     }
   }
 }
+
 Orb.Obliquity  = Orb.Obliquity || function(date){
  var ob = new Orb.NutationAndObliquity(date)
  return ob.obliquity()
