@@ -27,6 +27,7 @@ Math.atanh = Math.atanh || function(x) {
 Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
    var rad = Orb.Const.RAD;
    var au = Orb.Const.AU;
+   this.orbital_elements = orbital_elements;
 
    var eccentricity = Number(orbital_elements.eccentricity);
    if(orbital_elements.gm){
@@ -146,7 +147,7 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
      }
 
 
-   var ecliptic_rectangular = function(orbital_elements,orbital_plane,date){
+   this.ecliptic_rectangular = function(orbital_elements,orbital_plane,date){
      var time = new Orb.Time(date)
      var lan = Number(orbital_elements.longitude_of_ascending_node)*rad;
      var ap = Number(orbital_elements.argument_of_periapsis)*rad;
@@ -171,7 +172,7 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
      };
    }
 
-  function orbital_plane(date){
+  this.orbital_plane = function(date){
    var time = new Orb.Time(date)
    if(eccentricity<1.0){
      return EllipticalOrbit(orbital_elements,time);
@@ -181,42 +182,41 @@ Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
      return  ParabolicOrbit(orbital_elements,time);
    }
   }
+}
 
+Orb.Kepler.prototype.radec = function radec(date){
+  var op = this.orbital_plane(date)
+  var xyz = this.ecliptic_rectangular(this.orbital_elements,op,date);
+  var rectangular = Orb.EclipticToEquatorial({ecliptic:xyz,date:date})
+  var spherical = Orb.XYZtoRadec(rectangular)
   return {
-    xyz:function(date){
-      var op = orbital_plane(date)
-      var position = ecliptic_rectangular(orbital_elements,op,date);
-      return {
-        'x':position.x,
-        'y':position.y,
-        'z':position.z,
-        'xdot':position.xdot,
-        'ydot':position.ydot,
-        'zdot':position.zdot,
-        'orbital_plane':op,
-       "date":date,
-       "coordinate_keywords":"ecliptic rectangular",
-       "unit_keywords":"au au/d"
-      };
-    },
-    radec:function(date){
-      var op = orbital_plane(date)
-      var xyz = ecliptic_rectangular(orbital_elements,op,date);
-      var equatorial_rectangular = Orb.EclipticToEquatorial({ecliptic:xyz,date:date})
-      var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
-      return {
-        'ra':equatorial_spherical.ra,
-        'dec':equatorial_spherical.dec,
-        'distance':equatorial_spherical.distance,
-        "date":date,
-        "coordinate_keywords":"equatorial spherical",
-        "unit_keywords":"hour degree au"
-      }
-    }
+    'ra':spherical.ra,
+    'dec':spherical.dec,
+    'distance':spherical.distance,
+    "date":date,
+    "coordinate_keywords":"equatorial spherical",
+    "unit_keywords":"hour degree au"
   }
 }
-Orb.KeplerianToCartesian = Orb.KeplerianToCartesian || Orb.Kepler
 
+Orb.Kepler.prototype.xyz = function xyz(date){
+  var op = this.orbital_plane(date)
+  var position = this.ecliptic_rectangular(this.orbital_elements,op,date);
+  return {
+    'x':position.x,
+    'y':position.y,
+    'z':position.z,
+    'xdot':position.xdot,
+    'ydot':position.ydot,
+    'zdot':position.zdot,
+    'orbital_plane':op,
+   "date":date,
+   "coordinate_keywords":"ecliptic rectangular",
+   "unit_keywords":"au au/d"
+  };
+}
+
+Orb.KeplerianToCartesian = Orb.KeplerianToCartesian || Orb.Kepler
 
 Orb.CartesianToKeplerian = Orb.CartesianToKeplerian ||function(cartesian){
   var rad = Math.PI/180;

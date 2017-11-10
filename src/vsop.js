@@ -1,7 +1,8 @@
 //vsop.js
 Orb.VSOP = Orb.VSOP || function(target){
+  this.target = target;
   //target = ["Mercury","Venus","Earth","Moon","Mars","Jupiter","Saturn","Uranus","Neptune"],
-  function exec_vsop(target_data,date){
+  this.exec_vsop = function(target_data,date){
     var time = new Orb.Time(date)
     var jd = time.jd();
     var t = ((jd -2451545.0)/365250);
@@ -21,33 +22,33 @@ Orb.VSOP = Orb.VSOP || function(target){
       "unit_keywords":"au"
     }
   }
-
-  return {
-    xyz:function(date){
-      var vsop_target = Orb.Terms.VSOP87A[target];
-      var pos = exec_vsop(vsop_target,date)
-      return pos
-    },
-    radec:function(date){
-      var vsop_target = Orb.Terms.VSOP87A[target];
-      var target_pos = exec_vsop(vsop_target,date)
-      var equatorial_rectangular = Orb.EclipticToEquatorial({ecliptic:target_pos,date:date})
-      var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
-      return equatorial_spherical
-    }
-  }
 }
-Orb.Mercury=function(){return Orb.VSOP("Mercury")}
-Orb.Venus=function(){return Orb.VSOP("Venus")}
-Orb.Earth=function(){return Orb.VSOP("Earth")}
-Orb.Mars=function(){return Orb.VSOP("Mars")}
-Orb.Jupiter=function(){return Orb.VSOP("Jupiter")}
-Orb.Saturn=function(){return Orb.VSOP("Saturn")}
-Orb.Uranus=function(){return Orb.VSOP("Uranus")}
-Orb.Neptune=function(){return Orb.VSOP("Neptune")}
-Orb.Planet = Orb.Planet || Orb.VSOP
 
-Orb.Terms = Orb.Terms || {}
+Orb.VSOP.prototype.xyz = function xyz(date){
+  var vsop_target = Orb.Terms.VSOP87A[this.target];
+  var pos = this.exec_vsop(vsop_target,date);
+  return pos;
+}
+
+Orb.VSOP.prototype.radec = function radec(date){
+  var vsop_target = Orb.Terms.VSOP87A[this.target];
+  var target_pos = this.exec_vsop(vsop_target,date);
+  var rectangular = Orb.EclipticToEquatorial({ecliptic:target_pos,date:date});
+  var spherical = Orb.XYZtoRadec(rectangular);
+  return spherical;
+}
+
+Orb.Mercury=function(){return Orb.VSOP("Mercury")};
+Orb.Venus=function(){return Orb.VSOP("Venus")};
+Orb.Earth=function(){return Orb.VSOP("Earth")};
+Orb.Mars=function(){return Orb.VSOP("Mars")};
+Orb.Jupiter=function(){return Orb.VSOP("Jupiter")};
+Orb.Saturn=function(){return Orb.VSOP("Saturn")};
+Orb.Uranus=function(){return Orb.VSOP("Uranus")};
+Orb.Neptune=function(){return Orb.VSOP("Neptune")};
+Orb.Planet = Orb.Planet || Orb.VSOP;
+
+Orb.Terms = Orb.Terms || {};
 Orb.Terms.VSOP87A = {
   "Earth":[
     [0,0,0.99982928844,1.75348568475,6283.07584999140],
