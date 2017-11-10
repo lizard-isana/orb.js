@@ -1,5 +1,5 @@
 //vsop.js
-//requre core.js, time.js, coordinates.js
+//requre core.js, time.js, earth.js ,coordinates.js
 Orb.VSOP = Orb.VSOP || function(target){
   //target = ["Mercury","Venus","Earth","Moon","Mars","Jupiter","Saturn","Uranus","Neptune"],
   this.target = target;
@@ -46,7 +46,7 @@ Orb.VSOP.prototype = {
     return spherical;
   }
 }
-//Orb.Earth is defined in core.js
+//Orb.Earth is defined in earth.js
 Orb.Mercury=function(){return Orb.VSOP("Mercury")};
 Orb.Venus=function(){return Orb.VSOP("Venus")};
 Orb.Mars=function(){return Orb.VSOP("Mars")};
