@@ -6,8 +6,4 @@
 // Licensed under the MIT license (MIT-LICENSE.txt),
 
 // for Name Space
-var Orb;
-
-Orb = Orb || {};
-
-Orb.Storage = Orb.Storage ||  {}
+var Orb = Orb || {};
