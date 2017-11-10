@@ -25,198 +25,218 @@ Math.atanh = Math.atanh || function(x) {
 };
 
 Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
-   var rad = Orb.Const.RAD;
-   var au = Orb.Const.AU;
-
+   this.orbital_elements = orbital_elements;
    var eccentricity = Number(orbital_elements.eccentricity);
+   this.eccentricity = eccentricity;
    if(orbital_elements.gm){
      var gm = Number(orbital_elements.gm);
    }else{
      var gm = Orb.Const.GM;
    }
+   this.gm = gm;
    if(orbital_elements.time_of_periapsis){
      var epoch = orbital_elements.time_of_periapsis;
    }else{
      var epoch = orbital_elements.epoch;
    }
+   this.epoch = epoch;
 
+}
 
-   var EllipticalOrbit = function(orbital_elements,time){
-     if(orbital_elements.semi_major_axis){
+Orb.Kepler.prototype = {
+
+  EllipticalOrbit: function(time){
+    var rad = Orb.Const.RAD;
+    var gm = this.gm;
+    var epoch = this.epoch;
+    var orbital_elements = this.orbital_elements;
+    var eccentricity = this.eccentricity
+    if(orbital_elements.semi_major_axis){
+     var semi_major_axis = orbital_elements.semi_major_axis;
+    }else if(orbital_elements.perihelion_distance){
+     var semi_major_axis = (orbital_elements.perihelion_distance)/(1-eccentricity)
+    }
+    var mean_motion = Math.sqrt(gm/(semi_major_axis*semi_major_axis*semi_major_axis))/rad;
+    var elapsed_time = Number(time.jd())-Number(epoch);
+    if(orbital_elements.mean_anomaly && orbital_elements.epoch){
+     var mean_anomaly = Number(orbital_elements.mean_anomaly);
+     var l=(mean_motion*elapsed_time)+mean_anomaly;
+    }else if(orbital_elements.time_of_periapsis){
+     var mean_anomaly = mean_motion*elapsed_time;
+     var l=mean_anomaly;
+    }
+    if(l>360){l=l%360}
+    l = l*rad
+    var u=l
+    var i = 0;
+    do{
+     var ut=u;
+     var delta_u=(l-u+(eccentricity*Math.sin(u)))/(1- (eccentricity*Math.cos(u)));
+     u=u+delta_u;
+     if(i>1000000){break;}
+     i++
+    }while (Math.abs(ut-u)>0.0000001);
+    var eccentric_anomaly = u;
+    var p = Math.abs(semi_major_axis * (1 - eccentricity*eccentricity))
+    var true_anomaly = 2*Math.atan(Math.sqrt((1+eccentricity)/(1-eccentricity))*Math.tan(eccentric_anomaly/2));
+    var r = p / (1 + eccentricity * Math.cos(true_anomaly));
+    var orbital_plane = {
+     r:r,
+     x:r* Math.cos(true_anomaly),
+     y:r* Math.sin(true_anomaly),
+     xdot:-Math.sqrt(gm / p) * Math.sin(true_anomaly),
+     ydot:Math.sqrt(gm / p) * (eccentricity + Math.cos(true_anomaly))
+    };
+    return orbital_plane;
+  },
+
+  ParabolicOrbit: function(time){
+    var rad = Orb.Const.RAD;
+    var gm = this.gm;
+    var epoch = this.epoch;
+    var orbital_elements = this.orbital_elements;
+    var eccentricity = this.eccentricity
+    var perihelion_distance = Number(orbital_elements.perihelion_distance);
+    var mean_motion = Math.sqrt(gm/(2*(perihelion_distance*perihelion_distance*perihelion_distance)));
+    var elapsed_time = Number(time.jd())-Number(epoch);
+    if(orbital_elements.mean_anomaly){
+     var mean_anomaly = Number(orbital_elements.mean_anomaly);
+     var l=mean_motion*elapsed_time+mean_anomaly;
+    }else{
+     var l = mean_motion*elapsed_time;
+    }
+    var b= Math.atan2(2,(3*l))/2
+    var tanb = Math.tan(b)
+    var tang = Math.pow(tanb,(1/3))
+    var true_anomary = Math.atan2((1-tang*tang),tang)*2
+    var cosf= Math.cos(true_anomary)
+    var sinf=Math.sin(true_anomary)
+    var r =(2*perihelion_distance)/(1+cosf)
+    var x = r*cosf
+    var y = r*sinf
+    var p = Math.abs(semi_major_axis * (1 - eccentricity*eccentricity))
+    var semi_major_axis = (orbital_elements.perihelion_distance)/(1-eccentricity)
+    var orbital_plane= {
+     x:x,
+     y:y,
+     r:r,
+     xdot:-Math.sqrt(gm / p) * Math.sin(true_anomaly),
+     ydot:Math.sqrt(gm / p) * (eccentricity + Math.cos(true_anomaly))
+    }
+    return orbital_plane;
+  },
+
+  HyperbolicOrbit: function(time){
+    var rad = Orb.Const.RAD;
+    var gm = this.gm;
+    var epoch = this.epoch;
+    var orbital_elements = this.orbital_elements;
+    var eccentricity = this.eccentricity
+    if(orbital_elements.semi_major_axis && orbital_elements.semi_major_axis>0){
        var semi_major_axis = orbital_elements.semi_major_axis;
      }else if(orbital_elements.perihelion_distance){
-       var semi_major_axis = (orbital_elements.perihelion_distance)/(1-eccentricity)
+       var semi_major_axis = orbital_elements.perihelion_distance/(eccentricity-1);
      }
-     var mean_motion = Math.sqrt(gm/(semi_major_axis*semi_major_axis*semi_major_axis))/rad;
+     var mean_motion = Math.sqrt(gm/(semi_major_axis*semi_major_axis*semi_major_axis));
      var elapsed_time = Number(time.jd())-Number(epoch);
-     if(orbital_elements.mean_anomaly && orbital_elements.epoch){
-       var mean_anomaly = Number(orbital_elements.mean_anomaly);
-       var l=(mean_motion*elapsed_time)+mean_anomaly;
-     }else if(orbital_elements.time_of_periapsis){
-       var mean_anomaly = mean_motion*elapsed_time;
-       var l=mean_anomaly;
-     }
-     if(l>360){l=l%360}
-     l = l*rad
-     var u=l
-     var i = 0;
+     var mean_anomaly = mean_motion*elapsed_time;
+     var l=mean_anomaly;
+     var u=l/(eccentricity-1);
+     var i=0;
      do{
        var ut=u;
-       var delta_u=(l-u+(eccentricity*Math.sin(u)))/(1- (eccentricity*Math.cos(u)));
+       var delta_u=(l-(eccentricity*Math.sinh(u))+u)/((eccentricity*Math.cosh(u))-1);
        u=u+delta_u;
-       if(i>1000000){break;}
-       i++
+    	 if(i++>100000){
+    	   break
+    	 }
      }while (Math.abs(ut-u)>0.0000001);
      var eccentric_anomaly = u;
      var p = Math.abs(semi_major_axis * (1 - eccentricity*eccentricity))
-     var true_anomaly = 2*Math.atan(Math.sqrt((1+eccentricity)/(1-eccentricity))*Math.tan(eccentric_anomaly/2));
-     var r = p / (1 + eccentricity * Math.cos(true_anomaly));
-     var orbital_plane = {
-       r:r,
-       x:r* Math.cos(true_anomaly),
-       y:r* Math.sin(true_anomaly),
-       xdot:-Math.sqrt(gm / p) * Math.sin(true_anomaly),
-       ydot:Math.sqrt(gm / p) * (eccentricity + Math.cos(true_anomaly))
-     };
-   return orbital_plane;
-   }
-
-   var ParabolicOrbit = function(orbital_elements,time){
-     var perihelion_distance = Number(orbital_elements.perihelion_distance);
-     var mean_motion = Math.sqrt(gm/(2*(perihelion_distance*perihelion_distance*perihelion_distance)));
-     var elapsed_time = Number(time.jd())-Number(epoch);
-     if(orbital_elements.mean_anomaly){
-       var mean_anomaly = Number(orbital_elements.mean_anomaly);
-       var l=mean_motion*elapsed_time+mean_anomaly;
-     }else{
-       var l = mean_motion*elapsed_time;
-     }
-     var b= Math.atan2(2,(3*l))/2
-     var tanb = Math.tan(b)
-     var tang = Math.pow(tanb,(1/3))
-     var true_anomary = Math.atan2((1-tang*tang),tang)*2
-     var cosf= Math.cos(true_anomary)
-     var sinf=Math.sin(true_anomary)
-     var r =(2*perihelion_distance)/(1+cosf)
-     var x = r*cosf
-     var y = r*sinf
-     var p = Math.abs(semi_major_axis * (1 - eccentricity*eccentricity))
-     var semi_major_axis = (orbital_elements.perihelion_distance)/(1-eccentricity)
+     var true_anomaly = 2*Math.atan(Math.sqrt((eccentricity+1)/(eccentricity-1))*Math.tanh(eccentric_anomaly/2));
      var orbital_plane= {
-       x:x,
-       y:y,
-       r:r,
-       xdot:-Math.sqrt(gm / p) * Math.sin(true_anomaly),
-       ydot:Math.sqrt(gm / p) * (eccentricity + Math.cos(true_anomaly))
+       x:semi_major_axis*(eccentricity-Math.cosh(u)),
+       y:semi_major_axis*Math.sqrt(Math.pow(eccentricity,2)-1)*Math.sinh(u),
+       r:semi_major_axis*(1-(eccentricity*Math.cosh(u))),
+       xdot:-Math.sqrt(gm/p)*Math.sin(true_anomaly),
+       ydot:Math.sqrt(gm/p)*(eccentricity+Math.cos(true_anomaly))
      }
-     return orbital_plane;
-    }
+    return orbital_plane;
+  },
 
-    var HyperbolicOrbit = function(orbital_elements,time){
-      if(orbital_elements.semi_major_axis && orbital_elements.semi_major_axis>0){
-         var semi_major_axis = orbital_elements.semi_major_axis;
-       }else if(orbital_elements.perihelion_distance){
-         var semi_major_axis = orbital_elements.perihelion_distance/(eccentricity-1);
-       }
-       var mean_motion = Math.sqrt(gm/(semi_major_axis*semi_major_axis*semi_major_axis));
-       var elapsed_time = Number(time.jd())-Number(epoch);
-       var mean_anomaly = mean_motion*elapsed_time;
-       var l=mean_anomaly;
-       var u=l/(eccentricity-1);
-       var i=0;
-       do{
-         var ut=u;
-         var delta_u=(l-(eccentricity*Math.sinh(u))+u)/((eccentricity*Math.cosh(u))-1);
-         u=u+delta_u;
-    		 if(i++>100000){
-    		   break
-    		 }
-       }while (Math.abs(ut-u)>0.0000001);
-       var eccentric_anomaly = u;
-       var p = Math.abs(semi_major_axis * (1 - eccentricity*eccentricity))
-       var true_anomaly = 2*Math.atan(Math.sqrt((eccentricity+1)/(eccentricity-1))*Math.tanh(eccentric_anomaly/2));
-       var orbital_plane= {
-         x:semi_major_axis*(eccentricity-Math.cosh(u)),
-         y:semi_major_axis*Math.sqrt(Math.pow(eccentricity,2)-1)*Math.sinh(u),
-         r:semi_major_axis*(1-(eccentricity*Math.cosh(u))),
-         xdot:-Math.sqrt(gm/p)*Math.sin(true_anomaly),
-         ydot:Math.sqrt(gm/p)*(eccentricity+Math.cos(true_anomaly))
-       }
-	   return orbital_plane;
-     }
-
-
-   var ecliptic_rectangular = function(orbital_elements,orbital_plane,date){
-     var time = new Orb.Time(date)
-     var lan = Number(orbital_elements.longitude_of_ascending_node)*rad;
-     var ap = Number(orbital_elements.argument_of_periapsis)*rad;
-     var inc = Number(orbital_elements.inclination)*rad;
-     var op2xyz = function(opx,opy,lan,ap,inc){
-       return {
-         x: opx*(Math.cos(lan)*Math.cos(ap)-Math.sin(lan)*Math.cos(inc)*Math.sin(ap))-opy*(Math.cos(lan)*Math.sin(ap)+Math.sin(lan)*Math.cos(inc)*Math.cos(ap)),
-         y: opx*(Math.sin(lan)*Math.cos(ap)+Math.cos(lan)*Math.cos(inc)*Math.sin(ap))-opy*(Math.sin(lan)*Math.sin(ap)-Math.cos(lan)*Math.cos(inc)*Math.cos(ap)),
-         z: opx*Math.sin(inc)*Math.sin(ap)+opy*Math.sin(inc)*Math.cos(ap)
-     }
-     }
-     var vec = op2xyz(orbital_plane.x,orbital_plane.y,lan,ap,inc)
-     var dotvec = op2xyz(orbital_plane.xdot,orbital_plane.ydot,lan,ap,inc)
-   return {
-       x:vec.x,
-       y:vec.y,
-       z:vec.z,
-       xdot:dotvec.x,
-       ydot:dotvec.y,
-       zdot:dotvec.z,
-       orbital_plane:orbital_plane
-     };
-   }
-
-  function orbital_plane(date){
-   var time = new Orb.Time(date)
-   if(eccentricity<1.0){
-     return EllipticalOrbit(orbital_elements,time);
-   }else if(eccentricity>1.0){
-     return  HyperbolicOrbit(orbital_elements,time);
-   }else if(eccentricity == 1.0){
-     return  ParabolicOrbit(orbital_elements,time);
-   }
-  }
-
-  return {
-    xyz:function(date){
-      var op = orbital_plane(date)
-      var position = ecliptic_rectangular(orbital_elements,op,date);
+  EclipticRectangular: function(orbital_plane,date){
+    var rad = Orb.Const.RAD;
+    var orbital_elements = this.orbital_elements;
+    var time = new Orb.Time(date)
+    var lan = Number(orbital_elements.longitude_of_ascending_node)*rad;
+    var ap = Number(orbital_elements.argument_of_periapsis)*rad;
+    var inc = Number(orbital_elements.inclination)*rad;
+    var op2xyz = function(opx,opy,lan,ap,inc){
       return {
-        'x':position.x,
-        'y':position.y,
-        'z':position.z,
-        'xdot':position.xdot,
-        'ydot':position.ydot,
-        'zdot':position.zdot,
-        'orbital_plane':op,
-       "date":date,
-       "coordinate_keywords":"ecliptic rectangular",
-       "unit_keywords":"au au/d"
-      };
-    },
-    radec:function(date){
-      var op = orbital_plane(date)
-      var xyz = ecliptic_rectangular(orbital_elements,op,date);
-      var equatorial_rectangular = Orb.EclipticToEquatorial({ecliptic:xyz,date:date})
-      var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
-      return {
-        'ra':equatorial_spherical.ra,
-        'dec':equatorial_spherical.dec,
-        'distance':equatorial_spherical.distance,
-        "date":date,
-        "coordinate_keywords":"equatorial spherical",
-        "unit_keywords":"hour degree au"
+        x: opx*(Math.cos(lan)*Math.cos(ap)-Math.sin(lan)*Math.cos(inc)*Math.sin(ap))-opy*(Math.cos(lan)*Math.sin(ap)+Math.sin(lan)*Math.cos(inc)*Math.cos(ap)),
+        y: opx*(Math.sin(lan)*Math.cos(ap)+Math.cos(lan)*Math.cos(inc)*Math.sin(ap))-opy*(Math.sin(lan)*Math.sin(ap)-Math.cos(lan)*Math.cos(inc)*Math.cos(ap)),
+        z: opx*Math.sin(inc)*Math.sin(ap)+opy*Math.sin(inc)*Math.cos(ap)
       }
     }
+    var vec = op2xyz(orbital_plane.x,orbital_plane.y,lan,ap,inc)
+    var dotvec = op2xyz(orbital_plane.xdot,orbital_plane.ydot,lan,ap,inc)
+    return {
+     x:vec.x,
+     y:vec.y,
+     z:vec.z,
+     xdot:dotvec.x,
+     ydot:dotvec.y,
+     zdot:dotvec.z,
+     orbital_plane:orbital_plane
+    };
+  },
+
+  OrbitalPlane: function(date){
+     var eccentricity = this.eccentricity
+     var time = new Orb.Time(date)
+     if(eccentricity<1.0){
+       return this.EllipticalOrbit(time);
+     }else if(eccentricity>1.0){
+       return  this.HyperbolicOrbit(time);
+     }else if(eccentricity == 1.0){
+       return  this.ParabolicOrbit(time);
+     }
+  },
+
+  radec: function(date){
+    var op = this.OrbitalPlane(date)
+    var xyz = this.EclipticRectangular(op,date);
+    var rectangular = Orb.EclipticToEquatorial({ecliptic:xyz,date:date})
+    var spherical = Orb.XYZtoRadec(rectangular)
+    return {
+      'ra':spherical.ra,
+      'dec':spherical.dec,
+      'distance':spherical.distance,
+      "date":date,
+      "coordinate_keywords":"equatorial spherical",
+      "unit_keywords":"hour degree au"
+    }
+  },
+
+  xyz: function(date){
+    var op = this.OrbitalPlane(date)
+    var position = this.EclipticRectangular(op,date);
+    return {
+      'x':position.x,
+      'y':position.y,
+      'z':position.z,
+      'xdot':position.xdot,
+      'ydot':position.ydot,
+      'zdot':position.zdot,
+      'orbital_plane':op,
+     "date":date,
+     "coordinate_keywords":"ecliptic rectangular",
+     "unit_keywords":"au au/d"
+    };
   }
 }
-Orb.KeplerianToCartesian = Orb.KeplerianToCartesian || Orb.Kepler
 
+Orb.KeplerianToCartesian = Orb.KeplerianToCartesian || Orb.Kepler
 
 Orb.CartesianToKeplerian = Orb.CartesianToKeplerian ||function(cartesian){
   var rad = Math.PI/180;
@@ -312,9 +332,12 @@ Orb.CartesianToKeplerian = Orb.CartesianToKeplerian ||function(cartesian){
 Orb.Cartesian = Orb.Cartesian || Orb.CartesianToKeplerian;
 
 //sun.js
-Orb.Sun = Orb.Sun || function(date){
-  var rad = Orb.Constant.RAD
-  function ecliptic_longitude(date){
+Orb.Sun = Orb.Sun || function(){}
+
+Orb.Sun.prototype = {
+
+  EclipticLongitude: function(date){
+    var rad = Orb.Const.RAD;
     var time = new Orb.Time(date)
     //var dt = DeltaT()/86400;
     //var dt = 64/86400;
@@ -340,8 +363,28 @@ Orb.Sun = Orb.Sun || function(date){
       distance:distance,
       obliquity:obliquity
     }
-  }
-  function ecliptic_to_equatorial(longitude,distance,obliquity){
+  },
+
+  SphericalToRectangler: function(spherical){
+    var rad = Orb.Const.RAD;
+    var longitude = spherical.longitude;
+    var distance = spherical.distance;
+    var obliquity = spherical.obliquity;
+    var x = distance*Math.cos(longitude*rad);
+    var y = distance*(Math.sin(longitude*rad)*Math.cos(obliquity*rad));
+    var z = distance*(Math.sin(longitude*rad)*Math.sin(obliquity*rad));
+    return {
+      x : x,
+      y : y,
+      z : z
+    }
+  },
+
+  EclipticToEquatorial: function(ecliptic){
+    var rad = Orb.Const.RAD;
+    var longitude = ecliptic.longitude
+    var distance = ecliptic.distance
+    var obliquity = ecliptic.obliquity
     var ra = Math.atan2(Math.cos(obliquity*rad)*Math.sin(longitude*rad), Math.cos(longitude*rad))
     ra = Orb.RoundAngle(ra/rad);
     ra=ra/15
@@ -352,138 +395,41 @@ Orb.Sun = Orb.Sun || function(date){
       dec:dec,
       distance:distance
     }
-  }
-  function spherical_to_rectangler(longitude,distance,obliquity){
-    //rectanger
-    var x = distance*Math.cos(longitude*rad);
-    var y = distance*(Math.sin(longitude*rad)*Math.cos(obliquity*rad));
-    var z = distance*(Math.sin(longitude*rad)*Math.sin(obliquity*rad));
-    return {
-    x : x,
-    y : y,
-    z : z
-    }
-  }
+  },
 
-  return {
-    radec:function(date){
-      var ecliptic = ecliptic_longitude(date)
-      var radec = ecliptic_to_equatorial(ecliptic.longitude,ecliptic.distance,ecliptic.obliquity)
-      return{
-        "ra":radec.ra,
-        "dec":radec.dec,
-        "distance":radec.distance,
-        "date":date,
-        "coordinate_keywords":"equatorial spherical",
-        "unit_keywords":"degree hour au"
-      }
-    },
-    xyz:function(date){
-      var ecliptic = ecliptic(date)
-      var xyz = spherical_to_rectangler(ecliptic.longitude,ecliptic.distance,ecliptic.obliquity)
-      return{
-        x:xyz.x,
-        y:xyz.y,
-        z:xyz.z,
-        "date":date,
-        "coordinate_keywords":"equatorial rectangular",
-        "unit_keywords":"au"
-      }
+  radec: function(date){
+    var ecliptic = this.EclipticLongitude(date)
+    var radec = this.EclipticToEquatorial(ecliptic)
+    return{
+      "ra":radec.ra,
+      "dec":radec.dec,
+      "distance":radec.distance,
+      "date":date,
+      "coordinate_keywords":"equatorial spherical",
+      "unit_keywords":"degree hour au"
+    }
+  },
+
+  xyz: function(date){
+    var spherical = this.EclipticLongitude(date)
+    var xyz = this.SphericalToRectangler(spherical)
+    return{
+      x:xyz.x,
+      y:xyz.y,
+      z:xyz.z,
+      "date":date,
+      "coordinate_keywords":"equatorial rectangular",
+      "unit_keywords":"au"
     }
   }
 }
 
 //luna.js
-Orb.Luna = Orb.Luna ||  function(){
-  var Phase = function(date){
-      var time = new Orb.Time(date)
-      var now = date;
-      var jd = time.jd();
-      var date_first = new Date(time.year, 0, 1, 0, 0, 0);
-      var date_last = new Date(time.year, 11, 31, 11, 59, 59, 999);
-      var since_new_year = (now - date_first)/(date_last-date_first);
-      var y = time.year+since_new_year;
+Orb.Luna = Orb.Luna ||  function(){}
 
-      var k = Math.floor((y-2000) * 12.3685);
-      var t = k/1236.85;
-      var t2 = t*t;
-      var t3 = t*t*t;
-      var t4 = t*t*t*t;
-      var jde0 = 2451550.09766 + 29.530588861*k + 0.00015437*t2 - 0.000000150*t3 + 0.00000000073*t4;
-      var e = 1-0.002516*t - 0.0000074*t2;
-      e = Orb.RoundAngle(e);
-      //Sun's mean anomary at the time;
-      var m0 = 2.5534 + 29.10535670*k - 0.0000014*t2 - 0.00000011*t3;
-      m0 = Orb.RoundAngle(m0);
-      //Moon's mean anomary at the time;
-      var m1 = 201.5643 + 385.81693528*k + 0.0107582*t2 + 0.00001238*t3 - 0.000000011*t4;
-      m1 = Orb.RoundAngle(m1);
-      //Moon's argument of latitude
-      var f = 160.7108 + 390.67050284*k - 0.0016118*t2-0.00000227*t3 + 0.000000011*t4;
-      f = Orb.RoundAngle(f);
-      //Longitude of the ascending node of lunar orbit
-      var omega = 124.7746 -  1.56375588*k + 0.0020672*t2 + 0.00000215*t3;
-      omega = Orb.RoundAngle(omega);
-      var c1 = 0;
-      c1 = c1 - 0.40720 * Math.sin(m1*rad);
-      c1 = c1 + 0.17241 * e * Math.sin(m0*rad);
-      c1 = c1 + 0.01608 * Math.sin(2*m1*rad);
-      c1 = c1 + 0.01039 * Math.sin(2*f*rad);
-      c1 = c1 + 0.00739 * e * Math.sin((m1-m0)*rad);
-      c1 = c1 - 0.00514 * e * Math.sin((m1+m0)*rad);
-      c1 = c1 + 0.00208 * e * e * Math.sin(2*m0*rad);
-      c1 = c1 - 0.00111 * Math.sin((m1-2*f)*rad)
-      c1 = c1 - 0.00057 * Math.sin((m1+2*f)*rad)
-      c1 = c1 + 0.00056 * e * Math.sin((2*m1+m0)*rad);
-      c1 = c1 - 0.00042 * Math.sin(3*m1*rad);
-      c1 = c1 + 0.00042 * e * Math.sin((m0+2*f)*rad)
-      c1 = c1 + 0.00038 * e * Math.sin((m0-2*f)*rad)
-      c1 = c1 - 0.00024 * e * Math.sin((2*m1-m0)*rad);
-      c1 = c1 - 0.00017 * Math.sin(omega*rad);
-      c1 = c1 - 0.00007 * Math.sin((m1+2*m0)*rad);
-      c1 = c1 + 0.00004 * Math.sin((2*m1-2*f)*rad);
-      c1 = c1 + 0.00004 * Math.sin(3*m0 *rad);
-      c1 = c1 + 0.00003 * Math.sin((m1+m0-2*f)*rad);
-      c1 = c1 + 0.00003 * Math.sin((2*m1+2*f)*rad);
-      c1 = c1 - 0.00003 * Math.sin((m1+m0+2*f)*rad);
-      c1 = c1 + 0.00003 * Math.sin((m1-m0+2*f)*rad);
-      c1 = c1 - 0.00002 * Math.sin((m1-m0-2*f)*rad);
-      c1 = c1 - 0.00002 * Math.sin((3*m1+m0)*rad);
-      c1 = c1 + 0.00002 * Math.sin(4*m1*rad);
-      var a1 = 299.77 + 0.107408*k-0.009173*t2;
-      var a2 = 251.88 + 0.016321*k;
-      var a3 = 251.83 + 26.651886*k;
-      var a4 = 349.42 + 36.412478 *k;
-      var a5 =  84.66 + 18.206239*k;
-      var a6 =  141.74+53.303771*k;
-      var a7 =  207.14+2.453732*k;
-      var a8 =  154.84+7.306860*k;
-      var a9 =  34.52+27.261239*k;
-      var a10 =  207.19+0.121824*k;
-      var a11 =  291.34+1.844379*k;
-      var a12 =  161.72+24.198154*k;
-      var a13 =  239.56+25.513099*k;
-      var a14 =  331.55+3.592518*k;
-      var c2 = 0;
-      c2 = c2 + 0.000325 *Math.sin(a1*rad);
-      c2 = c2 + 0.000165 *Math.sin(a2*rad);
-      c2 = c2 + 0.000164 *Math.sin(a3*rad);
-      c2 = c2 + 0.000126 *Math.sin(a4*rad);
-      c2 = c2 + 0.000110 *Math.sin(a5*rad);
-      c2 = c2 + 0.000062 *Math.sin(a6*rad);
-      c2 = c2 + 0.000060 *Math.sin(a7*rad);
-      c2 = c2 + 0.000056 *Math.sin(a8*rad);
-      c2 = c2 + 0.000047 *Math.sin(a9*rad);
-      c2 = c2 + 0.000042 *Math.sin(a10*rad);
-      c2 = c2 + 0.000040 *Math.sin(a11*rad);
-      c2 = c2 + 0.000037 *Math.sin(a12*rad);
-      c2 = c2 + 0.000035 *Math.sin(a13*rad);
-      c2 = c2 + 0.000023 *Math.sin(a14*rad);
-      var jde = jde0 + c1 + c2;
-      var phase_of_the_moon = jd - jde;
-      return phase_of_the_moon;
-  }
-  function calc_latlng(date){
+Orb.Luna.prototype = {
+
+  latlng: function(date){
     var time = new Orb.Time(date)
     var rad = Orb.Constant.RAD
     var deg=180/Math.PI;
@@ -515,74 +461,74 @@ Orb.Luna = Orb.Luna ||  function(){
     A3 = Orb.RoundAngle(A3)*rad;
 
 
-  var SigmaL = function(){
-    var result =0;
-    var terms = Orb.Terms.Luna.LR;
-    var terms_length = terms.length;
-    for(var i = 0; i< terms_length;i++){
-      var coef = terms[i][4];
-      var multi = [terms[i][0],terms[i][1],terms[i][2],terms[i][3]]
-      if(Math.abs(multi[1]) == 1){
-        var e_coef = e;
-      }else if(Math.abs(multi[1]) == 2){
-        var e_coef = e*e;
-      }else{
-        var e_coef = 1;
+    var SigmaL = function(){
+      var result =0;
+      var terms = Orb.Terms.Luna.LR;
+      var terms_length = terms.length;
+      for(var i = 0; i< terms_length;i++){
+        var coef = terms[i][4];
+        var multi = [terms[i][0],terms[i][1],terms[i][2],terms[i][3]]
+        if(Math.abs(multi[1]) == 1){
+          var e_coef = e;
+        }else if(Math.abs(multi[1]) == 2){
+          var e_coef = e*e;
+        }else{
+          var e_coef = 1;
+        }
+        var asin = multi[0]*D0 + multi[1]*M0 + multi[2]*M1 + multi[3]*F0;
+        result += coef * Math.sin(asin) * e_coef;
       }
-      var asin = multi[0]*D0 + multi[1]*M0 + multi[2]*M1 + multi[3]*F0;
-      result += coef * Math.sin(asin) * e_coef;
+      result += 3958*Math.sin(A1)
+      result += 1962*Math.sin(L1-F0)
+      result += 318*Math.sin(A2)
+      return result;
     }
-    result += 3958*Math.sin(A1)
-    result += 1962*Math.sin(L1-F0)
-    result += 318*Math.sin(A2)
-    return result;
-  }
 
-  var SigmaR = function(){
-    var result =0;
-    var terms = Orb.Terms.Luna.LR;
-    var terms_length = terms.length;
-    for(var i = 0; i< terms_length;i++){
-      var coef = terms[i][5];
-      var multi = [terms[i][0],terms[i][1],terms[i][2],terms[i][3]]
-      if(Math.abs(multi[1]) == 1){
-        var e_coef = e;
-      }else if(Math.abs(multi[1]) == 2){
-        var e_coef = e*e;
-      }else{
-        var e_coef = 1;
-      }
-      var acos = multi[0]*D0 + multi[1]*M0 + multi[2]*M1 + multi[3]*F0
-      result += coef * Math.cos(acos) * e_coef;
+    var SigmaR = function(){
+  var result =0;
+  var terms = Orb.Terms.Luna.LR;
+  var terms_length = terms.length;
+  for(var i = 0; i< terms_length;i++){
+    var coef = terms[i][5];
+    var multi = [terms[i][0],terms[i][1],terms[i][2],terms[i][3]]
+    if(Math.abs(multi[1]) == 1){
+      var e_coef = e;
+    }else if(Math.abs(multi[1]) == 2){
+      var e_coef = e*e;
+    }else{
+      var e_coef = 1;
     }
-    return result;
+    var acos = multi[0]*D0 + multi[1]*M0 + multi[2]*M1 + multi[3]*F0
+    result += coef * Math.cos(acos) * e_coef;
   }
+  return result;
+}
 
-  var SigmaB = function(){
-    var result =0;
-    var terms = Orb.Terms.Luna.B;
-    var terms_length = terms.length;
-    for(var i = 0; i< terms_length;i++){
-      var coef = terms[i][4];
-      var multi = [terms[i][0],terms[i][1],terms[i][2],terms[i][3]]
-      if(Math.abs(multi[1]) == 1){
-        var e_coef = e;
-      }else if(Math.abs(multi[1]) == 2){
-        var e_coef = e*e;
-      }else{
-        var e_coef = 1;
+    var SigmaB = function(){
+      var result =0;
+      var terms = Orb.Terms.Luna.B;
+      var terms_length = terms.length;
+      for(var i = 0; i< terms_length;i++){
+        var coef = terms[i][4];
+        var multi = [terms[i][0],terms[i][1],terms[i][2],terms[i][3]]
+        if(Math.abs(multi[1]) == 1){
+          var e_coef = e;
+        }else if(Math.abs(multi[1]) == 2){
+          var e_coef = e*e;
+        }else{
+          var e_coef = 1;
+        }
+        var asin = multi[0]*D0 + multi[1]*M0 + multi[2]*M1 + multi[3]*F0
+        result += coef * Math.sin(asin) * e_coef;
       }
-      var asin = multi[0]*D0 + multi[1]*M0 + multi[2]*M1 + multi[3]*F0
-      result += coef * Math.sin(asin) * e_coef;
+      result += -2235*Math.sin(L1)
+      result += 382*Math.sin(A3)
+      result += 175*Math.sin(A1-F0)
+      result += 175*Math.sin(A1+F0)
+      result += 127*Math.sin(L1-M1)
+      result += -115*Math.sin(L1+M1)
+      return result;
     }
-    result += -2235*Math.sin(L1)
-    result += 382*Math.sin(A3)
-    result += 175*Math.sin(A1-F0)
-    result += 175*Math.sin(A1+F0)
-    result += 127*Math.sin(L1-M1)
-    result += -115*Math.sin(L1+M1)
-    return result;
-  }
 
 
     var sigma_l = SigmaL();
@@ -605,8 +551,10 @@ Orb.Luna = Orb.Luna ||  function(){
       "coordinate_keywords":"ecliptic spherical",
       "unit_keywords":"degree km"
     }
-  }
-  function calc_radec(latlng,date){
+  },
+
+  radec: function(date){
+    var latlng = this.latlng(date);
     var rad = Orb.Constant.RAD
     var latitude = latlng.latitude
     var longitude = latlng.longitude
@@ -624,9 +572,10 @@ Orb.Luna = Orb.Luna ||  function(){
       "coordinate_keywords":"equatoria spherical",
       "unit_keywords":"degree hour km"
     }
-  }
-  function calc_xyz(latlng,date){
-    //rectanger
+  },
+
+  xyz: function(date){
+    var latlng = this.latlng(date);
     var rad = Orb.Constant.RAD
     var latitude = latlng.latitude
     var longitude = latlng.longitude
@@ -642,34 +591,106 @@ Orb.Luna = Orb.Luna ||  function(){
       "coordinate_keywords":"equatorial rectangular",
       "unit_keywords":"km"
     }
+  },
+
+  parallax: function(date){
+    var latlng = this.latlng(date);
+    var rad = Orb.Constant.RAD
+    return Math.asin(6378.14/latlng.distance)/rad
+  },
+
+  phase: function(date){
+    var rad = Orb.Constant.RAD
+    var time = new Orb.Time(date)
+    var now = date;
+    var jd = time.jd();
+    var date_first = new Date(time.year, 0, 1, 0, 0, 0);
+    var date_last = new Date(time.year, 11, 31, 11, 59, 59, 999);
+    var since_new_year = (now - date_first)/(date_last-date_first);
+    var y = time.year+since_new_year;
+
+    var k = Math.floor((y-2000) * 12.3685);
+    var t = k/1236.85;
+    var t2 = t*t;
+    var t3 = t*t*t;
+    var t4 = t*t*t*t;
+    var jde0 = 2451550.09766 + 29.530588861*k + 0.00015437*t2 - 0.000000150*t3 + 0.00000000073*t4;
+    var e = 1-0.002516*t - 0.0000074*t2;
+    e = Orb.RoundAngle(e);
+    //Sun's mean anomary at the time;
+    var m0 = 2.5534 + 29.10535670*k - 0.0000014*t2 - 0.00000011*t3;
+    m0 = Orb.RoundAngle(m0);
+    //Moon's mean anomary at the time;
+    var m1 = 201.5643 + 385.81693528*k + 0.0107582*t2 + 0.00001238*t3 - 0.000000011*t4;
+    m1 = Orb.RoundAngle(m1);
+    //Moon's argument of latitude
+    var f = 160.7108 + 390.67050284*k - 0.0016118*t2-0.00000227*t3 + 0.000000011*t4;
+    f = Orb.RoundAngle(f);
+    //Longitude of the ascending node of lunar orbit
+    var omega = 124.7746 -  1.56375588*k + 0.0020672*t2 + 0.00000215*t3;
+    omega = Orb.RoundAngle(omega);
+    var c1 = 0;
+    c1 = c1 - 0.40720 * Math.sin(m1*rad);
+    c1 = c1 + 0.17241 * e * Math.sin(m0*rad);
+    c1 = c1 + 0.01608 * Math.sin(2*m1*rad);
+    c1 = c1 + 0.01039 * Math.sin(2*f*rad);
+    c1 = c1 + 0.00739 * e * Math.sin((m1-m0)*rad);
+    c1 = c1 - 0.00514 * e * Math.sin((m1+m0)*rad);
+    c1 = c1 + 0.00208 * e * e * Math.sin(2*m0*rad);
+    c1 = c1 - 0.00111 * Math.sin((m1-2*f)*rad)
+    c1 = c1 - 0.00057 * Math.sin((m1+2*f)*rad)
+    c1 = c1 + 0.00056 * e * Math.sin((2*m1+m0)*rad);
+    c1 = c1 - 0.00042 * Math.sin(3*m1*rad);
+    c1 = c1 + 0.00042 * e * Math.sin((m0+2*f)*rad)
+    c1 = c1 + 0.00038 * e * Math.sin((m0-2*f)*rad)
+    c1 = c1 - 0.00024 * e * Math.sin((2*m1-m0)*rad);
+    c1 = c1 - 0.00017 * Math.sin(omega*rad);
+    c1 = c1 - 0.00007 * Math.sin((m1+2*m0)*rad);
+    c1 = c1 + 0.00004 * Math.sin((2*m1-2*f)*rad);
+    c1 = c1 + 0.00004 * Math.sin(3*m0 *rad);
+    c1 = c1 + 0.00003 * Math.sin((m1+m0-2*f)*rad);
+    c1 = c1 + 0.00003 * Math.sin((2*m1+2*f)*rad);
+    c1 = c1 - 0.00003 * Math.sin((m1+m0+2*f)*rad);
+    c1 = c1 + 0.00003 * Math.sin((m1-m0+2*f)*rad);
+    c1 = c1 - 0.00002 * Math.sin((m1-m0-2*f)*rad);
+    c1 = c1 - 0.00002 * Math.sin((3*m1+m0)*rad);
+    c1 = c1 + 0.00002 * Math.sin(4*m1*rad);
+    var a1 = 299.77 + 0.107408*k-0.009173*t2;
+    var a2 = 251.88 + 0.016321*k;
+    var a3 = 251.83 + 26.651886*k;
+    var a4 = 349.42 + 36.412478 *k;
+    var a5 =  84.66 + 18.206239*k;
+    var a6 =  141.74+53.303771*k;
+    var a7 =  207.14+2.453732*k;
+    var a8 =  154.84+7.306860*k;
+    var a9 =  34.52+27.261239*k;
+    var a10 =  207.19+0.121824*k;
+    var a11 =  291.34+1.844379*k;
+    var a12 =  161.72+24.198154*k;
+    var a13 =  239.56+25.513099*k;
+    var a14 =  331.55+3.592518*k;
+    var c2 = 0;
+    c2 = c2 + 0.000325 *Math.sin(a1*rad);
+    c2 = c2 + 0.000165 *Math.sin(a2*rad);
+    c2 = c2 + 0.000164 *Math.sin(a3*rad);
+    c2 = c2 + 0.000126 *Math.sin(a4*rad);
+    c2 = c2 + 0.000110 *Math.sin(a5*rad);
+    c2 = c2 + 0.000062 *Math.sin(a6*rad);
+    c2 = c2 + 0.000060 *Math.sin(a7*rad);
+    c2 = c2 + 0.000056 *Math.sin(a8*rad);
+    c2 = c2 + 0.000047 *Math.sin(a9*rad);
+    c2 = c2 + 0.000042 *Math.sin(a10*rad);
+    c2 = c2 + 0.000040 *Math.sin(a11*rad);
+    c2 = c2 + 0.000037 *Math.sin(a12*rad);
+    c2 = c2 + 0.000035 *Math.sin(a13*rad);
+    c2 = c2 + 0.000023 *Math.sin(a14*rad);
+    var jde = jde0 + c1 + c2;
+    var phase_of_the_moon = jd - jde;
+    return phase_of_the_moon;
   }
-    // equatiorial horizontal parallax
-  return {
-    latlng:function(date){
-      var latlng = calc_latlng(date)
-      return latlng
-    },
-    radec:function(date){
-      var latlng = calc_latlng(date)
-      return calc_radec(latlng,date)
-    },
-    xyz:function(date){
-      var latlng = calc_latlng(date)
-      return calc_xyz(latlng,date)
-    },
-    parallax:function(date){
-      var rad = Orb.Constant.RAD
-      var latlng = calc_latlng(date)
-      return Math.asin(6378.14/latlng.distance)/rad
-    },
-    phase : function(date){
-      return Phase(date)
-    }
-  } //end  return;
 }
-Orb.Moon= function(){
-  return Orb.Luna()
-}
+
+Orb.Moon = Orb.Moon || Orb.Luna;
 
 Orb.Terms = Orb.Terms || {}
 Orb.Terms.Luna = {
@@ -802,7 +823,11 @@ Orb.Terms.Luna = {
 //vsop.js
 Orb.VSOP = Orb.VSOP || function(target){
   //target = ["Mercury","Venus","Earth","Moon","Mars","Jupiter","Saturn","Uranus","Neptune"],
-  function exec_vsop(target_data,date){
+  this.target = target;
+}
+
+Orb.VSOP.prototype = {
+  exec_vsop: function(target_data,date){
     var time = new Orb.Time(date)
     var jd = time.jd();
     var t = ((jd -2451545.0)/365250);
@@ -821,34 +846,34 @@ Orb.VSOP = Orb.VSOP || function(target){
       "coordinate_keywords":"ecliptic rectangular",
       "unit_keywords":"au"
     }
-  }
+  },
 
-  return {
-    xyz:function(date){
-      var vsop_target = Orb.Terms.VSOP87A[target];
-      var pos = exec_vsop(vsop_target,date)
-      return pos
-    },
-    radec:function(date){
-      var vsop_target = Orb.Terms.VSOP87A[target];
-      var target_pos = exec_vsop(vsop_target,date)
-      var equatorial_rectangular = Orb.EclipticToEquatorial({ecliptic:target_pos,date:date})
-      var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
-      return equatorial_spherical
-    }
+  xyz: function(date){
+    var vsop_target = Orb.Terms.VSOP87A[this.target];
+    var pos = this.exec_vsop(vsop_target,date);
+    return pos;
+  },
+
+  radec: function(date){
+    var vsop_target = Orb.Terms.VSOP87A[this.target];
+    var target_pos = this.exec_vsop(vsop_target,date);
+    var rectangular = Orb.EclipticToEquatorial({ecliptic:target_pos,date:date});
+    var spherical = Orb.XYZtoRadec(rectangular);
+    return spherical;
   }
 }
-Orb.Mercury=function(){return Orb.VSOP("Mercury")}
-Orb.Venus=function(){return Orb.VSOP("Venus")}
-Orb.Earth=function(){return Orb.VSOP("Earth")}
-Orb.Mars=function(){return Orb.VSOP("Mars")}
-Orb.Jupiter=function(){return Orb.VSOP("Jupiter")}
-Orb.Saturn=function(){return Orb.VSOP("Saturn")}
-Orb.Uranus=function(){return Orb.VSOP("Uranus")}
-Orb.Neptune=function(){return Orb.VSOP("Neptune")}
-Orb.Planet = Orb.Planet || Orb.VSOP
 
-Orb.Terms = Orb.Terms || {}
+Orb.Mercury=function(){return Orb.VSOP("Mercury")};
+Orb.Venus=function(){return Orb.VSOP("Venus")};
+Orb.Earth=function(){return Orb.VSOP("Earth")};
+Orb.Mars=function(){return Orb.VSOP("Mars")};
+Orb.Jupiter=function(){return Orb.VSOP("Jupiter")};
+Orb.Saturn=function(){return Orb.VSOP("Saturn")};
+Orb.Uranus=function(){return Orb.VSOP("Uranus")};
+Orb.Neptune=function(){return Orb.VSOP("Neptune")};
+Orb.Planet = Orb.Planet || Orb.VSOP;
+
+Orb.Terms = Orb.Terms || {};
 Orb.Terms.VSOP87A = {
   "Earth":[
     [0,0,0.99982928844,1.75348568475,6283.07584999140],
