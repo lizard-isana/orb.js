@@ -26,8 +26,6 @@ Math.atanh = Math.atanh || function(x) {
 
 Orb.Kepler = Orb.Kepler || function(orbital_elements,date){
    this.orbital_elements = orbital_elements;
-   var eccentricity = Number(orbital_elements.eccentricity);
-   this.eccentricity = eccentricity;
    if(orbital_elements.gm){
      var gm = Number(orbital_elements.gm);
    }else{
@@ -50,7 +48,7 @@ Orb.Kepler.prototype = {
     var gm = this.gm;
     var epoch = this.epoch;
     var orbital_elements = this.orbital_elements;
-    var eccentricity = this.eccentricity
+    var eccentricity = Number(orbital_elements.eccentricity);
     if(orbital_elements.semi_major_axis){
      var semi_major_axis = orbital_elements.semi_major_axis;
     }else if(orbital_elements.perihelion_distance){
@@ -95,7 +93,7 @@ Orb.Kepler.prototype = {
     var gm = this.gm;
     var epoch = this.epoch;
     var orbital_elements = this.orbital_elements;
-    var eccentricity = this.eccentricity
+    var eccentricity = Number(orbital_elements.eccentricity);
     var perihelion_distance = Number(orbital_elements.perihelion_distance);
     var mean_motion = Math.sqrt(gm/(2*(perihelion_distance*perihelion_distance*perihelion_distance)));
     var elapsed_time = Number(time.jd())-Number(epoch);
@@ -131,7 +129,7 @@ Orb.Kepler.prototype = {
     var gm = this.gm;
     var epoch = this.epoch;
     var orbital_elements = this.orbital_elements;
-    var eccentricity = this.eccentricity
+    var eccentricity = Number(orbital_elements.eccentricity);
     if(orbital_elements.semi_major_axis && orbital_elements.semi_major_axis>0){
        var semi_major_axis = orbital_elements.semi_major_axis;
      }else if(orbital_elements.perihelion_distance){
@@ -192,7 +190,7 @@ Orb.Kepler.prototype = {
   },
 
   OrbitalPlane: function(date){
-     var eccentricity = this.eccentricity
+     var eccentricity = Number(this.orbital_elements.eccentricity);
      var time = new Orb.Time(date)
      if(eccentricity<1.0){
        return this.EllipticalOrbit(time);
