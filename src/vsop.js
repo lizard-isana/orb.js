@@ -1,26 +1,27 @@
 //vsop.js
 Orb.VSOP = Orb.VSOP || function(target){
-  this.target = target;
   //target = ["Mercury","Venus","Earth","Moon","Mars","Jupiter","Saturn","Uranus","Neptune"],
-  this.exec_vsop = function(target_data,date){
-    var time = new Orb.Time(date)
-    var jd = time.jd();
-    var t = ((jd -2451545.0)/365250);
-    var v = [0,0,0];
-    for(var i=0,ln = target_data.length; i<ln; i++){
-      var tmp_data = target_data[i];
-      var n = tmp_data[0];
-      var sum = Math.pow(t,Number(tmp_data[1]))*Number(tmp_data[2]) * Math.cos(Number(tmp_data[3]) + Number(tmp_data[4]) * t);
-      v[n] = v[n]  + sum;
-    }
-    return {
-      x:v[0],
-      y:v[1],
-      z:v[2],
-      "date":date,
-      "coordinate_keywords":"ecliptic rectangular",
-      "unit_keywords":"au"
-    }
+  this.target = target;
+}
+
+Orb.VSOP.prototype.exec_vsop = function exec_vsop(target_data,date){
+  var time = new Orb.Time(date)
+  var jd = time.jd();
+  var t = ((jd -2451545.0)/365250);
+  var v = [0,0,0];
+  for(var i=0,ln = target_data.length; i<ln; i++){
+    var tmp_data = target_data[i];
+    var n = tmp_data[0];
+    var sum = Math.pow(t,Number(tmp_data[1]))*Number(tmp_data[2]) * Math.cos(Number(tmp_data[3]) + Number(tmp_data[4]) * t);
+    v[n] = v[n]  + sum;
+  }
+  return {
+    x:v[0],
+    y:v[1],
+    z:v[2],
+    "date":date,
+    "coordinate_keywords":"ecliptic rectangular",
+    "unit_keywords":"au"
   }
 }
 
