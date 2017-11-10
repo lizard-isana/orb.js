@@ -1,4 +1,13 @@
-// core.js
+// orb.js
+//
+// Orb 2.1.0 - Javascript Library for Astronomical Calcrations
+//
+// Copyright (c) 2017 KASHIWAI, Isana
+// Licensed under the MIT license (MIT-LICENSE.txt),
+
+// for Name Space
+var Orb = Orb || {};
+
 Orb.RoundAngle = Orb.RoundAngle || function(degree){
   var angle = degree%360
   if(angle<0){
@@ -30,6 +39,7 @@ Orb.NutationAndObliquity  = Orb.NutationAndObliquity || function(date){
     }
   }
 }
+
 Orb.Obliquity  = Orb.Obliquity || function(date){
  var ob = new Orb.NutationAndObliquity(date)
  return ob.obliquity()
