@@ -33,7 +33,7 @@ Orb.VSOP.prototype = {
       "unit_keywords":"au"
     }
   },
-
+  
   xyz: function(date){
     var pos = this.exec_vsop(date);
     return pos;
@@ -47,13 +47,13 @@ Orb.VSOP.prototype = {
   }
 }
 //Orb.Earth is defined in earth.js
-Orb.Mercury=function(){return Orb.VSOP("Mercury")};
-Orb.Venus=function(){return Orb.VSOP("Venus")};
-Orb.Mars=function(){return Orb.VSOP("Mars")};
-Orb.Jupiter=function(){return Orb.VSOP("Jupiter")};
-Orb.Saturn=function(){return Orb.VSOP("Saturn")};
-Orb.Uranus=function(){return Orb.VSOP("Uranus")};
-Orb.Neptune=function(){return Orb.VSOP("Neptune")};
+Orb.Mercury=function(){return new Orb.VSOP("Mercury")};
+Orb.Venus=function(){return new Orb.VSOP("Venus")};
+Orb.Mars=function(){return new Orb.VSOP("Mars")};
+Orb.Jupiter=function(){return new Orb.VSOP("Jupiter")};
+Orb.Saturn=function(){return new Orb.VSOP("Saturn")};
+Orb.Uranus=function(){return new Orb.VSOP("Uranus")};
+Orb.Neptune=function(){return new Orb.VSOP("Neptune")};
 Orb.Planet = Orb.Planet || Orb.VSOP;
 
 Orb.Terms = Orb.Terms || {};
