@@ -25,6 +25,7 @@ Orb.Time.prototype = {
     var year = this.year;
     var month = this.month;;
     var day = this.day;
+    var time_in_day = this.time_in_day()
     if(month <= 2){
       var year = year - 1;
       var month = month + 12;
@@ -36,7 +37,7 @@ Orb.Time.prototype = {
       var tmp = Math.floor(year/100);
       var transition_offset=2-tmp+Math.floor(tmp/4);
     }
-    var jd=julian_day+transition_offset;
+    var jd=julian_day+transition_offset + time_in_day;
     return jd;
   },
 
@@ -44,8 +45,9 @@ Orb.Time.prototype = {
     var rad = Orb.Constant.RAD
     var time_in_sec = this.hours*3600 + this.minutes*60 + this.seconds;
     var jd = this.jd();
+    var jd0 = jd-this.time_in_day();
     //gmst at 0:00
-    var t = (jd-2451545.0)/36525;
+    var t = (jd0-2451545.0)/36525;
     var gmst_at_zero = (24110.5484 + 8640184.812866*t+0.093104*t*t+0.0000062*t*t*t)/3600;
     if(gmst_at_zero>24){gmst_at_zero=gmst_at_zero%24;}
     //gmst at target time
