@@ -156,7 +156,6 @@ Orb.Time.prototype = {
     if(gmst>24){gmst=gmst%24;}
     return gmst
   },
-  
   delta_t: function(){
     //NASA - Polynomial Expressions for Delta T
     //http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html
