@@ -855,7 +855,7 @@ Orb.VSOP.prototype = {
       "unit_keywords":"au"
     }
   },
-
+  
   xyz: function(date){
     var pos = this.exec_vsop(date);
     return pos;
