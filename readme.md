@@ -70,7 +70,7 @@ Truncated version of orb.js. If you only need calculations for planetary objects
     }
     var satellite = new Orb.SGP4(tle);
     var xyz = satellite.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z, xdot, ydot, zdot)
-    var latlng = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude)
+    var latlng = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude, velocity)
 
     // Azimuth and Elevation
     var your_location = {

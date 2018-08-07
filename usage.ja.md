@@ -74,7 +74,7 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
     }
     var satellite = new Orb.SGP4(tle);
     var xyz = satellite.xyz(date); // equatorial rectangular coordinates (x, y, z ,xdot, ydot, zdot)
-    var latlng = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude)
+    var latlng = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude, velocity)
 
     //方位、高度の計算
     var your_location = {
@@ -269,6 +269,7 @@ Dateをメソッドに渡して位置を計算します。以下の例ではxyz(
      "latitude":<Number>,
      "longitude":<Number>,
      "distance":<Number>,
+     "velocity":<Number>,     
      "date":<Date>,
      "coordinate_keywords":"geographic spherical",
      "unit_keywords":"degree km"]
