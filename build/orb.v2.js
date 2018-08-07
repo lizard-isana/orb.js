@@ -1171,6 +1171,7 @@ Orb.SGP4.prototype ={
       "latitude" : geo.latitude,
       "longitude" : geo.longitude,
       "altitude" : geo.altitude,
+      "velocity" : geo.velocity,
       "date":date,
       "coordinate_keywords":"geographic spherical",
       "unit_keywords":"degree km"
