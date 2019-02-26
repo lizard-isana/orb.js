@@ -6,19 +6,78 @@ Orb.Time = Orb.Time || function(date){
   }else{
     var d = date;
   }
-  this.date = d;
-  this.year = d.getUTCFullYear();
-  this.month = d.getUTCMonth()+1;
-  this.day =  d.getUTCDate();
-  this.hours =  d.getUTCHours();
-  this.minutes = d.getUTCMinutes();
-  this.seconds = d.getUTCSeconds();
+  var date_constructor = d.constructor;
+  if(date_constructor == Date){
+    var date = d;
+    var year = d.getUTCFullYear();
+    var month = d.getUTCMonth()+1;
+    var day =  d.getUTCDate();
+    var hours =  d.getUTCHours();
+    var minutes = d.getUTCMinutes();
+    var seconds = d.getUTCSeconds();
+    var milliseconds = d.getUTCMilliseconds()
+  }else if(date_constructor == String){
+    var str = date.split('Z')[0];
+    str.match(/(T|_| )/i);
+    var dt=str.split(RegExp.$1);
+    var dt0 = dt[0]
+    if(dt0.match(/\./i)){
+      var d = dt0.split(".");
+    }else{
+      var d = dt0.split("-");
+    }
+    if(d.length>3){
+      d.shift()
+      d[0] = 0-Number(d[0]);
+    }
+    if(dt[1]){
+      var t = dt[1].split(":");
+    }else{
+      var t = [];
+    }
+    var year = d[0];
+    var month = d[1];
+    var day = d[2];
+    if(t[0]){
+      var hours = t[0]
+    }else{
+      var hours = 0
+    };
+    if(t[1]){
+      var minutes = t[1]
+    }else{
+      var minutes = 0
+    };
+    if(t[2]){
+      var sec = t[2].split(".");
+      var seconds = sec[0];
+      if(sec[1]){
+        var milliseconds = Number("0." + sec[1])*1000
+      }else if(t[3]){
+        var milliseconds = t[3];
+      }else{
+        var milliseconds = 0;
+      }
+    }else{
+      var seconds = 0;
+      var milliseconds = 0;
+    };
+  }
+  this.year = year;
+  this.month = month;
+  this.day = day;
+  this.hours = hours;
+  this.minutes = minutes;
+  this.seconds = seconds;
+  this.milliseconds = milliseconds;
+  this.date = new Date(Date.UTC(year, month-1, day, hours, minutes, seconds, milliseconds))
+  this.date.setUTCFullYear(year);
 }
 
 Orb.Time.prototype = {
 
   time_in_day: function(){
-    return this.hours/24 + this.minutes/1440 + this.seconds/86400;
+    return this.hours/24 + this.minutes/1440 + this.seconds/86400　+ this.milliseconds/86400000;
   },
 
   jd: function(){
@@ -43,7 +102,7 @@ Orb.Time.prototype = {
 
   gmst: function(){
     var rad = Orb.Constant.RAD
-    var time_in_sec = this.hours*3600 + this.minutes*60 + this.seconds;
+    var time_in_sec = this.hours*3600 + this.minutes*60 + this.seconds + this.milliseconds/1000;
     var jd = this.jd();
     var jd0 = jd-this.time_in_day();
     //gmst at 0:00
@@ -125,8 +184,8 @@ Orb.Time.prototype = {
 
   doy: function(){
     var d=this.date
-    var d0=new Date(Date.UTC(d.getFullYear()-1,11,31,0,0,0));
-    var doy=((d.getTime()-d.getTimezoneOffset()-d0.getTime())/(1000*60*60*24)).toFixed(8);
+    var d0=new Date(Date.UTC(d.getUTCFullYear()-1,11,31,0,0,0));
+    var doy=((d.getTime()-d.getTimezoneOffset()-d0.getTime())/(1000*60*60*24));
     return doy
   }
 }
