@@ -1,5 +1,10 @@
 //time.js
 //require core.js
+
+Math.trunc = Math.trunc || function(x) {
+  return x < 0 ? Math.ceil(x) : Math.floor(x);
+}
+
 Orb.Time = Orb.Time || function(date){
   if(!date){
     var d = new Date();
@@ -63,13 +68,13 @@ Orb.Time = Orb.Time || function(date){
       var milliseconds = 0;
     };
   }
-  this.year = year;
-  this.month = month;
-  this.day = day;
-  this.hours = hours;
-  this.minutes = minutes;
-  this.seconds = seconds;
-  this.milliseconds = milliseconds;
+  this.year = Number(year);
+  this.month = Number(month);
+  this.day = Number(day);
+  this.hours = Number(hours);
+  this.minutes = Number(minutes);
+  this.seconds = Number(seconds);
+  this.milliseconds = Number(milliseconds);
   this.date = new Date(Date.UTC(year, month-1, day, hours, minutes, seconds, milliseconds))
   this.date.setUTCFullYear(year);
 }
@@ -89,14 +94,15 @@ Orb.Time.prototype = {
       var year = year - 1;
       var month = month + 12;
     }
-    var julian_day = Math.floor(365.25*(year+4716))+Math.floor(30.6001*(month+1))+day-1524.5;
+    var julian_day = Math.trunc(365.25*(year+4716))+Math.trunc(30.6001*(month+1))+day-1524.5;
+
     if(julian_day<2299160.5){
       var transition_offset=0;
     }else{
       var tmp = Math.floor(year/100);
       var transition_offset=2-tmp+Math.floor(tmp/4);
     }
-    var jd=julian_day+transition_offset + time_in_day;
+    var jd=julian_day + transition_offset + time_in_day;
     return jd;
   },
 
