@@ -2,76 +2,32 @@
 //require core.js
 Orb.Time = Orb.Time || function(date){
   if(!date){
-    var d = new Date();
-  }else{
-    var d = date;
+    var date = new Date();
   }
-  var date_constructor = d.constructor;
-  if(date_constructor == Date){
-    var date = d;
-    var year = d.getUTCFullYear();
-    var month = d.getUTCMonth()+1;
-    var day =  d.getUTCDate();
-    var hours =  d.getUTCHours();
-    var minutes = d.getUTCMinutes();
-    var seconds = d.getUTCSeconds();
-    var milliseconds = d.getUTCMilliseconds()
-  }else if(date_constructor == String){
-    var str = date.split('Z')[0];
-    str.match(/(T|_| )/i);
-    var dt=str.split(RegExp.$1);
-    var dt0 = dt[0]
-    if(dt0.match(/\./i)){
-      var d = dt0.split(".");
-    }else{
-      var d = dt0.split("-");
+  if(date.constructor.name == "Date"){
+    var d = {
+      date:date,
+      year:date.getUTCFullYear(),
+      month:date.getUTCMonth()+1,
+      day:date.getUTCDate(),
+      hours:date.getUTCHours(),
+      minutes:date.getUTCMinutes(),
+      seconds:date.getUTCMinutes(),
+      milliseconds:date.getUTCMilliseconds()
     }
-    if(d.length>3){
-      d.shift()
-      d[0] = 0-Number(d[0]);
-    }
-    if(dt[1]){
-      var t = dt[1].split(":");
-    }else{
-      var t = [];
-    }
-    var year = d[0];
-    var month = d[1];
-    var day = d[2];
-    if(t[0]){
-      var hours = t[0]
-    }else{
-      var hours = 0
-    };
-    if(t[1]){
-      var minutes = t[1]
-    }else{
-      var minutes = 0
-    };
-    if(t[2]){
-      var sec = t[2].split(".");
-      var seconds = sec[0];
-      if(sec[1]){
-        var milliseconds = Number("0." + sec[1])*1000
-      }else if(t[3]){
-        var milliseconds = t[3];
-      }else{
-        var milliseconds = 0;
-      }
-    }else{
-      var seconds = 0;
-      var milliseconds = 0;
-    };
+  }else if(date.constructor.name == "String"){
+    var d = Orb.StringToDate(date)
+  }else if(date.constructor.name == "Array"){
+    var d = Orb.ArrayToDate(date)
   }
-  this.year = year;
-  this.month = month;
-  this.day = day;
-  this.hours = hours;
-  this.minutes = minutes;
-  this.seconds = seconds;
-  this.milliseconds = milliseconds;
-  this.date = new Date(Date.UTC(year, month-1, day, hours, minutes, seconds, milliseconds))
-  this.date.setUTCFullYear(year);
+  this.date = d.date;
+  this.year = d.year;
+  this.month = d.month;
+  this.day =  d.day;
+  this.hours =  d.hours;
+  this.minutes = d.minutes;
+  this.seconds = d.seconds;
+  this.milliseconds = d.milliseconds;
 }
 
 Orb.Time.prototype = {
@@ -188,4 +144,94 @@ Orb.Time.prototype = {
     var doy=((d.getTime()-d.getTimezoneOffset()-d0.getTime())/(1000*60*60*24));
     return doy
   }
+};
+
+Orb.ArrayToDate = Orb.ArrayToDate || function(array){
+  // NOTE: month must be actural month 1-12 not month index of JavaScript 0-11
+  var year = array[0];
+  var month = array[1];
+  var day = array[2];
+  var hours = array[3];
+  var minutes = array[4];
+  var seconds = array[5];
+  var milliseconds = array[6];
+  var date = new Date(Date.UTC(year, month-1, day, hours, minutes, seconds, milliseconds))
+  date.setUTCFullYear(year);
+  return {
+    date:date,
+    year:year,
+    month:month,
+    day:day,
+    hours:hours,
+    minutes:minutes,
+    seconds:seconds,
+    milliseconds:milliseconds
+  };
+}
+
+Orb.StringToDate = Orb.StringToDate || function(str){
+  // Date & Time separator must be "T" or " "(space)
+  // Date separator must be "-" or "." 
+  // Time separetor must be "."
+  // Accept negative year. Year 0 = B.C 1, year -1 = B.C. 2  
+  // exsample
+  // (-)YYYY-MM-DDThh:mm:ss.sssZ
+  // (-)YYYY.MM.DD hh:mm:ss.sssZ
+  var str = str.split('Z')[0];
+  str.match(/(T|_| )/i);
+  var dt=str.split(RegExp.$1);
+  var dt0 = dt[0]
+  if(dt0.match(/\./i)){
+    var d = dt0.split(".");
+  }else{
+    var d = dt0.split("-");
+  }
+  if(d.length>3){
+    d.shift()
+    d[0] = 0-Number(d[0]);
+  }
+  if(dt[1]){
+    var t = dt[1].split(":");
+  }else{
+    var t = [];
+  }
+  var year = d[0];
+  var month = d[1];
+  var day = d[2];
+  if(t[0]){
+    var hours = t[0]
+  }else{
+    var hours = 0
+  };
+  if(t[1]){
+    var minutes = t[1]
+  }else{
+    var minutes = 0
+  };
+  if(t[2]){
+    var sec = t[2].split(".");
+    var seconds = sec[0];
+    if(sec[1]){
+      var milliseconds = Number("0." + sec[1])*1000
+    }else if(t[3]){
+      var milliseconds = t[3];
+    }else{
+      var milliseconds = 0;
+    }
+  }else{
+    var seconds = 0;
+    var milliseconds = 0;
+  };
+  var date = new Date(Date.UTC(year, month-1, day, hours, minutes, seconds, milliseconds))
+  date.setUTCFullYear(year);
+  return {
+    date:date,
+    year:year,
+    month:month,
+    day:day,
+    hours:hours,
+    minutes:minutes,
+    seconds:seconds,
+    milliseconds:milliseconds
+  };
 }

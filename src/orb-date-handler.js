@@ -1,47 +1,14 @@
 Orb = Orb || {};
 // orb-date-handler.js
 
-Orb.DigitsToDate = Orb.DigitsToDate || function(digits){
-  var year =Number(digits.substring(0,4));
-  var month = Number(digits.substring(4,6));
-  var day = Number(digits.substring(6,8));
-  if(digits.length>8){
-    var hour = Number(digits.substring(8,10));
-  }else{
-    var hour = 0;
-  }
-  if(digits.length>10){
-    var min = Number(digits.substring(10,12));
-  }else{
-    var min = 0;
-  }
-  if(digits.length>12){
-    var sec = Number(digits.substring(12,14));
-  }else{
-    var sec = 0;
-  }
-  var date = new Date();
-  date.setTime(Date.UTC(year,month-1,day,hour,min,sec))
-  return date;
-}
-
-Orb.DateToDigits = Orb.DateToDigits || function(date){
-  var year = String(date.getUTCFullYear());
-  var month = String(date.getUTCMonth()+1);
-  if (month<10){month = "0" + month}
-  var day = String(date.getUTCDate());
-  if (day<10){day = "0" + day}
-  var hour = String(date.getUTCHours());
-  if (hour<10){hour = "0" + hour}
-  var min = String(date.getUTCMinutes())
-  if (min<10){min = "0" + min}
-  var sec = String(date.getUTCSeconds());
-  if (sec<10){sec = "0" + sec}
-  var digits = year+month+day+hour+min+sec;
-  return digits;
-}
-
 Orb.StringToDate = Orb.StringToDate || function(str){
+  // Date & Time separator must be "T" or " "(space)
+  // Date separator must be "-" or "." 
+  // Time separetor must be "."
+  // Accept negative year. Year 0 = B.C 1, year -1 = B.C. 2  
+  // exsample
+  // (-)YYYY-MM-DDThh:mm:ss.sssZ
+  // (-)YYYY.MM.DD hh:mm:ss.sssZ
   var str = str.split('Z')[0];
   str.match(/(T|_| )/i);
   var dt=str.split(RegExp.$1);
@@ -89,8 +56,58 @@ Orb.StringToDate = Orb.StringToDate || function(str){
   };
   var date = new Date(Date.UTC(year, month-1, day, hours, minutes, seconds, milliseconds))
   date.setUTCFullYear(year);
+  return {
+    date:date,
+    month:month,
+    day:day,
+    hours:hours,
+    minutes:minutes,
+    seconds:seconds,
+    milliseconds:milliseconds
+  };
+}
+
+Orb.DigitsToDate = Orb.DigitsToDate || function(digits){
+  var year =Number(digits.substring(0,4));
+  var month = Number(digits.substring(4,6));
+  var day = Number(digits.substring(6,8));
+  if(digits.length>8){
+    var hour = Number(digits.substring(8,10));
+  }else{
+    var hour = 0;
+  }
+  if(digits.length>10){
+    var min = Number(digits.substring(10,12));
+  }else{
+    var min = 0;
+  }
+  if(digits.length>12){
+    var sec = Number(digits.substring(12,14));
+  }else{
+    var sec = 0;
+  }
+  var date = new Date();
+  date.setTime(Date.UTC(year,month-1,day,hour,min,sec))
   return date;
 }
+
+Orb.DateToDigits = Orb.DateToDigits || function(date){
+  var year = String(date.getUTCFullYear());
+  var month = String(date.getUTCMonth()+1);
+  if (month<10){month = "0" + month}
+  var day = String(date.getUTCDate());
+  if (day<10){day = "0" + day}
+  var hour = String(date.getUTCHours());
+  if (hour<10){hour = "0" + hour}
+  var min = String(date.getUTCMinutes())
+  if (min<10){min = "0" + min}
+  var sec = String(date.getUTCSeconds());
+  if (sec<10){sec = "0" + sec}
+  var digits = year+month+day+hour+min+sec;
+  return digits;
+}
+
+
 
 Orb.FormatUTCDate = Orb.FormatUTCDate || function(date){
   var year = date.getUTCFullYear()
