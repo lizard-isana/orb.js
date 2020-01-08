@@ -324,14 +324,14 @@ Orb.Cartesian() is same as above
     //initialize
     var orbital_elements = new Orb.CartesianToKeplerian({
       "gm": 2.9591220828559093*Math.pow(10,-4), //au^3/d^2
-      "date":date // or epoch: 2457754.5,
+      "date":date, // or epoch: 2457754.5,
       "x": 0.0830237594569403,
       "y": -3.1268511124864538,
       "z": 4.499475953917434,
       "xdot": -0.002473803722068218,
       "ydot": 0.009696903602742064,
       "zdot": -0.015396150337498575
-    }
+    })
 
     // returns keplerian orbital elements
 
