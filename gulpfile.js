@@ -34,10 +34,10 @@ const src = {
   ]
 }
 
-const concat = function (done) {
+const concat_scripts = function (done) {
   gulp.src(src.all)
     .pipe(concat('orb.v2.js'))
-    .pipe(src.gulp.dest('./build'));
+    .pipe(gulp.dest('./build'));
 
   gulp.src(src.core)
     .pipe(concat('orb-core.v2.js'))
@@ -54,7 +54,7 @@ const concat = function (done) {
   return
 }
 
-const copy = function (done) {
+const copy_scripts = function (done) {
   var supplement = [
     "src/orb-date-handler.js",
     "src/orb-data-handler.js"
@@ -64,7 +64,7 @@ const copy = function (done) {
 };
 
 
-const minify = function (done) {
+const minify_scripts = function (done) {
 
   return gulp.src("./build/*.js")
     .pipe(uglify())
@@ -74,4 +74,4 @@ const minify = function (done) {
     .pipe(gulp.dest('./build/min'));
 };
 
-exports.build = gulp.series(concat, copy, minify);
+exports.build = gulp.series(concat_scripts, copy_scripts, minify_scripts);
