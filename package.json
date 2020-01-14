@@ -1,0 +1,32 @@
+{
+  "name": "orb.js",
+  "version": "2.0.0",
+  "description": "JavaScript library for astronomical calculations",
+  "main": "orb.v2.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lizard-isana/orb.js.git"
+  },
+  "author": "Isana Kashiwai",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lizard-isana/orb.js/issues"
+  },
+  "homepage": "https://github.com/lizard-isana/orb.js",
+  "devDependencies": {
+    "@babel/core": "^7.6.4",
+    "@babel/preset-env": "^7.6.3",
+    "babel": "^6.23.0",
+    "babel-cli": "^6.26.0",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-rename": "^1.4.0",
+    "gulp-uglify": "^3.0.2",
+    "uglify-es": "^3.3.9",
+    "uglify-save-license": "^0.4.1"
+  }
+}
