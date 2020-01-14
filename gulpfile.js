@@ -5,6 +5,7 @@ var concat = require("gulp-concat");
 
 const src = {
   all: [
+    './src/orb.js',
     './src/core.js',
     './src/time.js',
     './src/earth.js',
