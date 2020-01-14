@@ -222,7 +222,8 @@ Orb.Cartesian()と書いても同じです。
       mean_anomaly: 191.04774671275925,
       mean_motion: 0.6718296791172355,
       time_of_periapsis: 2458005.9807823156,
-      argument_of_periapsis: 241.53003549784427
+      argument_of_periapsis: 241.53003549784427,
+      "periapsis_distance": 0.2544723709438983
     }
 
 ## orb-satelite.v2.js
