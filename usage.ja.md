@@ -32,11 +32,11 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 
 ## CDN
 
-    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.2/build/orb.v2.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.3/build/orb.v2.js"></script>
 
 or minified file
 
-    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.2/build/min/orb.v2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.3/build/min/orb.v2.min.js"></script>
 
 
 ## Examples
