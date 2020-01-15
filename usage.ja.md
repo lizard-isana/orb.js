@@ -15,13 +15,13 @@
 すべての関数が含まれた全部入りバージョンです
 
 **orb-core.v2.js**:  
-orb.v2.jsから各関数が依存している関数だけを抜き出したもの。以下のorb-satellite.v2.jsやorb-planetary.v2.jsはこのファイルに依存します。
+orb.v2.jsから時刻変換、座標変換に必要な関数を抜き出したもの。
 
 **orb-satellite.v2.js**:  
-orb.v2.jsから人工衛星の計算に必要な関数を抜き出したもの。"orb-core.v2.js"と同時に使う必要があります。
+orb.v2.jsから人工衛星の計算に必要な関数を抜き出したもの。
 
 **orb-planetary.v2.js**:  
-orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関数を抜き出したもの。"orb-core.v2.js"と同時に使う必要があります。
+orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関数を抜き出したもの。
 
 ### Supplemental
 **orb-data-handler.js**  

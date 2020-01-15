@@ -7,13 +7,13 @@
 all-in-one package
 
 **orb-core.v2.js**:  
-Truncated version of orb.js. Core functions for orb-satellite.v2.js or orb-planetary.v2.js.
+Truncated version of orb.js. If you only need calculations for time conversion or coordinate conversion, you can use this .js file
 
 **orb-satellite.v2.js**:  
-Truncated version of orb.js. If you only need calculations for artificial satellites or space debris, you use this .js file with orb-core.v2.js.
+Truncated version of orb.js. If you only need calculations for artificial satellites or space debris, you can use this .js file 
 
 **orb-planetary.v2.js**:  
-Truncated version of orb.js. If you only need calculations for planetary objects such as planets or asteroids, you use this .js file with orb-core.v2.js.
+Truncated version of orb.js. If you only need calculations for planetary objects such as planets or asteroids, you can use this .js file
 
 ## CDN
 

@@ -18,6 +18,7 @@ const src = {
     './src/vsop.js'
   ],
   core: [
+    './src/orb.js',
     './src/core.js',
     './src/time.js',
     './src/earth.js',
@@ -25,12 +26,24 @@ const src = {
     './src/observation.js'
   ],
   planetary: [
+    './src/orb.js',
+    './src/core.js',
+    './src/time.js',
+    './src/earth.js',
+    './src/coordinates.js',
+    './src/observation.js',
     './src/kepler.js',
     './src/sun.js',
     './src/luna.js',
     './src/vsop.js'
   ],
   satellite: [
+    './src/orb.js',
+    './src/core.js',
+    './src/time.js',
+    './src/earth.js',
+    './src/coordinates.js',
+    './src/observation.js',
     './src/sgp4.js'
   ]
 }
