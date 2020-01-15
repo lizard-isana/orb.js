@@ -25,6 +25,14 @@ Truncated version of orb.js. If you only need calculations for artificial satell
 **orb-planetary.v2.js**:  
 Truncated version of orb.js. If you only need calculations for planetary objects such as planets or asteroids, you use this .js file with orb-core.v2.js.
 
+## CDN
+
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.2/build/orb.v2.js"></script>
+
+or minified file
+
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.2/build/min/orb.v2.min.js"></script>
+
 ## Usage
   English: [usage.en.md](/usage.en.md)  
   日本語: [usage.ja.md](/usage.ja.md)
