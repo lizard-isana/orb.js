@@ -12,8 +12,11 @@
 // and the revision number is incremented when minor bugs are fixed.
 
 // for Name Space
-var Orb = Orb || {};
-
+var Orb = Orb || {
+  VERSION: "2.3.0 (20200115)",
+  AUTHOR: "Isana Kashiwai",
+  LICENSE: "MIT"
+};
 
 //core.js
 Orb.Constant = Orb.Constant || {
