@@ -30,6 +30,13 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 **orb-date-handler.js**  
 文字列と日付を相互変換するための関数です。"Orb."のプリフィックスがついていますが、orb.v2.jsと依存関係はありません。
 
+## CDN
+
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.2/build/orb.v2.js"></script>
+
+or minified file
+
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.2/build/min/orb.v2.min.js"></script>
 
 
 ## Examples
