@@ -44,7 +44,7 @@ or minified file
 
     // Position of the moon
     var luna = new Orb.Luna();
-    var xyz = luna.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+    var xyz = luna.xyz(date); // Earth centered ecliptic rectangular coordinates (x, y, z)
     var radec = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     // Apparent position of the Sun
