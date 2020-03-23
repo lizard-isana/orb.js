@@ -9,6 +9,7 @@ const src = {
     './src/core.js',
     './src/time.js',
     './src/earth.js',
+    './src/nutation.js',
     './src/coordinates.js',
     './src/observation.js',
     './src/sgp4.js',
@@ -22,6 +23,7 @@ const src = {
     './src/core.js',
     './src/time.js',
     './src/earth.js',
+    './src/nutation.js',
     './src/coordinates.js',
     './src/observation.js'
   ],
@@ -30,6 +32,7 @@ const src = {
     './src/core.js',
     './src/time.js',
     './src/earth.js',
+    './src/nutation.js',
     './src/coordinates.js',
     './src/observation.js',
     './src/kepler.js',
@@ -42,6 +45,7 @@ const src = {
     './src/core.js',
     './src/time.js',
     './src/earth.js',
+    './src/nutation.js',
     './src/coordinates.js',
     './src/observation.js',
     './src/sgp4.js'
