@@ -2,13 +2,14 @@ var gulp = require('gulp');
 var uglify = require('gulp-uglify');
 var rename = require("gulp-rename");
 var concat = require("gulp-concat");
-var sequence = require('run-sequence');
 
-gulp.task("concat", function() {
-  var all = [
+const src = {
+  all: [
+    './src/orb.js',
     './src/core.js',
     './src/time.js',
     './src/earth.js',
+    './src/nutation.js',
     './src/coordinates.js',
     './src/observation.js',
     './src/sgp4.js',
@@ -16,59 +17,79 @@ gulp.task("concat", function() {
     './src/sun.js',
     './src/luna.js',
     './src/vsop.js'
-  ];
-  gulp.src(all)
-    .pipe(concat('orb.v2.js'))
-    .pipe(gulp.dest('./build'));
-
-  var core = [
+  ],
+  core: [
+    './src/orb.js',
     './src/core.js',
     './src/time.js',
     './src/earth.js',
+    './src/nutation.js',
     './src/coordinates.js',
     './src/observation.js'
-  ];
-  gulp.src(core)
-    .pipe(concat('orb-core.v2.js'))
-    .pipe(gulp.dest('./build'));
-
-  var planetary = [
+  ],
+  planetary: [
+    './src/orb.js',
+    './src/core.js',
+    './src/time.js',
+    './src/earth.js',
+    './src/nutation.js',
+    './src/coordinates.js',
+    './src/observation.js',
     './src/kepler.js',
     './src/sun.js',
     './src/luna.js',
     './src/vsop.js'
-  ];
-  gulp.src(planetary)
+  ],
+  satellite: [
+    './src/orb.js',
+    './src/core.js',
+    './src/time.js',
+    './src/earth.js',
+    './src/nutation.js',
+    './src/coordinates.js',
+    './src/observation.js',
+    './src/sgp4.js'
+  ]
+}
+
+const concat_scripts = function (done) {
+  gulp.src(src.all)
+    .pipe(concat('orb.v2.js'))
+    .pipe(gulp.dest('./build'));
+
+  gulp.src(src.core)
+    .pipe(concat('orb-core.v2.js'))
+    .pipe(gulp.dest('./build'));
+
+  gulp.src(src.planetary)
     .pipe(concat('orb-planetary.v2.js'))
     .pipe(gulp.dest('./build'));
 
-  var satellite = [
-    './src/sgp4.js'
-  ];
-  gulp.src(satellite)
+  gulp.src(src.satellite)
     .pipe(concat('orb-satellite.v2.js'))
     .pipe(gulp.dest('./build'));
+  done()
+  return
+}
 
-});
-
-gulp.task('copy', function() {
+const copy_scripts = function (done) {
   var supplement = [
     "src/orb-date-handler.js",
     "src/orb-data-handler.js"
   ]
   return gulp.src(supplement)
     .pipe(gulp.dest('./build'));
-});
+};
 
-gulp.task('minify',function() {
-    return gulp.src("./build/*.js")
-        .pipe(uglify())
-        .pipe(rename({
-          extname: '.min.js'
-        }))
-        .pipe(gulp.dest('./build/min'));
-});
 
-gulp.task('build', function() {
-  sequence('concat', 'copy','minify');
-});
+const minify_scripts = function (done) {
+
+  return gulp.src("./build/*.js")
+    .pipe(uglify())
+    .pipe(rename({
+      extname: '.min.js'
+    }))
+    .pipe(gulp.dest('./build/min'));
+};
+
+exports.build = gulp.series(concat_scripts, copy_scripts, minify_scripts);

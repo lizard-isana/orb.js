@@ -1,8 +1,8 @@
 {
   "name": "orb.js",
-  "version": "2.1.0",
-  "description": "JavaScript Library for Astronomical Calculations",
-  "main": "gulpfiles.js",
+  "version": "2.0.0",
+  "description": "JavaScript library for astronomical calculations",
+  "main": "orb.v2.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,29 +15,16 @@
   "bugs": {
     "url": "https://github.com/lizard-isana/orb.js/issues"
   },
-  "homepage": "https://github.com/lizard-isana/orb.js#readme",
+  "homepage": "https://github.com/lizard-isana/orb.js",
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-es2015-rollup": "^3.0.0",
-    "graceful-fs": "^4.1.11",
-    "gulp": "^3.9.1",
-    "gulp-babel": "^7.0.0",
+    "@babel/core": "^7.8.3",
+    "@babel/preset-env": "^7.8.3",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
     "gulp-concat": "^2.6.1",
-    "gulp-file": "^0.3.0",
-    "gulp-plumber": "^1.1.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^3.0.0",
-    "jshint": "^2.9.5",
-    "minimatch": "^3.0.4",
-    "rollup": "^0.51.2",
-    "rollup-plugin-babel": "^3.0.2",
-    "rollup-plugin-commonjs": "^8.2.6",
-    "rollup-plugin-node-resolve": "^3.0.0",
-    "run-sequence": "^2.2.0"
-  },
-  "dependencies": {
-    "gulp-jshint": "^2.0.4"
+    "gulp-rename": "^1.4.0",
+    "gulp-uglify": "^3.0.2",
+    "uglify-es": "^3.3.9",
+    "uglify-save-license": "^0.4.1"
   }
 }

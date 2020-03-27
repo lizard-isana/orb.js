@@ -15,13 +15,13 @@
 すべての関数が含まれた全部入りバージョンです
 
 **orb-core.v2.js**:  
-orb.v2.jsから各関数が依存している関数だけを抜き出したもの。以下のorb-satellite.v2.jsやorb-planetary.v2.jsはこのファイルに依存します。
+orb.v2.jsから時刻変換、座標変換に必要な関数を抜き出したもの。
 
 **orb-satellite.v2.js**:  
-orb.v2.jsから人工衛星の計算に必要な関数を抜き出したもの。"orb-core.v2.js"と同時に使う必要があります。
+orb.v2.jsから人工衛星の計算に必要な関数を抜き出したもの。
 
 **orb-planetary.v2.js**:  
-orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関数を抜き出したもの。"orb-core.v2.js"と同時に使う必要があります。
+orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関数を抜き出したもの。
 
 ### Supplemental
 **orb-data-handler.js**  
@@ -30,6 +30,13 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 **orb-date-handler.js**  
 文字列と日付を相互変換するための関数です。"Orb."のプリフィックスがついていますが、orb.v2.jsと依存関係はありません。
 
+## CDN
+
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.3/build/orb.v2.js"></script>
+
+or minified file
+
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.3/build/min/orb.v2.min.js"></script>
 
 
 ## Examples
@@ -222,7 +229,8 @@ Orb.Cartesian()と書いても同じです。
       mean_anomaly: 191.04774671275925,
       mean_motion: 0.6718296791172355,
       time_of_periapsis: 2458005.9807823156,
-      argument_of_periapsis: 241.53003549784427
+      argument_of_periapsis: 241.53003549784427,
+      "periapsis_distance": 0.2544723709438983
     }
 
 ## orb-satelite.v2.js

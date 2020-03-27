@@ -7,13 +7,22 @@
 all-in-one package
 
 **orb-core.v2.js**:  
-Truncated version of orb.js. Core functions for orb-satellite.v2.js or orb-planetary.v2.js.
+Truncated version of orb.js. If you only need calculations for time conversion or coordinate conversion, you can use this .js file
 
 **orb-satellite.v2.js**:  
-Truncated version of orb.js. If you only need calculations for artificial satellites or space debris, you use this .js file with orb-core.v2.js.
+Truncated version of orb.js. If you only need calculations for artificial satellites or space debris, you can use this .js file 
 
 **orb-planetary.v2.js**:  
-Truncated version of orb.js. If you only need calculations for planetary objects such as planets or asteroids, you use this .js file with orb-core.v2.js.
+Truncated version of orb.js. If you only need calculations for planetary objects such as planets or asteroids, you can use this .js file
+
+## CDN
+
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.3/build/orb.v2.js"></script>
+
+or minified file
+
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.3/build/min/orb.v2.min.js"></script>
+
 
 ## Example
     var date = new Date();
@@ -324,14 +333,14 @@ Orb.Cartesian() is same as above
     //initialize
     var orbital_elements = new Orb.CartesianToKeplerian({
       "gm": 2.9591220828559093*Math.pow(10,-4), //au^3/d^2
-      "date":date // or epoch: 2457754.5,
+      "date":date, // or epoch: 2457754.5,
       "x": 0.0830237594569403,
       "y": -3.1268511124864538,
       "z": 4.499475953917434,
       "xdot": -0.002473803722068218,
       "ydot": 0.009696903602742064,
       "zdot": -0.015396150337498575
-    }
+    })
 
     // returns keplerian orbital elements
 
@@ -345,7 +354,8 @@ Orb.Cartesian() is same as above
       mean_anomaly: 191.04774671275925,
       mean_motion: 0.6718296791172355,
       time_of_periapsis: 2458005.9807823156,
-      argument_of_periapsis: 241.53003549784427
+      "argument_of_periapsis": 241.53003549784427,
+      "periapsis_distance": 0.2544723709438983
     }
 
 "gm" has default value "2.9591220828559093E-4" so you can omit "gm" for the Sun.
