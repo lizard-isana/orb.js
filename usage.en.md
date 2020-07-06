@@ -34,7 +34,7 @@ or minified file
 
     // Position of the moon
     var luna = new Orb.Luna();
-    var xyz = luna.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+    var xyz = luna.xyz(date); // Earth centered ecliptic rectangular coordinates (x, y, z)
     var radec = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     // Apparent position of the Sun
@@ -373,14 +373,14 @@ Orb.Cartesian() is same as above
 
 ### Orb.Luna()
 Position and Phase of the moon seen from the Earth.
-Please note: xyz() returns Earth centered "equatorial" rectangular coordinates not "ecliptic"
+Please note: xyz() returns Earth centered "ecliptic" rectangular coordinates not "equatorial"
 
     //initialize
     var luna = new Orb.Luna();
     // var luna = new Orb.Moon();
     // this is same as above
 
-    var xyz = luna.xyz(date); // x, y, z -> equatorial rectangular coordinates (Earth centered)
+    var xyz = luna.xyz(date); // x, y, z -> ecliptic rectangular coordinates (Earth centered)
     var radec = luna.radec(date); // ra, dec, distance -> equatorial spherical coordinates
 
 ### Orb.Sun()

@@ -50,7 +50,7 @@ or minified file
 
     // 月位置
     var luna = new Orb.Luna();
-    var xyz = luna.xyz(date); // equatorial rectangular coordinates (x, y, z)
+    var xyz = luna.xyz(date); // ecliptic rectangular coordinates (x, y, z)
     var radec = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
     // 太陽視位置
@@ -168,10 +168,10 @@ or minified file
 
 
 ### 月の位置(Orb.Luna)
-地球から見た月の位置を計算します。
+地球から見た月の位置を計算します。xyz()の戻り値が地心黄道座標であることに注意してください。
 
     var luna = new Orb.Luna();
-    var xyz = luna.xyz(date); // equatorial rectangular coordinates (x, y, z)
+    var xyz = luna.xyz(date); // Earth centered ecliptic rectangular coordinates (x, y, z)
     var radec = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
 ### 太陽の視位置（Orb.Sun）
