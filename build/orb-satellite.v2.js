@@ -1,6 +1,6 @@
 // orb.js
 //
-// Orb 2.3.0 (20200115) - Javascript Library for Astronomical Calculation
+// Orb 2.3.1 (20200124) - Javascript Library for Astronomical Calculation
 //
 // Copyright (c) 2012 - 2020 KASHIWAI, Isana
 // Licensed under the MIT license (MIT-LICENSE),
@@ -13,7 +13,7 @@
 
 // for Name Space
 var Orb = Orb || {
-  VERSION: "2.3.0 (20200115)",
+  VERSION: "2.3.1 (20200124)",
   AUTHOR: "Isana Kashiwai",
   LICENSE: "MIT"
 };
