@@ -2458,7 +2458,25 @@ Orb.SGP4 = Orb.SGP4 || function (elements) {
     this.tle = this.elements;
     this.omm = this.TLE2OMM();
   }
-  this.orbital_elements = this.DecodeTLE();
+  var omm = this.omm;
+  this.orbital_elements = {
+    name: omm.OBJECT_NAME,
+    catalog_number: omm.NORAD_CAT_ID,
+    security_classification: omm.CLASSIFICATION_TYPE,
+    international_designator: omm.OBJECT_ID,
+    first_derivative_mean_motion: omm.MEAN_MOTION_DOT,
+    second_derivative_mean_motion: omm.MEAN_MOTION_DDOT,
+    bstar: omm.BSTAR,
+    ephemeris_type: omm.EPHEMERIS_TYPE,
+    element_number: omm.ELEMENT_SET_NO,
+    inclination: omm.INCLINATION,
+    right_ascension: omm.RA_OF_ASC_NODE,
+    eccentricity: omm.ECCENTRICITY,
+    argument_of_perigee: omm.ARG_OF_PERICENTER,
+    mean_anomaly: omm.MEAN_ANOMALY,
+    mean_motion: omm.MEAN_MOTION,
+    rev_number_at_epoch: omm.REV_AT_EPOCH
+  };
   this.sgp4 = this.SetSGP4()
   this.orbital_period = this.sgp4.orbital_period;
   this.apogee = this.sgp4.apogee;
