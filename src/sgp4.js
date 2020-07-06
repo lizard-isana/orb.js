@@ -3,7 +3,7 @@
 Orb.SGP4 = Orb.SGP4 || function (elements) {
   this.elements = elements;
   if (elements.CCSDS_OMM_VERS) {
-    this.mcc = elements;
+    this.omm = elements;
     this.tle = {
       name: elements.OBJECT_NAME,
       first_line: elements.USER_DEFINED_TLE_LINE1,
@@ -11,7 +11,7 @@ Orb.SGP4 = Orb.SGP4 || function (elements) {
     }
   } else {
     this.tle = this.elements;
-    this.mcc = this.TLE2MCC();
+    this.omm = this.TLE2OMM();
   }
   this.orbital_elements = this.DecodeTLE();
   this.sgp4 = this.SetSGP4()
@@ -22,7 +22,7 @@ Orb.SGP4 = Orb.SGP4 || function (elements) {
 
 Orb.SGP4.prototype = {
 
-  TLE2MCC: function () {
+  TLE2OMM: function () {
     var tle = this.tle;
     if (tle.name) {
       var name = tle.name;
@@ -47,7 +47,7 @@ Orb.SGP4.prototype = {
     var bstar = bstar_mantissa * bstar_exponent
     var mm_ddot = line1.substring(45, 52).split("-");
     var mean_motion_ddot = Number(mm_ddot[0]) * 10 ^ (0 - Number(mm_ddot[1]))
-    var mcc = {
+    var omm = {
       "CCSDS_OMM_VERS": "2.0",
       "COMMENT": "GENERATED VIA ORB.JS",
       "CREATION_DATE": creation_date,
@@ -77,7 +77,7 @@ Orb.SGP4.prototype = {
       "USER_DEFINED_TLE_LINE1": line1,
       "USER_DEFINED_TLE_LINE2": line2
     }
-    return mcc
+    return omm
   },
 
   DecodeTLE: function () {
@@ -126,8 +126,8 @@ Orb.SGP4.prototype = {
   },
 
   SetSGP4: function () {
-    var orbital_elements = this.orbital_elements;
-    var mcc = this.mcc;
+    //var orbital_elements = this.orbital_elements;
+    var omm = this.omm;
     var torad = Math.PI / 180;
     var ck2 = 5.413080e-4;
     var ck4 = 0.62098875e-6;
@@ -144,22 +144,13 @@ Orb.SGP4.prototype = {
     var pio2 = 1.57079633;
     var twopi = 6.2831853;
     var x3pio2 = 4.71238898;
-    var epoch = orbital_elements.epoch;
-    var epoch_year = orbital_elements.epoch_year;
-    //var bstar = orbital_elements.bstar;
-    var bstar = mcc.BSTAR;
-    //var xincl = orbital_elements["inclination"] * torad;
-    var xincl = mcc.INCLINATION * torad;
-    //var xnodeo = orbital_elements["right_ascension"] * torad;
-    var xnodeo = mcc.RA_OF_ASC_NODE * torad;
-    //var eo = orbital_elements["eccentricity"] * 1e-7;
-    var eo = mcc.ECCENTRICITY;
-    //var omegao = orbital_elements["argument_of_perigee"] * torad;
-    var omegao = mcc.ARG_OF_PERICENTER * torad;
-    //var xmo = orbital_elements["mean_anomaly"] * torad;
-    var xmo = mcc.MEAN_ANOMALY * torad;
-    //var xno = orbital_elements["mean_motion"] * 2.0 * Math.PI / 1440.0;
-    var xno = mcc.MEAN_MOTION * 2.0 * Math.PI / 1440.0;
+    var bstar = omm.BSTAR;
+    var xincl = omm.INCLINATION * torad;
+    var xnodeo = omm.RA_OF_ASC_NODE * torad;
+    var eo = omm.ECCENTRICITY;
+    var omegao = omm.ARG_OF_PERICENTER * torad;
+    var xmo = omm.MEAN_ANOMALY * torad;
+    var xno = omm.MEAN_MOTION * 2.0 * Math.PI / 1440.0;
     var a1 = Math.pow(xke / xno, tothrd);
     var cosio = Math.cos(xincl);
     var theta2 = cosio * cosio;
@@ -172,8 +163,7 @@ Orb.SGP4.prototype = {
     var delo = 1.5 * ck2 * x3thm1 / (ao * ao * betao * betao2);
     var xnodp = xno / (1.0 + delo); //original_mean_motion
     var aodp = ao / (1.0 - delo); //semi_major_axis
-    //var orbital_period = 1440.0 / Number(orbital_elements["mean_motion"]);
-    var orbital_period = 1440.0 / mcc.MEAN_MOTION;
+    var orbital_period = 1440.0 / omm.MEAN_MOTION;
     var isimp = 0;
     if ((aodp * (1.0 - eo) / ae) < (220.0 / xkmper + ae)) {
       isimp = 1;
@@ -237,13 +227,10 @@ Orb.SGP4.prototype = {
     }
     //set accesser
     return {
-      orbital_elements: orbital_elements,
-      mcc: mcc,
+      omm: omm,
       apogee: apogee,
       perigee: perigee,
       orbital_period: orbital_period,
-      epoch_year: epoch_year,
-      epoch: epoch,
       xmo: xmo,
       xmdot: xmdot,
       omegao: omegao,
@@ -289,23 +276,16 @@ Orb.SGP4.prototype = {
   ExecSGP4: function (time) {
     var rad = Orb.Constant.RAD
     var sgp4 = this.sgp4;
-    var mcc = this.mcc;
-    //var orbital_elements = this.orbital_elements;
-    var tsince = (function (time, mcc) {
-      var epoch_array = mcc.EPOCH.split("T");
+    var omm = this.omm;
+    var tsince = (function (time, omm) {
+      var epoch_array = omm.EPOCH.split("T");
       var epoch_date = epoch_array[0].split("-");
       var epoch_time = epoch_array[1].split(":");
-      /*
-      var epoch_year = orbital_elements.epoch_year;
-      var epoch = orbital_elements.epoch;
-      var year2 = epoch_year - 1;
-      */
       var now_sec = Date.UTC(time.year, time.month - 1, time.day, time.hours, time.minutes, time.seconds, time.milliseconds);
-      //var epoch_sec = Date.UTC(year2, 11, 31, 0, 0, 0) + (epoch * 24 * 60 * 60 * 1000);
       var epoch_sec = Date.UTC(Number(epoch_date[0]), Number(epoch_date[1]) - 1, Number(epoch_date[2]), Number(epoch_time[0]), Number(epoch_time[1]), Number(epoch_time[2]));
       var elapsed_time = (now_sec - epoch_sec) / (60 * 1000);
       return elapsed_time;
-    })(time, mcc)
+    })(time, omm)
     var xmo = sgp4.xmo;
     var xmdot = sgp4.xmdot;
     var omegao = sgp4.omegao;
