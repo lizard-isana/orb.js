@@ -283,7 +283,7 @@ Dateをメソッドに渡して位置を計算します。以下の例ではxyz(
      "unit_keywords":"degree km"]
     }
 
-### OMMによる人工衛星の位置(Orb.SGP4)
+### ORBIT MEAN-ELEMENTS MESSAGE(OMM)による人工衛星の位置(Orb.SGP4)
 OMM形式のJSONから地球周回軌道の人工衛星の位置を計算します。
 cf. ORBIT DATA MESSAGES(CCSDS 502.0-B-2) https://public.ccsds.org/pubs/502x0b2c1.pdf
 
