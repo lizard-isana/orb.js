@@ -101,6 +101,16 @@ Orb.RoundAngle = Orb.RoundAngle || function (degree) {
   return angle;
 }
 
+Orb.ZeroFill = function (num, length) {
+  if (length) {
+    var length = length;
+  } else {
+    var length = num.length;
+  }
+  var seed = "0000000000"
+  var str = seed + String(num)
+  return str.slice(0 - length)
+}
 //time.js
 //require core.js
 Orb.Time = Orb.Time || function (date) {
