@@ -319,7 +319,7 @@ TLEと同じようににOMMを以下のようにオブジェクトとしてOrb.S
       "USER_DEFINED_TLE_LINE1": "1 25544U 98067A   20176.97949255  .00000516  00000-0  17286-4 0  9996",
       "USER_DEFINED_TLE_LINE2": "2 25544  51.6446 309.8972 0002538  80.4322  66.5560 15.49457702233227"
     }
-    const satellite = new Orb.SGP4(tle);
+    const satellite = new Orb.SGP4(omm);
 
 
 ## orb-core.v2.js
