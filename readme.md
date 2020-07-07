@@ -24,11 +24,11 @@ Truncated version of orb.js. If you only need calculations for planetary objects
 
 ## CDN
 
-    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.4/build/orb.v2.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@v2.4/build/orb.v2.js"></script>
 
 or minified file
 
-    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.4/build/min/orb.v2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@v2.4/build/min/orb.v2.min.js"></script>
 
 ## Usage
   English: [usage.en.md](/usage.en.md)  
