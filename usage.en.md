@@ -292,18 +292,18 @@ Calc obliquity of Earth. This is wrapper function of Orb.NutationAndObliquity()
 ## orb-satellite.v2.js
 
 ### Orb.SGP4()
-Calc position of an Earth-orbiting object from Two Line Elements(TLE).
+Calc position of an Earth-orbiting object from Two Line Elements(TLE).  
+
     //initialize
     var tle = {
       first_line:"1 25544U 98067A   15012.59173611  .00014829  00000-0  23845-3 0  7179",
       second_line:"2 25544 051.6466 140.7335 0006107 243.2909 291.5211 15.53213268923827"
     }
     var satellite = new Orb.SGP4(tle);
-
     var xyz = satellite.xyz(date); // equatorial rectangular coordinates (Earth centered): x, y, z, xdot, ydot, zdot
     var latlng = satellite.latlng(date); // geographic spherical coordinates :  latitude, longitude, altitude, velocity
 
-ORBIT MEAN-ELEMENTS MESSAGE(OMM) format is also acceptable
+ORBIT MEAN-ELEMENTS MESSAGE(OMM) format is also acceptable  
 cf. ORBIT DATA MESSAGES(CCSDS 502.0-B-2) https://public.ccsds.org/pubs/502x0b2c1.pdf
 
     const omm = {
