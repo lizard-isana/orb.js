@@ -283,6 +283,45 @@ Dateをメソッドに渡して位置を計算します。以下の例ではxyz(
      "unit_keywords":"degree km"]
     }
 
+### OMMによる人工衛星の位置(Orb.SGP4)
+OMM形式のJSONから地球周回軌道の人工衛星の位置を計算します。
+cf. ORBIT DATA MESSAGES(CCSDS 502.0-B-2) https://public.ccsds.org/pubs/502x0b2c1.pdf
+
+TLEと同じようににOMMを以下のようにオブジェクトとしてOrb.SGP4()に渡して初期化します。TLEとOMMで処理を変える必要はありません（内部的には、"CCSDS_OMM_VERS"のヘッダの有無でTLEとOMMの判別をしています）。
+
+    const omm = {
+      "CCSDS_OMM_VERS": "2.0",
+      "COMMENT": "GENERATED VIA SPACE-TRACK.ORG API",
+      "CREATION_DATE": "2020-06-24 23:30:28",
+      "ORIGINATOR": "18 SPCS",
+      "OBJECT_NAME": "ISS (ZARYA)",
+      "OBJECT_ID": "1998-067A",
+      "CENTER_NAME": "EARTH",
+      "REF_FRAME": "TEME",
+      "TIME_SYSTEM": "UTC",
+      "MEAN_ELEMENT_THEORY": "SGP4",
+      "EPOCH": "2020-06-24T23:30:28",
+      "MEAN_MOTION": "15.49457702",
+      "ECCENTRICITY": "0.0002538",
+      "INCLINATION": "51.6446",
+      "RA_OF_ASC_NODE": "309.8972",
+      "ARG_OF_PERICENTER": "80.4322",
+      "MEAN_ANOMALY": "66.556",
+      "EPHEMERIS_TYPE": "0",
+      "CLASSIFICATION_TYPE": "U",
+      "NORAD_CAT_ID": "25544",
+      "ELEMENT_SET_NO": "999",
+      "REV_AT_EPOCH": "23322",
+      "BSTAR": "0.000017286",
+      "MEAN_MOTION_DOT": "0.00000516",
+      "MEAN_MOTION_DDOT": "0",
+      "USER_DEFINED_TLE_LINE0": "0 ISS (ZARYA)",
+      "USER_DEFINED_TLE_LINE1": "1 25544U 98067A   20176.97949255  .00000516  00000-0  17286-4 0  9996",
+      "USER_DEFINED_TLE_LINE2": "2 25544  51.6446 309.8972 0002538  80.4322  66.5560 15.49457702233227"
+    }
+    const satellite = new Orb.SGP4(tle);
+
+
 ## orb-core.v2.js
 
 ### 地平座標への変換(Orb.Observation)

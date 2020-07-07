@@ -289,7 +289,7 @@ Calc obliquity of Earth. This is wrapper function of Orb.NutationAndObliquity()
     var round = Orb.RoundAngle(degree) // returns 350
 
 
-## orb-satellite.v2.js (require orb-core.v2.js)
+## orb-satellite.v2.js
 
 ### Orb.SGP4()
 
@@ -302,6 +302,42 @@ Calc obliquity of Earth. This is wrapper function of Orb.NutationAndObliquity()
 
     var xyz = satellite.xyz(date); // equatorial rectangular coordinates (Earth centered): x, y, z, xdot, ydot, zdot
     var latlng = satellite.latlng(date); // geographic spherical coordinates :  latitude, longitude, altitude, velocity
+
+OMM(JSON) format is also acceptable
+cf. ORBIT DATA MESSAGES(CCSDS 502.0-B-2) https://public.ccsds.org/pubs/502x0b2c1.pdf
+
+    const omm = {
+      "CCSDS_OMM_VERS": "2.0",
+      "COMMENT": "GENERATED VIA SPACE-TRACK.ORG API",
+      "CREATION_DATE": "2020-06-24 23:30:28",
+      "ORIGINATOR": "18 SPCS",
+      "OBJECT_NAME": "ISS (ZARYA)",
+      "OBJECT_ID": "1998-067A",
+      "CENTER_NAME": "EARTH",
+      "REF_FRAME": "TEME",
+      "TIME_SYSTEM": "UTC",
+      "MEAN_ELEMENT_THEORY": "SGP4",
+      "EPOCH": "2020-06-24T23:30:28",
+      "MEAN_MOTION": "15.49457702",
+      "ECCENTRICITY": "0.0002538",
+      "INCLINATION": "51.6446",
+      "RA_OF_ASC_NODE": "309.8972",
+      "ARG_OF_PERICENTER": "80.4322",
+      "MEAN_ANOMALY": "66.556",
+      "EPHEMERIS_TYPE": "0",
+      "CLASSIFICATION_TYPE": "U",
+      "NORAD_CAT_ID": "25544",
+      "ELEMENT_SET_NO": "999",
+      "REV_AT_EPOCH": "23322",
+      "BSTAR": "0.000017286",
+      "MEAN_MOTION_DOT": "0.00000516",
+      "MEAN_MOTION_DDOT": "0",
+      "USER_DEFINED_TLE_LINE0": "0 ISS (ZARYA)",
+      "USER_DEFINED_TLE_LINE1": "1 25544U 98067A   20176.97949255  .00000516  00000-0  17286-4 0  9996",
+      "USER_DEFINED_TLE_LINE2": "2 25544  51.6446 309.8972 0002538  80.4322  66.5560 15.49457702233227"
+    }
+    const satellite = new Orb.SGP4(omm);
+
 
 ## orb-planetary.v2.js (require orb-core.v2.js)
 
