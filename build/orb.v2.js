@@ -2755,7 +2755,7 @@ Orb.SGP4.prototype = {
       var epoch_date = epoch_array[0].split("-");
       var epoch_time = epoch_array[1].split(":");
       var now_sec = Date.UTC(time.year, time.month - 1, time.day, time.hours, time.minutes, time.seconds, time.milliseconds);
-      var epoch_sec = Date.UTC(Number(epoch_date[0]), Number(epoch_date[1]) - 1, Number(epoch_date[2]), Number(epoch_time[0]), Number(epoch_time[1]), Number(epoch_time[2]));
+      var epoch_sec = Date.UTC(Number(epoch_date[0]), Number(epoch_date[1]) - 1, Number(epoch_date[2]), Number(epoch_time[0]), Number(epoch_time[1]), Number(epoch_time[2]), 0);
       var elapsed_time = (now_sec - epoch_sec) / (60 * 1000);
       return elapsed_time;
     })(time, omm)
