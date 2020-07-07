@@ -143,11 +143,7 @@ Orb.Luna.prototype = {
       distance: distance,
       obliquity: obliquity,
       "date": date,
-<<<<<<< HEAD
-      "coordinate_keywords": "equatoria spherical",
-=======
       "coordinate_keywords": "equatorial spherical",
->>>>>>> 980d009571f62ad38707c51619ec224ac79d36b4
       "unit_keywords": "degree hour km"
     }
   },
@@ -166,11 +162,7 @@ Orb.Luna.prototype = {
       y: y,
       z: z,
       "date": date,
-<<<<<<< HEAD
-      "coordinate_keywords": "equatorial rectangular",
-=======
       "coordinate_keywords": "ecliptic rectangular",
->>>>>>> 980d009571f62ad38707c51619ec224ac79d36b4
       "unit_keywords": "km"
     }
   },
