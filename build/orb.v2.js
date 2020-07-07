@@ -101,6 +101,16 @@ Orb.RoundAngle = Orb.RoundAngle || function (degree) {
   return angle;
 }
 
+Orb.ZeroFill = function (num, length) {
+  if (length) {
+    var length = length;
+  } else {
+    var length = num.length;
+  }
+  var seed = "0000000000"
+  var str = seed + String(num)
+  return str.slice(0 - length)
+}
 //time.js
 //require core.js
 Orb.Time = Orb.Time || function (date) {
@@ -2299,74 +2309,74 @@ Orb.EclipticToEquatorial = function (parameter) {
 }
 //observation.js
 //require core.js, time.js, coordinates.js, earth.js
-Orb.Observer = Orb.Observer || function (position) {
+Orb.Observer = Orb.Observer ||  function(position){
   var rad = Orb.Constant.RAD;
   var a = 6377.39715500; // earth radius
   var e2 = 0.006674372230614;
-  var n = a / (Math.sqrt(1 - e2 * Math.cos(position.latitude * rad)))
+  var n = a/(Math.sqrt(1-e2*Math.cos(position.latitude*rad)))
   this.latitude = position.latitude
   this.longitude = position.longitude
   this.altitude = position.altitude
 }
 Orb.Observer.prototype = {
 
-  rectangular: function (time) {
+  rectangular: function(time){
     var rad = Orb.Constant.RAD;
     var lat = this.latitude;
     var lng = this.longitude;
     var gmst = time.gmst();
-    var lst = gmst * 15 + lng;
+    var lst = gmst*15 + lng;
     var a = 6378.135 + this.altitude;  //Earth's equational radius in WGS-72 (km)
     var f = 0.00335277945 //Earth's flattening term in WGS-72 (= 1/298.26)
-    var sin_lat = Math.sin(lat * rad);
-    var c = 1 / Math.sqrt(1 + f * (f - 2) * sin_lat * sin_lat);
-    var s = (1 - f) * (1 - f) * c;
+    var sin_lat =Math.sin(lat*rad);
+    var c = 1/Math.sqrt(1+f*(f-2)*sin_lat*sin_lat);
+    var s = (1-f)*(1-f)*c;
     return {
-      x: a * c * Math.cos(lat * rad) * Math.cos(lst * rad),
-      y: a * c * Math.cos(lat * rad) * Math.sin(lst * rad),
-      z: a * s * Math.sin(lat * rad)
+      x: a*c*Math.cos(lat*rad)*Math.cos(lst*rad),
+      y: a*c*Math.cos(lat*rad)*Math.sin(lst*rad),
+      z: a*s*Math.sin(lat*rad)
     }
   }
 
 }
 
-Orb.Observation = Orb.Observation || function (param) {
+Orb.Observation = Orb.Observation || function(param){
   this.observer = param.observer;
   this.target = param.target;
 }
 
 Orb.Observation.prototype = {
 
-  RadecToHorizontal: function (time, radec) {
+  RadecToHorizontal: function(time,radec){
     var rad = Orb.Constant.RAD;
     var observer = this.observer;
     var ra = Number(radec.ra);
     var dec = Number(radec.dec);
-    if (radec.distance != undefined) {
+    if(radec.distance != undefined){
       var distance = Number(radec.distance);
-    } else {
+    }else{
       var distance = undefined
     }
     var latitude = Number(observer.latitude);
     var longitude = Number(observer.longitude);
     var altitutude = Number(observer.altitutude);
-    dec = dec * rad
+    dec = dec*rad
     var gmst = time.gmst();
-    var hour_angle = (gmst * 15 + longitude - (ra * 15));
-    var h = hour_angle * rad;
-    var lat = latitude * rad;
-    var azimuth = (Math.atan2(-Math.cos(dec) * Math.sin(h), Math.sin(dec) * Math.cos(lat) - Math.cos(dec) * Math.sin(lat) * Math.cos(h))) / rad;
-    var elevation = (Math.asin(Math.sin(dec) * Math.sin(lat) + Math.cos(lat) * Math.cos(dec) * Math.cos(h))) / rad;
-    if (azimuth < 0) {
-      azimuth = azimuth % 360 + 360
+    var hour_angle = (gmst*15 + longitude - (ra*15));
+    var h = hour_angle*rad;
+    var lat = latitude*rad;
+    var azimuth = (Math.atan2(-Math.cos(dec)*Math.sin(h),Math.sin(dec)*Math.cos(lat)-Math.cos(dec)*Math.sin(lat)*Math.cos(h)))/rad;
+    var elevation = (Math.asin(Math.sin(dec)*Math.sin(lat)+Math.cos(lat)*Math.cos(dec)*Math.cos(h)))/rad;
+    if (azimuth<0){
+      azimuth = azimuth%360 +360
     }
     return {
-      "azimuth": azimuth,
-      "elevation": elevation,
+      "azimuth" : azimuth,
+      "elevation" : elevation,
       "distance": distance
-    }
+     }
   },
-  RectToHorizontal: function (time, rect) {
+  RectToHorizontal: function(time,rect){
     var rad = Orb.Constant.RAD;
     var observer = this.observer;
     var lat = observer.latitude;
@@ -2377,67 +2387,67 @@ Orb.Observation.prototype = {
     var ry0 = rect.y - ob.y
     var rz0 = rect.z - ob.z
     var gmst = time.gmst();
-    var lst = gmst * 15 + lng;
-    var rs = Math.sin(lat * rad) * Math.cos(lst * rad) * rx0 + Math.sin(lat * rad) * Math.sin(lst * rad) * ry0 - Math.cos(lat * rad) * rz0;
-    var re = -Math.sin(lst * rad) * rx0 + Math.cos(lst * rad) * ry0;
-    var rz = Math.cos(lat * rad) * Math.cos(lst * rad) * rx0 + Math.cos(lat * rad) * Math.sin(lst * rad) * ry0 + Math.sin(lat * rad) * rz0;
-    var range = Math.sqrt(rs * rs + re * re + rz * rz);
-    var elevation = Math.asin(rz / range);
-    var azimuth = Math.atan2(-re, rs);
-    azimuth = azimuth / rad + 180;
-    if (azimuth > 360) {
-      azimuth = azimuth % 360;
+    var lst = gmst*15 + lng;
+    var rs = Math.sin(lat*rad)*Math.cos(lst*rad)*rx0 + Math.sin(lat*rad)*Math.sin(lst*rad)*ry0-Math.cos(lat*rad)*rz0;
+    var re = -Math.sin(lst*rad)*rx0 + Math.cos(lst*rad)*ry0;
+    var rz = Math.cos(lat*rad)*Math.cos(lst*rad)*rx0+Math.cos(lat*rad)*Math.sin(lst*rad)*ry0 + Math.sin(lat*rad)*rz0;
+    var range = Math.sqrt(rs*rs+re*re+rz*rz);
+    var elevation = Math.asin(rz/range);
+    var azimuth  = Math.atan2(-re,rs);
+    azimuth = azimuth/rad+180;
+    if (azimuth>360){
+      azimuth = azimuth%360;
     }
     return {
-      "azimuth": azimuth,
-      "elevation": elevation,
-      "distance": range
-    }
+    "azimuth" : azimuth,
+    "elevation" : elevation,
+    "distance": range
+   }
   },
-  azel: function (date) {
+  azel: function(date){
     var rad = Orb.Constant.RAD;
     var target = this.target;
     var observer = this.observer;
     var time = new Orb.Time(date)
-    function get_distance_unit(target) {
-      if (target.unit_keywords.match(/km/)) {
+    function get_distance_unit(target){
+      if(target.unit_keywords.match(/km/)){
         return "km"
-      } else if (target.unit_keywords.match(/au/)) {
+      }else if(target.unit_keywords.match(/au/)){
         return "au"
       }
     }
-    if (target.ra != undefined && target.dec != undefined) {
-      var horizontal = this.RadecToHorizontal(time, target)
+    if(target.ra != undefined && target.dec != undefined){
+      var horizontal = this.RadecToHorizontal(time,target)
       var distance_unit = "au"
-    } else if (target.x != undefined && target.y != undefined && target.z != undefined) {
-      if (target.coordinate_keywords.match(/ecliptic/)) {
-        if (target.date != undefined) {
+    }else if(target.x != undefined && target.y != undefined && target.z != undefined){
+      if(target.coordinate_keywords.match(/ecliptic/)){
+        if(target.date != undefined ){
           var target_date = target.date;
-        } else {
+        }else{
           var target_date = date;
         }
-        var rect = Orb.EclipticToEquatorial({ "date": target_date, "ecliptic": target })
-      } else {
+        var rect = Orb.EclipticToEquatorial({"date":target_date,"ecliptic":target})
+      }else{
         var rect = target
       }
-      var horizontal = this.RectToHorizontal(time, rect)
+      var horizontal = this.RectToHorizontal(time,rect)
       var distance_unit = get_distance_unit(rect)
-    } else if (target.radec != undefined) {
+    }else if(target.radec != undefined){
       var radec = target.radec(date)
-      var horizontal = this.RadecToHorizontal(time, radec)
+      var horizontal = this.RadecToHorizontal(time,radec)
       var distance_unit = get_distance_unit(radec)
-    } else if (target.xyz != undefined) {
+    }else if(target.xyz != undefined){
       var rect = target.xyz(date);
-      var horizontal = this.RectToHorizontal(time, rect)
+      var horizontal = this.RectToHorizontal(time,rect)
       var distance_unit = get_distance_unit(rect)
     }
 
     return {
-      "azimuth": horizontal.azimuth,
-      "elevation": horizontal.elevation,
+      "azimuth" : horizontal.azimuth,
+      "elevation" : horizontal.elevation,
       "distance": horizontal.distance,
-      "date": date,
-      "coordinate_keywords": "horizontal spherical",
+      "date":date,
+      "coordinate_keywords":"horizontal spherical",
       "unit_keywords": "degree" + " " + distance_unit
     }
   }
@@ -2445,9 +2455,38 @@ Orb.Observation.prototype = {
 
 //sgp4.js
 //require core.js, time.js
-Orb.SGP4 = Orb.SGP4 || function (tle) {
-  this.tle = tle;
-  this.orbital_elements = this.DecodeTLE();
+Orb.SGP4 = Orb.SGP4 || function (elements) {
+  this.elements = elements;
+  if (elements.CCSDS_OMM_VERS) {
+    this.omm = elements;
+    this.tle = {
+      name: elements.OBJECT_NAME,
+      first_line: elements.USER_DEFINED_TLE_LINE1,
+      second_line: elements.USER_DEFINED_TLE_LINE2
+    }
+  } else {
+    this.tle = this.elements;
+    this.omm = this.TLE2OMM();
+  }
+  var omm = this.omm;
+  this.orbital_elements = {
+    name: omm.OBJECT_NAME,
+    catalog_number: omm.NORAD_CAT_ID,
+    security_classification: omm.CLASSIFICATION_TYPE,
+    international_designator: omm.OBJECT_ID,
+    first_derivative_mean_motion: omm.MEAN_MOTION_DOT,
+    second_derivative_mean_motion: omm.MEAN_MOTION_DDOT,
+    bstar: omm.BSTAR,
+    ephemeris_type: omm.EPHEMERIS_TYPE,
+    element_number: omm.ELEMENT_SET_NO,
+    inclination: omm.INCLINATION,
+    right_ascension: omm.RA_OF_ASC_NODE,
+    eccentricity: omm.ECCENTRICITY,
+    argument_of_perigee: omm.ARG_OF_PERICENTER,
+    mean_anomaly: omm.MEAN_ANOMALY,
+    mean_motion: omm.MEAN_MOTION,
+    rev_number_at_epoch: omm.REV_AT_EPOCH
+  };
   this.sgp4 = this.SetSGP4()
   this.orbital_period = this.sgp4.orbital_period;
   this.apogee = this.sgp4.apogee;
@@ -2456,9 +2495,71 @@ Orb.SGP4 = Orb.SGP4 || function (tle) {
 
 Orb.SGP4.prototype = {
 
+  TLE2OMM: function () {
+    var tle = this.tle;
+    if (tle.name) {
+      var name = tle.name;
+    } else {
+      var name = "N/A";
+    }
+    var line1 = tle.first_line;
+    var line2 = tle.second_line;
+    var date = new Date();
+    var creation_date = date.getUTCFullYear() + "-" + Orb.ZeroFill(date.getUTCMonth() + 1, 2) + "-" + Orb.ZeroFill(date.getUTCDate(), 2) + " " + Orb.ZeroFill(date.getUTCHours(), 2) + ":" + Orb.ZeroFill(date.getUTCMinutes(), 2) + ":" + Orb.ZeroFill(date.getUTCSeconds(), 2);
+    var id = String(line1.slice(9, 18))
+    if (Number(id.slice(0, 2)) < 58) { var epystr = "20" } else { var epystr = "19" };
+    var international_designator = epystr + String(id.slice(0, 2)) + "-" + String(id.slice(2, 7))
+    var epy = Number(line1.slice(18, 20));
+    if (epy < 57) { var epoch_year = epy + 2000 } else { var epoch_year = epy + 1900 };
+    var doy = Number(line1.substring(20, 32))
+    var year2 = epoch_year - 1;
+    var epoch = new Date(Date.UTC(year2, 11, 31, 0, 0, 0) + (doy * 24 * 60 * 60 * 1000));
+    var epoch_str = epoch.getUTCFullYear() + "-" + Orb.ZeroFill(epoch.getUTCMonth() + 1, 2) + "-" + Orb.ZeroFill(epoch.getUTCDate(), 2) + "T" + Orb.ZeroFill(epoch.getUTCHours(), 2) + ":" + Orb.ZeroFill(epoch.getUTCMinutes(), 2) + ":" + Orb.ZeroFill(epoch.getUTCSeconds(), 2);
+    var bstar_mantissa = Number(line1.substring(53, 59)) * 1e-5;
+    var bstar_exponent = Number("1e" + Number(line1.substring(59, 61)));
+    var bstar = bstar_mantissa * bstar_exponent
+    var mm_ddot = line1.substring(45, 52).split("-");
+    var mean_motion_ddot = Number(mm_ddot[0]) * 10 ^ (0 - Number(mm_ddot[1]))
+    var omm = {
+      "CCSDS_OMM_VERS": "2.0",
+      "COMMENT": "GENERATED VIA ORB.JS",
+      "CREATION_DATE": creation_date,
+      "ORIGINATOR": "",
+      "OBJECT_NAME": name,
+      "OBJECT_ID": international_designator,
+      "CENTER_NAME": "EARTH",
+      "REF_FRAME": "TEME",
+      "TIME_SYSTEM": "UTC",
+      "MEAN_ELEMENT_THEORY": "SGP4",
+      "EPOCH": epoch_str,
+      "MEAN_MOTION": Number(line2.substring(52, 63)),
+      "ECCENTRICITY": Number(line2.substring(26, 33)) * 1e-7,
+      "INCLINATION": Number(line2.substring(8, 16)),
+      "RA_OF_ASC_NODE": Number(line2.substring(17, 25)),
+      "ARG_OF_PERICENTER": Number(line2.substring(34, 42)),
+      "MEAN_ANOMALY": Number(line2.substring(43, 51)),
+      "EPHEMERIS_TYPE": Number(line1.substring(62, 63)),
+      "CLASSIFICATION_TYPE": Number(line1.slice(7, 7)),
+      "NORAD_CAT_ID": Number(line1.slice(2, 6)),
+      "ELEMENT_SET_NO": Number(line1.substring(64, 68)),
+      "REV_AT_EPOCH": Number(line2.substring(64, 68)),
+      "BSTAR": bstar,
+      "MEAN_MOTION_DOT": Number(line1.substring(34, 43)),
+      "MEAN_MOTION_DDOT": mean_motion_ddot,
+      "USER_DEFINED_TLE_LINE0": "0 " + name,
+      "USER_DEFINED_TLE_LINE1": line1,
+      "USER_DEFINED_TLE_LINE2": line2
+    }
+    return omm
+  },
+
   DecodeTLE: function () {
     var tle = this.tle;
-    var name = tle.name;
+    if (tle.name) {
+      var name = tle.name;
+    } else {
+      var name = "N/A";
+    }
     var line1 = tle.first_line;
     var line2 = tle.second_line;
     var epy = Number(line1.slice(18, 20));
@@ -2498,7 +2599,8 @@ Orb.SGP4.prototype = {
   },
 
   SetSGP4: function () {
-    var orbital_elements = this.orbital_elements;
+    //var orbital_elements = this.orbital_elements;
+    var omm = this.omm;
     var torad = Math.PI / 180;
     var ck2 = 5.413080e-4;
     var ck4 = 0.62098875e-6;
@@ -2515,15 +2617,13 @@ Orb.SGP4.prototype = {
     var pio2 = 1.57079633;
     var twopi = 6.2831853;
     var x3pio2 = 4.71238898;
-    var epoch = orbital_elements.epoch;
-    var epoch_year = orbital_elements.epoch_year;
-    var bstar = orbital_elements.bstar;
-    var xincl = orbital_elements["inclination"] * torad;
-    var xnodeo = orbital_elements["right_ascension"] * torad;
-    var eo = orbital_elements["eccentricity"] * 1e-7;
-    var omegao = orbital_elements["argument_of_perigee"] * torad;
-    var xmo = orbital_elements["mean_anomaly"] * torad;
-    var xno = orbital_elements["mean_motion"] * 2.0 * Math.PI / 1440.0;
+    var bstar = omm.BSTAR;
+    var xincl = omm.INCLINATION * torad;
+    var xnodeo = omm.RA_OF_ASC_NODE * torad;
+    var eo = omm.ECCENTRICITY;
+    var omegao = omm.ARG_OF_PERICENTER * torad;
+    var xmo = omm.MEAN_ANOMALY * torad;
+    var xno = omm.MEAN_MOTION * 2.0 * Math.PI / 1440.0;
     var a1 = Math.pow(xke / xno, tothrd);
     var cosio = Math.cos(xincl);
     var theta2 = cosio * cosio;
@@ -2536,7 +2636,7 @@ Orb.SGP4.prototype = {
     var delo = 1.5 * ck2 * x3thm1 / (ao * ao * betao * betao2);
     var xnodp = xno / (1.0 + delo); //original_mean_motion
     var aodp = ao / (1.0 - delo); //semi_major_axis
-    var orbital_period = 1440.0 / Number(orbital_elements["mean_motion"]);
+    var orbital_period = 1440.0 / omm.MEAN_MOTION;
     var isimp = 0;
     if ((aodp * (1.0 - eo) / ae) < (220.0 / xkmper + ae)) {
       isimp = 1;
@@ -2600,12 +2700,10 @@ Orb.SGP4.prototype = {
     }
     //set accesser
     return {
-      orbital_elements: orbital_elements,
+      omm: omm,
       apogee: apogee,
       perigee: perigee,
       orbital_period: orbital_period,
-      epoch_year: epoch_year,
-      epoch: epoch,
       xmo: xmo,
       xmdot: xmdot,
       omegao: omegao,
@@ -2651,16 +2749,16 @@ Orb.SGP4.prototype = {
   ExecSGP4: function (time) {
     var rad = Orb.Constant.RAD
     var sgp4 = this.sgp4;
-    var orbital_elements = this.orbital_elements;
-    var tsince = (function (time, orbital_elements) {
-      var epoch_year = orbital_elements.epoch_year;
-      var epoch = orbital_elements.epoch;
-      var year2 = epoch_year - 1;
+    var omm = this.omm;
+    var tsince = (function (time, omm) {
+      var epoch_array = omm.EPOCH.split("T");
+      var epoch_date = epoch_array[0].split("-");
+      var epoch_time = epoch_array[1].split(":");
       var now_sec = Date.UTC(time.year, time.month - 1, time.day, time.hours, time.minutes, time.seconds, time.milliseconds);
-      var epoch_sec = Date.UTC(year2, 11, 31, 0, 0, 0) + (epoch * 24 * 60 * 60 * 1000);
+      var epoch_sec = Date.UTC(Number(epoch_date[0]), Number(epoch_date[1]) - 1, Number(epoch_date[2]), Number(epoch_time[0]), Number(epoch_time[1]), Number(epoch_time[2]));
       var elapsed_time = (now_sec - epoch_sec) / (60 * 1000);
       return elapsed_time;
-    })(time, orbital_elements)
+    })(time, omm)
     var xmo = sgp4.xmo;
     var xmdot = sgp4.xmdot;
     var omegao = sgp4.omegao;
@@ -2869,7 +2967,7 @@ Orb.SGP4.prototype = {
       "zdot": rect.zdot,
       "date": date,
       "coordinate_keywords": "equational rectangular",
-      "unit_keywords": "km"
+      "unit_keywords": "km km/s"
     }
   },
 
@@ -2884,7 +2982,7 @@ Orb.SGP4.prototype = {
       "velocity": geo.velocity,
       "date": date,
       "coordinate_keywords": "geographic spherical",
-      "unit_keywords": "degree km"
+      "unit_keywords": "degree km km/s"
     }
   }
 
