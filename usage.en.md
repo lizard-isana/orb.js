@@ -288,6 +288,11 @@ Calc obliquity of Earth. This is wrapper function of Orb.NutationAndObliquity()
     var degree = -10;
     var round = Orb.RoundAngle(degree) // returns 350
 
+### Orb.ZeroFill()
+
+    var num = 1;
+    var fill = Orb.ZeroFill(num,2) // returns 01
+    var fill = Orb.ZeroFill(num,4) // returns 0001
 
 ## orb-satellite.v2.js
 
