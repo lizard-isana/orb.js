@@ -2392,7 +2392,7 @@ Orb.Observation.prototype = {
     var re = -Math.sin(lst*rad)*rx0 + Math.cos(lst*rad)*ry0;
     var rz = Math.cos(lat*rad)*Math.cos(lst*rad)*rx0+Math.cos(lat*rad)*Math.sin(lst*rad)*ry0 + Math.sin(lat*rad)*rz0;
     var range = Math.sqrt(rs*rs+re*re+rz*rz);
-    var elevation = Math.asin(rz/range);
+    var elevation = Math.asin(rz/range)/rad;
     var azimuth  = Math.atan2(-re,rs);
     azimuth = azimuth/rad+180;
     if (azimuth>360){
