@@ -2347,11 +2347,9 @@ Orb.Observation = Orb.Observation || function(param){
 
 Orb.Observation.prototype = {
   AtmosphericRefraction:function(elevation){
-    var cot=function(x) {return 1/Math.tan(x)}
-    // Correction for Atmospheric refraction p = pressure(kPa), t = temperature(deg)
-    var p = 101, t=20
-    var arc = (p/101)*(283/(273+t))
-    var ar = (1.02*cot(elevation+(10.3/(elevation+5.11)))*arc)/60
+    var rad = Orb.Constant.RAD;
+    var tmp = elevation+7.31/(elevation + 4.4)
+    var ar = 0.0167*rad/(Math.tan(tmp*rad))/rad
     return ar
   },
   RadecToHorizontal: function(time,radec){
