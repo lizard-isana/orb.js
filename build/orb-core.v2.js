@@ -2346,7 +2346,14 @@ Orb.Observation = Orb.Observation || function(param){
 }
 
 Orb.Observation.prototype = {
-
+  AtmosphericRefraction:function(elevation){
+    var cot=function(x) {return 1/Math.tan(x)}
+    // Correction for Atmospheric refraction p = pressure(kPa), t = temperature(deg)
+    var p = 101, t=20
+    var arc = (p/101)*(283/(273+t))
+    var ar = (1.02*cot(elevation+(10.3/(elevation+5.11)))*arc)/60
+    return ar
+  },
   RadecToHorizontal: function(time,radec){
     var rad = Orb.Constant.RAD;
     var observer = this.observer;
@@ -2367,7 +2374,7 @@ Orb.Observation.prototype = {
     var lat = latitude*rad;
     var azimuth = (Math.atan2(-Math.cos(dec)*Math.sin(h),Math.sin(dec)*Math.cos(lat)-Math.cos(dec)*Math.sin(lat)*Math.cos(h)))/rad;
     var elevation = (Math.asin(Math.sin(dec)*Math.sin(lat)+Math.cos(lat)*Math.cos(dec)*Math.cos(h)))/rad;
-    var atmospheric_refraction = AtmosphericRefraction(elevation)
+    var atmospheric_refraction = this.AtmosphericRefraction(elevation)
     if (azimuth<0){
       azimuth = azimuth%360 +360
     }
@@ -2377,13 +2384,6 @@ Orb.Observation.prototype = {
       "distance": distance,
       "atmospheric_refraction":atmospheric_refraction
      }
-  },
-  AtmosphericRefraction:function(elevation){
-    var cot=function(x) {return 1/Math.tan(x)}
-    var p = 101, t=20
-    var arc = (p/101)*(283/(273+t)) // Correction for Atmospheric refraction p = pressure(kPa), t = temperature(deg)
-    var ar = (1.02*cot(elevation+(10.3/(elevation+5.11)))*arc)/60
-    return ar
   },
   RectToHorizontal: function(time,rect){
     var rad = Orb.Constant.RAD;
@@ -2402,7 +2402,7 @@ Orb.Observation.prototype = {
     var rz = Math.cos(lat*rad)*Math.cos(lst*rad)*rx0+Math.cos(lat*rad)*Math.sin(lst*rad)*ry0 + Math.sin(lat*rad)*rz0;
     var range = Math.sqrt(rs*rs+re*re+rz*rz);
     var elevation = Math.asin(rz/range)/rad;
-    var atmospheric_refraction = AtmosphericRefraction(elevation)
+    var atmospheric_refraction = this.AtmosphericRefraction(elevation)
     var azimuth  = Math.atan2(-re,rs);
     azimuth = azimuth/rad+180;
     if (azimuth>360){
