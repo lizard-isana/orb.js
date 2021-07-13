@@ -2362,7 +2362,7 @@ Orb.Observation.prototype = {
     }
     var latitude = Number(observer.latitude);
     var longitude = Number(observer.longitude);
-    var altitutude = Number(observer.altitutude);
+    var altitude = Number(observer.altitude);
     dec = dec*rad
     var gmst = time.gmst();
     var hour_angle = (gmst*15 + longitude - (ra*15));
@@ -2382,6 +2382,16 @@ Orb.Observation.prototype = {
      }
   },
   RectToHorizontal: function(time,rect){
+    function get_distance_unit(target){
+      if(target.unit_keywords.match(/km/)){
+        return " km"
+      }else if(target.unit_keywords.match(/au/)){
+        return " au"
+      }else{
+        return ""
+      }
+    }
+    var distance_unit = get_distance_unit(rect)
     var rad = Orb.Constant.RAD;
     var observer = this.observer;
     var lat = observer.latitude;
@@ -2408,7 +2418,9 @@ Orb.Observation.prototype = {
     "azimuth" : azimuth,
     "elevation" : elevation,
     "distance": range,
-    "atmospheric_refraction":atmospheric_refraction
+    "atmospheric_refraction":atmospheric_refraction,
+    "coordinate_keywords":"horizontal spherical",
+    "unit_keywords": "degree" + distance_unit
    }
   },
   azel: function(date){
@@ -2418,14 +2430,16 @@ Orb.Observation.prototype = {
     var time = new Orb.Time(date)
     function get_distance_unit(target){
       if(target.unit_keywords.match(/km/)){
-        return "km"
+        return " km"
       }else if(target.unit_keywords.match(/au/)){
-        return "au"
+        return " au"
+      }else{
+        return ""
       }
     }
     if(target.ra != undefined && target.dec != undefined){
       var horizontal = this.RadecToHorizontal(time,target)
-      var distance_unit = "au"
+      var distance_unit = " au"
     }else if(target.x != undefined && target.y != undefined && target.z != undefined){
       if(target.coordinate_keywords.match(/ecliptic/)){
         if(target.date != undefined ){
@@ -2456,7 +2470,7 @@ Orb.Observation.prototype = {
       "atmospheric_refraction":horizontal.atmospheric_refraction,
       "date":date,
       "coordinate_keywords":"horizontal spherical",
-      "unit_keywords": "degree" + " " + distance_unit
+      "unit_keywords": "degree" + distance_unit
     }
   }
 }
@@ -3867,7 +3881,12 @@ Orb.VSOP.prototype = {
 
   radec: function (date) {
     var target_pos = this.exec_vsop(date);
-    var rectangular = Orb.EclipticToEquatorial({ ecliptic: target_pos, date: date });
+    var rectangular = Orb.EclipticToEquatorial({
+      ecliptic: target_pos,
+      date: date,
+      "coordinate_keywords": "ecliptic rectangular",
+      "unit_keywords": "au"
+    });
     var spherical = Orb.XYZtoRadec(rectangular);
     return spherical;
   }
