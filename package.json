@@ -1,10 +1,11 @@
 {
   "name": "orb.js",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "JavaScript library for astronomical calculations",
-  "main": "orb.v2.js",
+  "main": "orb.v3.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c rollup.config.js"
   },
   "repository": {
     "type": "git",
@@ -16,15 +17,14 @@
     "url": "https://github.com/lizard-isana/orb.js/issues"
   },
   "homepage": "https://github.com/lizard-isana/orb.js",
+  "browserslist": [
+    "defaults,not ie 11,not ie_mob 11"
+  ],
   "devDependencies": {
-    "@babel/core": "^7.8.3",
-    "@babel/preset-env": "^7.8.3",
-    "gulp": "^4.0.2",
-    "gulp-babel": "^8.0.0",
-    "gulp-concat": "^2.6.1",
-    "gulp-rename": "^1.4.0",
-    "gulp-uglify": "^3.0.2",
-    "uglify-es": "^3.3.9",
-    "uglify-save-license": "^0.4.1"
+    "@babel/core": "^7.17.5",
+    "@babel/preset-env": "^7.16.11",
+    "@rollup/plugin-babel": "^5.3.1",
+    "rollup": "^2.70.0",
+    "rollup-plugin-terser": "^7.0.2"
   }
 }

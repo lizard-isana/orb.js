@@ -1,4 +1,7 @@
-# orb.js（v2）- JavaScript library for astronomical calculations
+# orb.js（v3）- JavaScript library for astronomical calculations
+
+
+**Experimental!**
 
 ***Please note: There is no compatibility v1 and v2.***
 

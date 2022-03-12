@@ -1,4 +1,6 @@
-# orb.js（v2）- JavaScript library for astronomical calculations
+# orb.js（v3）- JavaScript library for astronomical calculations
+
+**Experimental!**
 
 **orb.jsは主にブラウザ上で手軽に天体の位置計算を行うことを目的としたJavaScriptライブラリです。**  
 **※v1とv2ではメソッドや引数に大幅な修正が入っているため互換性がありません。くれぐれもご注意ください。**
