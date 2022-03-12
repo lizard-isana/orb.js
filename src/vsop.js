@@ -41,7 +41,12 @@ Orb.VSOP.prototype = {
 
   radec: function (date) {
     var target_pos = this.exec_vsop(date);
-    var rectangular = Orb.EclipticToEquatorial({ ecliptic: target_pos, date: date });
+    var rectangular = Orb.EclipticToEquatorial({
+      ecliptic: target_pos,
+      date: date,
+      "coordinate_keywords": "ecliptic rectangular",
+      "unit_keywords": "au"
+    });
     var spherical = Orb.XYZtoRadec(rectangular);
     return spherical;
   }

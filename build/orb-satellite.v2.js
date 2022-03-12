@@ -1,6 +1,6 @@
 // orb.js
 //
-// Orb 2.3.1 (20200124) - Javascript Library for Astronomical Calculation
+// Orb 2.4.0 (20200707) - Javascript Library for Astronomical Calculation
 //
 // Copyright (c) 2012 - 2020 KASHIWAI, Isana
 // Licensed under the MIT license (MIT-LICENSE),
@@ -13,7 +13,7 @@
 
 // for Name Space
 var Orb = Orb || {
-  VERSION: "2.3.1 (20200124)",
+  VERSION: "2.4.0 (20200707)",
   AUTHOR: "Isana Kashiwai",
   LICENSE: "MIT"
 };
@@ -2165,9 +2165,7 @@ Orb.NutationAndObliquity = Orb.NutationAndObliquity || function (date) {
   var dt = time.delta_t();
   //jd = jd + (dt / 86400);
   var t = (jd - 2451545.0) / 36525;
-  console.log(t)
   var omega = 125.04452 - 1934.136261 * t + 0.0020708 * t * t + (t * t * t / 450000);
-  console.log(omega)
   var L0 = 280.4665 + 36000.7698 * t;
   var L1 = 218.3165 + 481267.8813 * t;
   var nutation = (-17.20 / 3600) * Math.sin(omega * rad) - (-1.32 / 3600) * Math.sin(2 * L0 * rad) - (0.23 / 3600) * Math.sin(2 * L1 * rad) + (0.21 / 3600) * Math.sin(2 * omega * rad);
@@ -2346,7 +2344,12 @@ Orb.Observation = Orb.Observation || function(param){
 }
 
 Orb.Observation.prototype = {
-
+  AtmosphericRefraction:function(elevation){
+    var rad = Orb.Constant.RAD;
+    var tmp = elevation+7.31/(elevation + 4.4)
+    var ar = 0.0167*rad/(Math.tan(tmp*rad))/rad
+    return ar
+  },
   RadecToHorizontal: function(time,radec){
     var rad = Orb.Constant.RAD;
     var observer = this.observer;
@@ -2359,7 +2362,7 @@ Orb.Observation.prototype = {
     }
     var latitude = Number(observer.latitude);
     var longitude = Number(observer.longitude);
-    var altitutude = Number(observer.altitutude);
+    var altitude = Number(observer.altitude);
     dec = dec*rad
     var gmst = time.gmst();
     var hour_angle = (gmst*15 + longitude - (ra*15));
@@ -2367,16 +2370,28 @@ Orb.Observation.prototype = {
     var lat = latitude*rad;
     var azimuth = (Math.atan2(-Math.cos(dec)*Math.sin(h),Math.sin(dec)*Math.cos(lat)-Math.cos(dec)*Math.sin(lat)*Math.cos(h)))/rad;
     var elevation = (Math.asin(Math.sin(dec)*Math.sin(lat)+Math.cos(lat)*Math.cos(dec)*Math.cos(h)))/rad;
+    var atmospheric_refraction = this.AtmosphericRefraction(elevation)
     if (azimuth<0){
       azimuth = azimuth%360 +360
     }
     return {
       "azimuth" : azimuth,
       "elevation" : elevation,
-      "distance": distance
+      "distance": distance,
+      "atmospheric_refraction":atmospheric_refraction
      }
   },
   RectToHorizontal: function(time,rect){
+    function get_distance_unit(target){
+      if(target.unit_keywords.match(/km/)){
+        return " km"
+      }else if(target.unit_keywords.match(/au/)){
+        return " au"
+      }else{
+        return ""
+      }
+    }
+    var distance_unit = get_distance_unit(rect)
     var rad = Orb.Constant.RAD;
     var observer = this.observer;
     var lat = observer.latitude;
@@ -2392,7 +2407,8 @@ Orb.Observation.prototype = {
     var re = -Math.sin(lst*rad)*rx0 + Math.cos(lst*rad)*ry0;
     var rz = Math.cos(lat*rad)*Math.cos(lst*rad)*rx0+Math.cos(lat*rad)*Math.sin(lst*rad)*ry0 + Math.sin(lat*rad)*rz0;
     var range = Math.sqrt(rs*rs+re*re+rz*rz);
-    var elevation = Math.asin(rz/range);
+    var elevation = Math.asin(rz/range)/rad;
+    var atmospheric_refraction = this.AtmosphericRefraction(elevation)
     var azimuth  = Math.atan2(-re,rs);
     azimuth = azimuth/rad+180;
     if (azimuth>360){
@@ -2401,7 +2417,10 @@ Orb.Observation.prototype = {
     return {
     "azimuth" : azimuth,
     "elevation" : elevation,
-    "distance": range
+    "distance": range,
+    "atmospheric_refraction":atmospheric_refraction,
+    "coordinate_keywords":"horizontal spherical",
+    "unit_keywords": "degree" + distance_unit
    }
   },
   azel: function(date){
@@ -2411,14 +2430,16 @@ Orb.Observation.prototype = {
     var time = new Orb.Time(date)
     function get_distance_unit(target){
       if(target.unit_keywords.match(/km/)){
-        return "km"
+        return " km"
       }else if(target.unit_keywords.match(/au/)){
-        return "au"
+        return " au"
+      }else{
+        return ""
       }
     }
     if(target.ra != undefined && target.dec != undefined){
       var horizontal = this.RadecToHorizontal(time,target)
-      var distance_unit = "au"
+      var distance_unit = " au"
     }else if(target.x != undefined && target.y != undefined && target.z != undefined){
       if(target.coordinate_keywords.match(/ecliptic/)){
         if(target.date != undefined ){
@@ -2446,9 +2467,10 @@ Orb.Observation.prototype = {
       "azimuth" : horizontal.azimuth,
       "elevation" : horizontal.elevation,
       "distance": horizontal.distance,
+      "atmospheric_refraction":horizontal.atmospheric_refraction,
       "date":date,
       "coordinate_keywords":"horizontal spherical",
-      "unit_keywords": "degree" + " " + distance_unit
+      "unit_keywords": "degree" + distance_unit
     }
   }
 }
@@ -2755,7 +2777,7 @@ Orb.SGP4.prototype = {
       var epoch_date = epoch_array[0].split("-");
       var epoch_time = epoch_array[1].split(":");
       var now_sec = Date.UTC(time.year, time.month - 1, time.day, time.hours, time.minutes, time.seconds, time.milliseconds);
-      var epoch_sec = Date.UTC(Number(epoch_date[0]), Number(epoch_date[1]) - 1, Number(epoch_date[2]), Number(epoch_time[0]), Number(epoch_time[1]), Number(epoch_time[2]));
+      var epoch_sec = Date.UTC(Number(epoch_date[0]), Number(epoch_date[1]) - 1, Number(epoch_date[2]), Number(epoch_time[0]), Number(epoch_time[1]), Number(epoch_time[2]), 0);
       var elapsed_time = (now_sec - epoch_sec) / (60 * 1000);
       return elapsed_time;
     })(time, omm)

@@ -1,5 +1,6 @@
 //observation.js
 //require core.js, time.js, coordinates.js, earth.js
+
 Orb.Observer = Orb.Observer ||  function(position){
   var rad = Orb.Constant.RAD;
   var a = 6377.39715500; // earth radius
@@ -37,7 +38,12 @@ Orb.Observation = Orb.Observation || function(param){
 }
 
 Orb.Observation.prototype = {
-
+  AtmosphericRefraction:function(elevation){
+    var rad = Orb.Constant.RAD;
+    var tmp = elevation+7.31/(elevation + 4.4)
+    var ar = 0.0167*rad/(Math.tan(tmp*rad))/rad
+    return ar
+  },
   RadecToHorizontal: function(time,radec){
     var rad = Orb.Constant.RAD;
     var observer = this.observer;
@@ -50,7 +56,7 @@ Orb.Observation.prototype = {
     }
     var latitude = Number(observer.latitude);
     var longitude = Number(observer.longitude);
-    var altitutude = Number(observer.altitutude);
+    var altitude = Number(observer.altitude);
     dec = dec*rad
     var gmst = time.gmst();
     var hour_angle = (gmst*15 + longitude - (ra*15));
@@ -58,16 +64,29 @@ Orb.Observation.prototype = {
     var lat = latitude*rad;
     var azimuth = (Math.atan2(-Math.cos(dec)*Math.sin(h),Math.sin(dec)*Math.cos(lat)-Math.cos(dec)*Math.sin(lat)*Math.cos(h)))/rad;
     var elevation = (Math.asin(Math.sin(dec)*Math.sin(lat)+Math.cos(lat)*Math.cos(dec)*Math.cos(h)))/rad;
+    var atmospheric_refraction = this.AtmosphericRefraction(elevation)
     if (azimuth<0){
       azimuth = azimuth%360 +360
     }
     return {
       "azimuth" : azimuth,
       "elevation" : elevation,
-      "distance": distance
+      "distance": distance,
+      "atmospheric_refraction":atmospheric_refraction
      }
   },
+  
   RectToHorizontal: function(time,rect){
+    function get_distance_unit(target){
+      if(target.unit_keywords.match(/km/)){
+        return " km"
+      }else if(target.unit_keywords.match(/au/)){
+        return " au"
+      }else{
+        return ""
+      }
+    }
+    var distance_unit = get_distance_unit(rect)
     var rad = Orb.Constant.RAD;
     var observer = this.observer;
     var lat = observer.latitude;
@@ -83,7 +102,8 @@ Orb.Observation.prototype = {
     var re = -Math.sin(lst*rad)*rx0 + Math.cos(lst*rad)*ry0;
     var rz = Math.cos(lat*rad)*Math.cos(lst*rad)*rx0+Math.cos(lat*rad)*Math.sin(lst*rad)*ry0 + Math.sin(lat*rad)*rz0;
     var range = Math.sqrt(rs*rs+re*re+rz*rz);
-    var elevation = Math.asin(rz/range);
+    var elevation = Math.asin(rz/range)/rad;
+    var atmospheric_refraction = this.AtmosphericRefraction(elevation)
     var azimuth  = Math.atan2(-re,rs);
     azimuth = azimuth/rad+180;
     if (azimuth>360){
@@ -92,7 +112,10 @@ Orb.Observation.prototype = {
     return {
     "azimuth" : azimuth,
     "elevation" : elevation,
-    "distance": range
+    "distance": range,
+    "atmospheric_refraction":atmospheric_refraction,
+    "coordinate_keywords":"horizontal spherical",
+    "unit_keywords": "degree" + distance_unit
    }
   },
   azel: function(date){
@@ -102,14 +125,16 @@ Orb.Observation.prototype = {
     var time = new Orb.Time(date)
     function get_distance_unit(target){
       if(target.unit_keywords.match(/km/)){
-        return "km"
+        return " km"
       }else if(target.unit_keywords.match(/au/)){
-        return "au"
+        return " au"
+      }else{
+        return ""
       }
     }
     if(target.ra != undefined && target.dec != undefined){
       var horizontal = this.RadecToHorizontal(time,target)
-      var distance_unit = "au"
+      var distance_unit = " au"
     }else if(target.x != undefined && target.y != undefined && target.z != undefined){
       if(target.coordinate_keywords.match(/ecliptic/)){
         if(target.date != undefined ){
@@ -137,9 +162,10 @@ Orb.Observation.prototype = {
       "azimuth" : horizontal.azimuth,
       "elevation" : horizontal.elevation,
       "distance": horizontal.distance,
+      "atmospheric_refraction":horizontal.atmospheric_refraction,
       "date":date,
       "coordinate_keywords":"horizontal spherical",
-      "unit_keywords": "degree" + " " + distance_unit
+      "unit_keywords": "degree" + distance_unit
     }
   }
 }

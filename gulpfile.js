@@ -93,3 +93,4 @@ const minify_scripts = function (done) {
 };
 
 exports.build = gulp.series(concat_scripts, copy_scripts, minify_scripts);
+exports.minify = gulp.series(minify_scripts);
