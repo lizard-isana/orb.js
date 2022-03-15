@@ -9,33 +9,45 @@
   const date = new Date();
   const time = new Orb.Time(date);
   const time_in_day = time.time_in_day();
-  const jd = time.jd()
-  const gmst = time.gmst()
+  const jd = time.jd();
+  const gmst = time.gmst();
+  const delta_t = time.delta_t();
+  const doy = time.doy()
   const results = {
     "date":date,
     "time in day": time_in_day,
     "jd":jd,
     "gmst":gmst,
+    "delta_t":delta_t,
+    "doy":doy,
   }
   display(".results",results)
 </script>
 
+## Preparation
 ```JavaScript
+import * as Orb from '/src/orb.js';
 const display = function(selector,value){
   document.querySelector(selector).innerHTML = JSON.stringify(value, null, "  ");
 }
+const date = new Date();
 ```
 
+## Time
 ```JavaScript
-import * as Orb from '/src/orb.js';
-const date = new Date();
 const time = new Orb.Time(date);
 const time_in_day = time.time_in_day();
 const jd = time.jd()
+const gmst = time.gmst()
+const delta_t = time.delta_t();
+const doy = time.doy()
 const results = {
   "date":date,
   "time in day": time_in_day,
   "jd":jd,
+  "gmst":gmst,
+  "delta_t":delta_t,
+  "doy":doy,
 }
 display(".results",results)
 ```
