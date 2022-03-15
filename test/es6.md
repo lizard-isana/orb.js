@@ -18,7 +18,6 @@
   display(".results",results)
 </script>
 
-
 ```JavaScript
 const display = function(selector,value){
   document.querySelector(selector).innerHTML = JSON.stringify(value, null, "  ");

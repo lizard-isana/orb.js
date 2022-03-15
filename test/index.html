@@ -51,6 +51,49 @@
           sanitize: "false"
         });
 
+        const included_scripts = [];
+        const written_scripts = [];
+        const merged_style = [];
+        main.post_rendering_hook(function(id, contents){
+          //script tags are temporary removed and store for re-apply
+          //sanitize option should be "false"
+          //If "type" attribute is defined and is not "text/javascript", it will be ignored.
+
+          let dom = document.createRange().createContextualFragment(contents);
+          const script_elements = dom.querySelectorAll("script")
+          for (let i = 0, ln = script_elements.length; i < ln; i++) {
+            if (script_elements[i]) {
+              const src = script_elements[i].getAttribute("src");
+              const type = script_elements[i].getAttribute("type");
+              if (src) {
+                included_scripts.push(src)
+              } else if (type) {
+                if (type == "text/javascript") {
+                  written_scripts.push(script_elements[i].textContent);
+                } else {
+                  continue;
+                }
+              } else {
+                written_scripts.push(script_elements[i].textContent);
+              }
+              script_elements[i].parentNode.removeChild(script_elements[i]);
+            }
+          }
+
+          //style tags are temporary removed and store for re-apply
+          //sanitize option should be "false".
+          const style_elements = dom.querySelectorAll("style")
+          for (let i = 0, ln = style_elements.length; i < ln; i++) {
+            if (style_elements[i] && style_elements[i].textContent) {
+              merged_style.push(style_elements[i].textContent);
+            }
+            style_elements[i].parentNode.removeChild(style_elements[i]);
+          }
+          const div = document.createElement('div');
+          div.appendChild( dom.cloneNode(true) );
+          return div.innerHTML;
+        });
+
         // the 1st <h1> tag (#...) will be title of the page
         main.post_content_load_hook(function (id, content) {
           const h1 = document.querySelectorAll(`#${id} h1`)
@@ -77,33 +120,9 @@
 
         // load main
         main.load("index.md");
-
+      
         main.post_page_load_hook(function () {
-
-          //re-apply <script> tags in "main" area.
-          //sanitize option should be "false"
-          //If "type" attribute is defined and is not "text/javascript", it will be ignored.
-          const script_elements = document.querySelectorAll(`#main script`)
-          const included_scripts = [];
-          const written_scripts = [];
-          for (let i = 0, ln = script_elements.length; i < ln; i++) {
-            if (script_elements[i]) {
-              const src = script_elements[i].getAttribute("src");
-              const type = script_elements[i].getAttribute("type");
-              if (src) {
-                included_scripts.push(src)
-              } else if (type) {
-                if (type == "text/javascript") {
-                  written_scripts.push(script_elements[i].textContent);
-                } else {
-                  continue;
-                }
-              } else {
-                written_scripts.push(script_elements[i].textContent);
-              }
-              script_elements[i].parentNode.removeChild(script_elements[i]);
-            }
-          }
+          //re-apply stored <script> tags in "main" area.
           if (included_scripts.length > 0) {
             MoSkosh.ScriptLoader(included_scripts, function () {
               new Function(written_scripts.join("\n"))()
@@ -111,17 +130,7 @@
           } else {
             new Function(written_scripts.join("\n"))()
           }
-
-          //re-apply <style> tags in "main" area.
-          //sanitize option should be "false".
-          const style_elements = document.querySelectorAll(`#main style`)
-          const merged_style = [];
-          for (let i = 0, ln = style_elements.length; i < ln; i++) {
-            if (style_elements[i] && style_elements[i].textContent) {
-              merged_style.push(style_elements[i].textContent);
-            }
-            style_elements[i].parentNode.removeChild(style_elements[i]);
-          }
+          //re-apply stored <style> tags in "main" area.
           const merged_style_element = document.createElement('style');
           merged_style_element.setAttribute("type", "text/css");
           merged_style_element.textContent = merged_style.join("\n");
