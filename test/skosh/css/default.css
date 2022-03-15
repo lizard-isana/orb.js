@@ -1,0 +1,660 @@
+/* default css for Skosh by Isana Kashiwai 2020 */
+
+/* import fonts */
+@import url('https://fonts.googleapis.com/css?family=Noto+Sans+JP|Roboto:100,200,300&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Round');
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+html{
+  font-size:16px;
+}
+
+body {
+  background: #fff;
+  color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic Pro", "Yu Gothic", "YuGothic", "Meiryo",system-ui, sans-serif;
+  font-weight: 300;
+  font-kerning: auto;
+  font-variant-ligatures: none;
+  letter-spacing: .25px;
+  line-height: 1.75em;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  -webkit-text-size-adjust: 100%;
+}
+
+a:link {
+  color: #6699cc;
+  text-decoration: none;
+}
+
+a:visited {
+  text-decoration: none;
+  color: #778899;
+}
+
+a:active {
+  text-decoration: none;
+  color: #6699cc;
+}
+
+a:hover {
+  text-decoration: none;
+  color: #6699cc;
+}
+
+sup, sub {
+  vertical-align: baseline;
+  position: relative;
+  top: -0.4em;
+}
+
+sub { 
+  top: 0.4em; 
+}
+
+/* page structure */
+
+#header {
+  top: 0;
+  width: 100%;
+  display: flex;
+}
+
+#body {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+#main {
+  width: 100%;
+  padding: 20px;
+  margin: 0 auto 2em auto;
+  max-width: 780px;
+}
+#sidebar {
+  display: block;
+  padding: 10px;
+  margin: 2em 1em 0 1em;
+  flex-basis: 20%;
+  order: 1;
+}
+
+#footer {
+  padding-right: 1em;
+}
+
+/* main common markdown */
+/* <h1> - <h6> tags */
+
+#main h1,h2,h3,h4,h5,h6 {
+  font-weight: 300;
+  clear: both;
+}
+
+#main h3, h4, h5, h6 {
+  margin-left: 1em;
+}
+
+#main h1 {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Hiragino Sans", 'Noto Sans JP', sans-serif;
+  font-size: 2.0em;
+  margin-top:3em;
+  margin-bottom: 1.5em;
+}
+
+#main h1:nth-of-type(1) {
+  margin-top:1em;
+}
+
+#main h2 {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Hiragino Sans", 'Noto Sans JP', sans-serif;
+  margin-top: 2em;
+  border-bottom: 1px solid #bbb;
+}
+
+#main h3 {
+  margin-top: 2em;
+  border-bottom: 1px dashed #bbb;
+}
+#main h4 {
+  font-weight:700;
+  margin-top: 2em;
+  margin-bottom: 0;
+}
+#main h4 + *{
+  margin-top: 0;
+}
+
+
+/* <p> tags */
+#main p {
+  word-break: break-word;
+  margin:1em;
+}
+
+/* <hr> tags */
+#main hr {
+  line-height: 1em;
+  position: relative;
+  outline: 0;
+  border: 0;
+  color: #333;
+  text-align: center;
+  height: 1.5em;
+  user-select: text;
+}
+
+#main hr:after {
+  content: "*";
+  position: relative;
+  display: inline-block;
+  user-select: text;
+  color: #555;
+  padding: 0 0.5em;
+  line-height: 1.5em;
+}
+
+
+/* main: img */
+#main img {
+  box-sizing: content-box;
+  max-width: 100%;
+  margin: 1em auto;
+  border: 1px solid #bbb;
+  background-color: #fff;
+}
+
+#main img[align="right"] {
+  padding-left: 20px;
+}
+
+#main img[align="left"] {
+  padding-right: 20px;
+}
+
+
+/* markdown list items (<ul>,<li>) */
+
+#main > ul li {
+  list-style-position: outside;
+  list-style-type: none;
+  margin: 0 auto;
+  text-indent: -1.25em;
+}
+
+#main > ul li::before {
+  padding-right:0.25em;
+  margin-left:-0.25em;
+  vertical-align: -0.15em;
+  font-family: 'Material Icons';
+  font-size:18px;
+  content: "\e315";
+  color:slategray;
+}
+
+
+/*  markdown <table> tags */
+
+
+#main table {
+  overflow: auto;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#main table th {
+  font-weight: 600;
+}
+
+#main table td,
+#main table th {
+  border: 1px solid #dfe2e5;
+  padding: 6px 13px;
+}
+
+#main table tr {
+  background-color: #fff;
+  border-top: 1px solid #c6cbd1;
+}
+
+#main table tr:nth-child(2n) {
+  background-color: #f6f8fa;
+}
+
+/* markdown <pre>, <blockquote>, <code> tags */
+
+pre,
+blockquote {
+  overflow: visible;
+  word-wrap: break-word;
+  margin:1em 2em;
+  position: relative;
+}
+
+#main pre {
+  white-space:pre-wrap;
+}
+
+#main blockquote{
+  border-left: 1.5px solid #bbb;
+}
+
+#main blockquote p {
+  margin:2em 1em;
+  padding: 1em 0;
+}
+
+#main blockquote > footer {
+  font-size:small;
+  width:100%;
+  text-align:right;
+  margin-top:-2em;
+}
+
+#main blockquote > footer > cite {
+  font-style:normal;
+}
+
+
+#main pre {
+  background-color: #f6f8fa;
+  font-weight: 300;
+  border-radius: 3px;
+  line-height: 1.65em;
+  padding: 1.25em 1em;
+  margin: 1em;
+}
+
+#main pre > code {
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  width:100%;
+}
+
+#main p code{
+  display:inline-block;
+  margin:1px;
+  padding:0 2px;
+  background-color:#f3f3f3;
+}
+
+#main code {
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic Pro", "Yu Gothic", "YuGothic", "Meiryo",system-ui, sans-serif;
+}
+#main code:after{
+  content:attr(data-language)"";
+  position: absolute;
+  font-weight: bold;
+  height: 20px;
+  top:-20px;
+  left:0px;
+  color: #333;
+  font-size: 12px;
+  padding:1px;
+}
+#main code[class*="language"] {
+  background-color: #f6f8fa;
+  display: inline-block;
+  font-family: Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  line-height: 1.2em;
+  position: relative;
+  word-break: break-word;
+  /*overflow: scroll;*/
+}
+#main pre.code{
+  background-color: #fff;
+  margin: 0;
+}
+
+code table{
+  display: table;
+  border:1px solid #bbb;
+  width:100%;
+  font-size:14px;
+  white-space: pre-wrap;
+}
+code table td,
+code table th,
+code table tr {
+  padding:3px !important;
+  border: none !important;
+}
+
+/* highlight.js */
+
+.highlight {
+  margin-bottom: 16px;
+}
+
+.highlight pre {
+  margin-bottom: 0;
+  word-break: normal;
+}
+
+.hljs-ln-numbers{
+	border-right: 1px solid #ccc;
+	color: #bbb;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.hljs-ln-n{
+  width:2em;
+}
+
+.hljs-ln-code{
+  width: 100%;
+}
+
+/* pre-defined attributes for markdown-it-attrs */
+
+.invisible, .hidden {
+  visibility:hidden;
+  line-height: 0;
+}
+
+.top-left {
+  float:left;
+  margin:0.5em 15px 15px 0;
+}
+
+.top-right {
+    float:right;
+    margin:0 0 15px 15px;
+}
+
+/* main: toc */
+
+#main .toc {
+  display: inline-block;
+  border: 1px solid #a2a9b1;
+  padding: 5px;
+  margin: 1em 5px;
+  min-width: 10em;
+  max-width: 50%;
+  background: #f8f9fa;
+  font-size: 0.85em;
+  line-height: 1.5em;
+  word-break: normal;
+}
+
+#main .toc h2 {
+  font-family: system-ui, sans-serif;
+  font-size: 1.2em;
+  font-weight: 500;
+  margin: 0 0.5em;
+  border-bottom: none;
+  cursor: pointer
+}
+#main .toc h2:after{
+  content:" [hide]";
+  display:inline-flex;
+  align-items: center;
+  margin-left:10px;
+  font-weight:200;
+  font-size:0.85em;
+  color:#bbb;
+}
+
+#main .toc H2.close:after {
+  content:" [show]";
+}
+#main .toc .toc-close{
+  display:none;
+}
+
+.toc ul {
+  list-style-position: outside;
+  list-style-type: none;
+  counter-reset: toc;
+  margin: 0.5em auto;
+  padding-left: 0.5em;
+}
+.toc ul li {
+  margin: 0 auto;
+  display: table-row;
+  counter-increment: toc;
+}
+
+.toc ul li::before {
+  padding-right: 0.25em;
+  display: table-cell;
+  content: counters(toc, ".") "."; 
+}
+
+.toc::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+/* markdown-it-footnote */
+
+#main hr.footnotes-sep {
+  margin-top:2em;
+  margin-left:20%;
+  border-bottom: 1px solid #bbb;
+}
+
+#main hr.footnotes-sep:after {
+  content: "";
+}
+
+#main .footnotes{
+  font-size:0.85em;
+  margin-left:20%;
+  line-height: 1.2em;
+}
+
+#main .media {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  max-width: 95%;
+}
+
+.media iframe {
+  max-width: 100%;
+}
+
+
+/* main task-lists */
+
+li.task-list-item{
+  list-style: none;
+  margin-left:-0.25em !important;
+}
+
+li.task-list-item::before{
+  content: "" !important;
+}
+
+ul.contains-task-list{
+  line-height: 1.5em;
+}
+
+#main twitter-widget{
+  margin:1em 2em;
+}
+
+
+
+/* header contents */
+#header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+#header h1 {
+  display: inline-block;
+  font-size: 22px;
+  font-weight: 100;
+  margin-left:64px;
+}
+
+#header p {
+  display: block;
+  }
+
+#header p:last-of-type {
+  margin-right:64px;
+}
+
+#header a {
+  text-decoration: none;
+  color: #999;
+}
+
+/* for navbar */
+#header > ul {
+  position: absolute;
+  width: 100vw;
+  top: 30px;
+  padding: 10px;
+  padding-left: 1em;
+  z-index: 1000;
+  display: none;
+}
+
+#header > ul > li {
+  border-bottom: 1px solid #bbb;
+}
+
+#header ul {
+  list-style-type: none;
+  font-weight: bold;
+  flex-flow: column;
+  background: rgba(255, 255, 255, 1);
+}
+
+#header li {
+  list-style-type: none;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+#header #menu_icon {
+  position: absolute;
+  margin:0;
+  top: 13px;
+  left: 15px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+
+/* footer contents */
+
+#footer {
+  text-align: right;
+  font-style: italic;
+  color: #999999;
+  font-size: small;
+}
+
+/* sidebar contents */
+
+#sidebar {
+  font-size: 12pt;
+}
+
+#sidebar p {
+  margin-top: 1em;
+  margin-left: 1em;
+}
+#sidebar .toc {
+  margin: 1em;
+  font-size: small;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+#sidebar h1 {
+  font-size:1.2em;
+}
+#sidebar h2 {
+  font-weight: 700;
+  font-size:1.2em;
+}
+#sidebar .toc ul {
+  padding-left: 0em;
+}
+
+#sidebar .toc li {
+  line-height: 1.5em;
+  font-size: small;
+}
+
+#sidebar img {
+  width: 120px;
+  margin: 0 auto;
+}
+
+#sidebar a {
+  cursor: pointer;
+  text-decoration: none;
+  color: #bbb;
+}
+
+#sidebar a:hover {
+  border-bottom-color: #4ebbe4;
+}
+
+
+/* for mobile environments */
+@media screen and (max-width: 768px) {
+
+  #main p{
+    margin:1em 0;
+  }
+
+  .top-left{
+    margin:0.5em 15px 15px 1em;
+  }
+
+  #main h3, h4, h5, h6 {
+    margin-left: 0;
+  }
+  
+  pre, blockquote {
+    margin:1em;
+  }
+
+  #main .toc {
+    max-width:100%;
+  }
+
+  #main twitter-widget{
+    margin:0;
+    width:100%;
+  }
+
+/* mobile header contents */
+  #header p {
+    display: none;
+  }
+
+/* mobile sidebar contents */
+
+  #sidebar {
+    display: none;
+  }
+
+}

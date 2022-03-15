@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <meta charset="utf-8">
+    <title>Skosh </title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="./skosh/js/skosh.js"></script>
+    <script src="./skosh/js/plugins/moskosh_navbar.js"></script>
+    <script src="./skosh/js/plugins/moskosh_toc.js"></script>
+    <script src="./skosh/js/plugins/moskosh_highlight.js"></script>
+    <script src="./skosh/js/plugins/moskosh_mathjax.js"></script>
+    <script src="./skosh/js/plugins/moskosh_chart.js"></script>
+    <script src="./skosh/js/plugins/moskosh_flowchart.js"></script>
+    <script src="./skosh/js/plugins/moskosh_diagram.js"></script>
+    <link rel="stylesheet" href="./skosh/css/default.css" />
+  </head>
+
+  <body>
+    <div id="header"></div>
+    <div id="body">
+      <div id="main"></div>
+      <!--<div id="sidebar"></div>-->
+    </div>
+    <div id="footer"></div>
+
+    <script>
+      // load extensions
+      const skosh_navbar = new MoSkosh.NavBar();
+      const skosh_highlight = new MoSkosh.CodeHighlight();
+      const skosh_math = new MoSkosh.MathJax();
+      const skosh_chart = new MoSkosh.Chart();
+      const skosh_flowchart = new MoSkosh.FlowChart();
+      const skosh_diagram = new MoSkosh.Diagram();
+
+      window.addEventListener('load', function () {
+        // init header
+        const header = new Skosh("header", {
+          link_target: "main"
+        });
+
+        // append extensions to header
+        skosh_navbar.append(header);
+
+        // load header
+        header.load("./header.md");
+
+        // init main
+        const main = new Skosh("main", {
+          sanitize: "false"
+        });
+
+        // the 1st <h1> tag (#...) will be title of the page
+        main.post_content_load_hook(function (id, content) {
+          const h1 = document.querySelectorAll(`#${id} h1`)
+          if (h1.length > 0) {
+            document.title = h1[0].textContent;
+          }
+          const external = document.querySelectorAll(".external");
+          external.forEach(function(element,index){
+            element.setAttribute('target', '_blank');
+            element.setAttribute('rel', 'noopener noreferrer');
+          })
+        });
+
+        // append extensions to main
+        skosh_highlight.append(main, {
+          line_number: true
+        });
+        skosh_math.append(main);
+        skosh_chart.append(main);
+        skosh_flowchart.append(main);
+        skosh_diagram.append(main);
+
+        const toc = new MoSkosh.Toc(main);
+
+        // load main
+        main.load("index.md");
+
+        main.post_page_load_hook(function () {
+
+          //re-apply <script> tags in "main" area.
+          //sanitize option should be "false"
+          //If "type" attribute is defined and is not "text/javascript", it will be ignored.
+          const script_elements = document.querySelectorAll(`#main script`)
+          const included_scripts = [];
+          const written_scripts = [];
+          for (let i = 0, ln = script_elements.length; i < ln; i++) {
+            if (script_elements[i]) {
+              const src = script_elements[i].getAttribute("src");
+              const type = script_elements[i].getAttribute("type");
+              if (src) {
+                included_scripts.push(src)
+              } else if (type) {
+                if (type == "text/javascript") {
+                  written_scripts.push(script_elements[i].textContent);
+                } else {
+                  continue;
+                }
+              } else {
+                written_scripts.push(script_elements[i].textContent);
+              }
+              script_elements[i].parentNode.removeChild(script_elements[i]);
+            }
+          }
+          if (included_scripts.length > 0) {
+            MoSkosh.ScriptLoader(included_scripts, function () {
+              new Function(written_scripts.join("\n"))()
+            })
+          } else {
+            new Function(written_scripts.join("\n"))()
+          }
+
+          //re-apply <style> tags in "main" area.
+          //sanitize option should be "false".
+          const style_elements = document.querySelectorAll(`#main style`)
+          const merged_style = [];
+          for (let i = 0, ln = style_elements.length; i < ln; i++) {
+            if (style_elements[i] && style_elements[i].textContent) {
+              merged_style.push(style_elements[i].textContent);
+            }
+            style_elements[i].parentNode.removeChild(style_elements[i]);
+          }
+          const merged_style_element = document.createElement('style');
+          merged_style_element.setAttribute("type", "text/css");
+          merged_style_element.textContent = merged_style.join("\n");
+          document.getElementsByTagName("head")[0].appendChild(merged_style_element);
+
+          // Center twitter wedged
+          const twitter_elements = document.querySelectorAll(`#main .twitter-tweet`)
+          for (let i = 0, ln = twitter_elements.length; i < ln; i++) {
+            twitter_elements[i].classList.add("tw-align-center");
+          }
+        });
+
+        toc.append(main);
+
+        // sidebar 
+        var sidebar_element = document.getElementById("sidebar")
+        if (sidebar_element) {
+          const sidebar = new Skosh("sidebar", {
+            link_target: "main"
+          });
+          sidebar.load("./sidebar.md");
+          toc.append(sidebar);
+        }
+
+        // footer
+        const footer = new Skosh("footer", {
+          link_target: "main"
+        });
+        footer.load("footer.md");
+
+      });
+
+    </script>
+  </body>
+
+</html>
