@@ -1,9 +1,13 @@
 //coodinates.js
 //require core.js, time.js, earth.js
 
-Orb.RadecToXYZ = (parameter) => {
+import {Earth} from './earth.js'
+import {Const} from './constant.js'
+import {Obliquity} from './nutation.js'
+
+export const RadecToXYZ = (parameter) => {
   // equatorial spherical(ra,dec) to rectangular(x,y,z)
-  var rad = Orb.Const.RAD;
+  var rad = Const.RAD;
   var ra = parameter.ra * 15
   var dec = parameter.dec
   var distance = parameter.distance
@@ -27,7 +31,7 @@ Orb.RadecToXYZ = (parameter) => {
   }
 }
 
-Orb.XYZtoRadec = function (parameter) {
+export const XYZtoRadec = function (parameter) {
   // equatorial rectangular(x,y,z) to spherical(ra,dec)
   if (parameter.coordinate_keywords && parameter.coordinate_keywords.match(/ecliptic/)) {
     if (parameter.date) {
@@ -35,7 +39,7 @@ Orb.XYZtoRadec = function (parameter) {
     } else {
       var date = new Date()
     }
-    var rect = Orb.EclipticToEquatorial({ "date": date, "ecliptic": parameter })
+    var rect = EclipticToEquatorial({ "date": date, "ecliptic": parameter })
   } else {
     var rect = parameter
     if (parameter.date) {
@@ -68,12 +72,12 @@ Orb.XYZtoRadec = function (parameter) {
   };
 }
 
-Orb.EquatorialToEcliptic = function (parameter) {
+export const EquatorialToEcliptic = function (parameter) {
   // equatorial rectangular(x,y,z) to ecliptic rectangular(x,y,z)
   var date = parameter.date
-  var obliquity = Orb.Obliquity(date)
+  var obliquity = Obliquity(date)
   var equatorial = parameter.equatorial
-  var rad = Orb.Const.RAD;
+  var rad = Const.RAD;
   var ecliptic = {
     x: equatorial.x,
     y: Math.cos(obliquity * rad) * equatorial.y + Math.sin(obliquity * rad) * equatorial.z,
@@ -89,17 +93,17 @@ Orb.EquatorialToEcliptic = function (parameter) {
   }
 }
 
-Orb.EclipticToEquatorial = function (parameter) {
+export const EclipticToEquatorial = function (parameter) {
   // ecliptic rectangular(x,y,z) to equatorial rectangular(x,y,z)
   var date = parameter.date
   var ecliptic = parameter.ecliptic
-  var rad = Orb.Const.RAD;
-  var earth = new Orb.Earth();
+  var rad = Const.RAD;
+  var earth = new Earth();
   var ep = earth.xyz(date)
   var gcx = ecliptic.x - ep.x;
   var gcy = ecliptic.y - ep.y;
   var gcz = ecliptic.z - ep.z;
-  var obliquity = Orb.Obliquity(parameter.date)
+  var obliquity = Obliquity(parameter.date)
   var ecl = obliquity;
   var equatorial = {
     x: gcx,

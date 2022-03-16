@@ -3,6 +3,7 @@
 
 import {Time} from './time.js'
 import * as COEF from './coefficients.js'
+import {EclipticToEquatorial, XYZtoRadec} from './coordinates.js'
 
 
 export class VSOP {
@@ -48,26 +49,60 @@ export class VSOP {
     var pos = this.exec_vsop(date);
     return pos;
   }
-  /*
+
   radec = (date) =>  {
     var target_pos = this.exec_vsop(date);
-    var rectangular = Orb.EclipticToEquatorial({
+    var rectangular = EclipticToEquatorial({
       ecliptic: target_pos,
       date: date,
       "coordinate_keywords": "ecliptic rectangular",
       "unit_keywords": "au"
     });
-    var spherical = Orb.XYZtoRadec(rectangular);
+    var spherical = XYZtoRadec(rectangular);
     return spherical;
   }
-  */
+  
 }
+
 //Orb.Earth is defined in earth.js
-export const Mercury = () => { return new VSOP("Mercury") };
-export const Venus = () => { return new VSOP("Venus") };
-export const Mars = () => { return new VSOP("Mars") };
-export const Jupiter = () => { return new VSOP("Jupiter") };
-export const Saturn = () => { return new VSOP("Saturn") };
-export const Uranus = () => { return new VSOP("Uranus") };
-export const Neptune = () => { return new VSOP("Neptune") };
+export class Mercury{ 
+  constructor(){
+    return new VSOP("Mercury")
+  }
+};
+export class Venus{ 
+  constructor(){
+    return new VSOP("Venus")
+  }
+};
+
+export class Mars{ 
+  constructor(){
+    return new VSOP("Mars")
+  }
+};
+
+export class Jupiter{ 
+  constructor(){
+    return new VSOP("Jupiter")
+  }
+};
+
+export class Saturn{ 
+  constructor(){
+    return new VSOP("Saturn")
+  }
+};
+
+export class Uranus{ 
+  constructor(){
+    return new VSOP("Uranus")
+  }
+};
+
+export class Neptune{ 
+  constructor(){
+    return new VSOP("Neptune")
+  }
+};
 export const Planet = VSOP;
