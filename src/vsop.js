@@ -15,7 +15,7 @@ export class VSOP {
       "Earth":COEF.EARTH_COEF,
       "Mars":COEF.MARS_COEF,
       "Jupiter":COEF.JUPITER_COEF,
-      "Saturn":COEF.SATRUN_COEF,
+      "Saturn":COEF.SATURN_COEF,
       "Uranus":COEF.URANUS_COEF,
       "Neptune":COEF.NEPTUNE_COEF
     }

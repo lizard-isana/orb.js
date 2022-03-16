@@ -7,16 +7,17 @@ import {Obliquity} from './nutation.js'
 
 export const RadecToXYZ = (parameter) => {
   // equatorial spherical(ra,dec) to rectangular(x,y,z)
-  var rad = Const.RAD;
-  var ra = parameter.ra * 15
-  var dec = parameter.dec
-  var distance = parameter.distance
+  const rad = Const.RAD;
+  const ra = parameter.ra * 15
+  const dec = parameter.dec
+  const distance = parameter.distance;
+  let date;
   if (parameter.date) {
-    var date = parameter.date;
+    date = parameter.date;
   } else {
-    var date = null;
+    date = null;
   }
-  var xyz = {
+  const xyz = {
     "x": distance * Math.cos(dec * rad) * Math.cos(ra * rad),
     "y": distance * Math.cos(dec * rad) * Math.sin(ra * rad),
     "z": distance * Math.sin(dec * rad)
@@ -33,26 +34,27 @@ export const RadecToXYZ = (parameter) => {
 
 export const XYZtoRadec = function (parameter) {
   // equatorial rectangular(x,y,z) to spherical(ra,dec)
+  let date,rect;
   if (parameter.coordinate_keywords && parameter.coordinate_keywords.match(/ecliptic/)) {
     if (parameter.date) {
-      var date = parameter.date
+      date = parameter.date
     } else {
-      var date = new Date()
+      date = new Date()
     }
-    var rect = EclipticToEquatorial({ "date": date, "ecliptic": parameter })
+    rect = EclipticToEquatorial({ "date": date, "ecliptic": parameter })
   } else {
-    var rect = parameter
+    rect = parameter
     if (parameter.date) {
-      var date = parameter.date;
+      date = parameter.date;
     } else {
-      var date = null;
+      date = null;
     }
   }
-  var rad = Math.PI / 180;
-  var eqx = rect.x;
-  var eqy = rect.y;
-  var eqz = rect.z;
-  var ra = Math.atan2(eqy, eqx) / rad;
+  const rad = Math.PI / 180;
+  const eqx = rect.x;
+  const eqy = rect.y;
+  const eqz = rect.z;
+  let ra = Math.atan2(eqy, eqx) / rad;
   if (ra < 0) {
     ra = ra % 360 + 360
   }
@@ -60,8 +62,8 @@ export const XYZtoRadec = function (parameter) {
     ra = ra % 360
   }
   ra = ra / 15
-  var dec = Math.atan2(eqz, Math.sqrt(eqx * eqx + eqy * eqy)) / rad;
-  var distance = Math.sqrt(eqx * eqx + eqy * eqy + eqz * eqz);
+  const dec = Math.atan2(eqz, Math.sqrt(eqx * eqx + eqy * eqy)) / rad;
+  const distance = Math.sqrt(eqx * eqx + eqy * eqy + eqz * eqz);
   return {
     "ra": ra,
     "dec": dec,
@@ -74,11 +76,11 @@ export const XYZtoRadec = function (parameter) {
 
 export const EquatorialToEcliptic = function (parameter) {
   // equatorial rectangular(x,y,z) to ecliptic rectangular(x,y,z)
-  var date = parameter.date
-  var obliquity = Obliquity(date)
-  var equatorial = parameter.equatorial
-  var rad = Const.RAD;
-  var ecliptic = {
+  const date = parameter.date
+  const obliquity = Obliquity(date)
+  const equatorial = parameter.equatorial
+  const rad = Const.RAD;
+  const ecliptic = {
     x: equatorial.x,
     y: Math.cos(obliquity * rad) * equatorial.y + Math.sin(obliquity * rad) * equatorial.z,
     z: -Math.sin(obliquity * rad) * equatorial.y + Math.cos(obliquity * rad) * equatorial.z
@@ -95,17 +97,17 @@ export const EquatorialToEcliptic = function (parameter) {
 
 export const EclipticToEquatorial = function (parameter) {
   // ecliptic rectangular(x,y,z) to equatorial rectangular(x,y,z)
-  var date = parameter.date
-  var ecliptic = parameter.ecliptic
-  var rad = Const.RAD;
-  var earth = new Earth();
-  var ep = earth.xyz(date)
-  var gcx = ecliptic.x - ep.x;
-  var gcy = ecliptic.y - ep.y;
-  var gcz = ecliptic.z - ep.z;
-  var obliquity = Obliquity(parameter.date)
-  var ecl = obliquity;
-  var equatorial = {
+  const date = parameter.date
+  const ecliptic = parameter.ecliptic
+  const rad = Const.RAD;
+  const earth = new Earth();
+  const ep = earth.xyz(date)
+  const gcx = ecliptic.x - ep.x;
+  const gcy = ecliptic.y - ep.y;
+  const gcz = ecliptic.z - ep.z;
+  const obliquity = Obliquity(parameter.date)
+  const ecl = obliquity;
+  const equatorial = {
     x: gcx,
     y: gcy * Math.cos(ecl * rad) - gcz * Math.sin(ecl * rad),
     z: gcy * Math.sin(ecl * rad) + gcz * Math.cos(ecl * rad)
