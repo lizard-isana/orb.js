@@ -1,7 +1,7 @@
-import {Constant} from './constant.js';
+import {Constant} from './core.js';
 import {Time} from './time.js';
 
-const NutationAndObliquity =  (date) => {
+export const NutationAndObliquity =  (date) => {
   const rad = Constant.RAD
   //var dt = DeltaT()/86400;
   //var dt = 64/86400;

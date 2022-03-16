@@ -2,7 +2,7 @@
 //require core.js, time.js, earth.js
 
 import {Earth} from './earth.js'
-import {Const} from './constant.js'
+import {Const} from './core.js'
 import {Obliquity} from './nutation.js'
 
 export const RadecToXYZ = (parameter) => {

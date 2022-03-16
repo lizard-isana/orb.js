@@ -72,3 +72,22 @@ export const Constant = {
   }
 }
 export const Const = Constant;
+
+export const RoundAngle = (degree) => {
+  var angle = degree % 360
+  if (angle < 0) {
+    angle = angle + 360
+  }
+  return angle;
+}
+
+export const ZeroFill = (num, length) => {
+  if (length) {
+    var length = length;
+  } else {
+    var length = num.length;
+  }
+  var seed = "0000000000"
+  var str = seed + String(num)
+  return str.slice(0 - length)
+}

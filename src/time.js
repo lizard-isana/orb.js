@@ -1,4 +1,4 @@
-import {Constant} from './constant.js';
+import {Constant} from './core.js';
 
 Math.trunc = Math.trunc || function(x) {
   return x < 0 ? Math.ceil(x) : Math.floor(x);

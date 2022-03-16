@@ -5,10 +5,9 @@ import {Time} from './time.js'
 import * as COEF from './coefficients.js'
 import {EclipticToEquatorial, XYZtoRadec} from './coordinates.js'
 
-
 export class VSOP {
   constructor(target){
-    //target = ["Mercury","Venus","Earth","Moon","Mars","Jupiter","Saturn","Uranus","Neptune"],
+    //target = ["Mercury","Venus","Earth","Mars","Jupiter","Saturn","Uranus","Neptune"],
     const COEFFICIENTS = {
       "Mercury":COEF.MERCURY_COEF,
       "Venus":COEF.VENUS_COEF,

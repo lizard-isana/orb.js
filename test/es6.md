@@ -33,12 +33,23 @@
   const mars_xyz = mars.xyz(date);
   const mars_radec = mars.radec(date);
   const results_planets = {
-    "mars":{
+    "Mars":{
       "xyz":mars_xyz,
       "radec":mars_radec
     }
   }
   display(".results_planets",results_planets);
+  var sun = new Orb.Sun();
+  var sun_xyz = sun.xyz(date);
+  var sun_radec = sun.radec(date);
+  const results_sun = {
+    "Sun":{
+      "xyz":sun_xyz,
+      "radec":sun_radec
+    }
+  }
+  display(".results_sun",results_sun);
+
 </script>
 
 ## Preparation
@@ -84,3 +95,7 @@ display(".results_earth",results_earth);
 ## Planets
 
 <pre class="results_planets"></pre>
+
+## Sun
+
+<pre class="results_sun"></pre>
