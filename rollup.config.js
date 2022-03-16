@@ -14,7 +14,6 @@ export default {
       name:"Orb",
       file: "dist/orb.min.js",
       format: "umd",
-      sourcemap: "inline",
       plugins: [
         terser(),
       ],

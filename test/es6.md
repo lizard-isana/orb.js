@@ -1,10 +1,9 @@
-# Orb.js ES6 Migration Tests (/src/orb.js)
+# Orb.js ES6 Migration Tests (/src/orb.es6.js)
 
 <script type="module">
   const display = function(selector,value){
     document.querySelector(selector).innerHTML = JSON.stringify(value, null, "  ");
   }
-
   import * as Orb from '/src/orb.es6.js';
   const date = new Date();
   const time = new Orb.Time(date);
@@ -60,4 +59,12 @@ display(".results_time",results_time)
 <pre class="results_time"></pre>
 
 ## Earth
+```JavaScript
+const earth = new Orb.Earth();
+const xyz = earth.xyz(date);
+const results_earth = {
+  "xyz":xyz,
+}
+display(".results_earth",results_earth);
+```
 <pre class="results_earth"></pre>
