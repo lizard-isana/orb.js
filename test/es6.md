@@ -13,7 +13,7 @@
   const gmst = time.gmst();
   const delta_t = time.delta_t();
   const doy = time.doy()
-  const results = {
+  const results_time = {
     "date":date,
     "time in day": time_in_day,
     "jd":jd,
@@ -21,7 +21,13 @@
     "delta_t":delta_t,
     "doy":doy,
   }
-  display(".results",results)
+  display(".results_time",results_time);
+  const earth = new Orb.Earth();
+  const xyz = earth.xyz(date);
+  const results_earth = {
+    "xyz":xyz,
+  }
+  display(".results_earth",results_earth);
 </script>
 
 ## Preparation
@@ -49,6 +55,9 @@ const results = {
   "delta_t":delta_t,
   "doy":doy,
 }
-display(".results",results)
+display(".results_time",results_time)
 ```
-<pre class="results"></pre>
+<pre class="results_time"></pre>
+
+## Earth
+<pre class="results_earth"></pre>
