@@ -22,11 +22,18 @@
   }
   display(".results_time",results_time);
   const earth = new Orb.Earth();
-  const xyz = earth.xyz(date);
+  const earth_xyz = earth.xyz(date);
   const results_earth = {
-    "xyz":xyz,
+    "xyz":earth_xyz,
   }
   display(".results_earth",results_earth);
+
+  const mars = new Orb.Planet("Mars");
+  const mars_xyz = mars.xyz(date);
+  const results_planets = {
+    "mars":mars_xyz,
+  }
+  display(".results_planets",results_planets);
 </script>
 
 ## Preparation
@@ -68,3 +75,5 @@ const results_earth = {
 display(".results_earth",results_earth);
 ```
 <pre class="results_earth"></pre>
+
+<pre class="results_planets"></pre>
