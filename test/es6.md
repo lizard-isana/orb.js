@@ -93,9 +93,32 @@ display(".results_earth",results_earth);
 <pre class="results_earth"></pre>
 
 ## Planets
-
+```JavaScript
+const mars = new Orb.Mars();
+//const mars = new Orb.Planet("Mars");
+//const mars = new VSOP["Mars"];
+const mars_xyz = mars.xyz(date);
+const mars_radec = mars.radec(date);
+const results_planets = {
+  "Mars":{
+    "xyz":mars_xyz,
+    "radec":mars_radec
+  }
+}
+```
 <pre class="results_planets"></pre>
 
 ## Sun
-
+```JavaScript
+var sun = new Orb.Sun();
+var sun_xyz = sun.xyz(date);
+var sun_radec = sun.radec(date);
+const results_sun = {
+  "Sun":{
+    "xyz":sun_xyz,
+    "radec":sun_radec
+  }
+}
+display(".results_sun",results_sun);
+```
 <pre class="results_sun"></pre>
