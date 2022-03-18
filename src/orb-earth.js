@@ -1,7 +1,7 @@
 //earth.js
 //require core.js, time.js
 import {Time} from './orb-time.js'
-import {EARTH_COEF} from './orb-coefficients.js';
+import {EARTH_COEF} from './orb-vsop87a.js';
 
 export class Earth {
   constructor(){}

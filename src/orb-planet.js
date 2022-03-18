@@ -2,7 +2,7 @@
 //requre core.js, time.js, earth.js ,coordinates.js
 
 import {Time} from './orb-time.js'
-import * as COEF from './orb-coefficients.js'
+import * as COEF from './orb-vsop87a.js'
 import {EclipticToEquatorial, XYZtoRadec} from './orb-coordinates.js'
 
 export class VSOP {
