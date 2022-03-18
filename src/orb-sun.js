@@ -2,7 +2,7 @@
 
 import {Constant,RoundAngle} from './orb-core.js'
 import {Time} from './orb-time.js'
-import {NutationAndObliquity} from './orb-nutation.js'
+import {Nutation,Obliquity} from './orb-obliquity.js'
 
 export class Sun{
   constructor(){}
@@ -23,9 +23,8 @@ export class Sun{
     const true_longitude = mean_longitude + equation;
     const true_anomary = mean_anomaly + equation;
     const radius = (1.000001018 * (1 - eccentricity * eccentricity)) / (1 + eccentricity * Math.cos(true_anomary * rad));
-    const nao = NutationAndObliquity(date);
-    const nutation = nao.nutation;
-    const obliquity = nao.obliquity;
+    const nutation = Nutation(date);
+    const obliquity = Obliquity(date);
     const apparent_longitude = true_longitude + nutation;
     const longitude = apparent_longitude;
     const distance = radius; //* 149597870.691;

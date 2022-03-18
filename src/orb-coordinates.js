@@ -3,7 +3,7 @@
 
 import {Earth} from './orb-earth.js'
 import {Const} from './orb-core.js'
-import {Obliquity} from './orb-nutation.js'
+import {Obliquity} from './orb-obliquity.js'
 
 export const RadecToXYZ = (parameter) => {
   // equatorial spherical(ra,dec) to rectangular(x,y,z)

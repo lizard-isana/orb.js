@@ -27,7 +27,6 @@
     "xyz":earth_xyz,
   }
   display(".results_earth",results_earth);
-
   const mars = new Orb.Mars();
   //const mars = new Orb.Planet("Mars");
   const mars_xyz = mars.xyz(date);
@@ -49,7 +48,17 @@
     }
   }
   display(".results_sun",results_sun);
-
+// Position of the moon
+var luna = new Orb.Moon();
+var luna_xyz = luna.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+var luna_radec = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+  const results_moon = {
+    "Moon":{
+      "xyz":luna_xyz,
+      "radec":luna_radec
+    }
+  }
+  display(".results_moon",results_moon);
 </script>
 
 ## Preparation
@@ -122,3 +131,5 @@ const results_sun = {
 display(".results_sun",results_sun);
 ```
 <pre class="results_sun"></pre>
+
+<pre class="results_moon"></pre>
