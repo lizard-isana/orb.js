@@ -5,3 +5,4 @@ export * from './orb-coordinates.js';
 export * from './orb-planet.js';
 export * from './orb-sun.js';
 export * from './orb-luna.js';
+export * from './orb-kepler.js';

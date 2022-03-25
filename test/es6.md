@@ -59,6 +59,28 @@ var luna_radec = luna.radec(date); // equatorial spherical coordinates(ra, dec, 
     }
   }
   display(".results_moon",results_moon);
+
+// Kepler orbital elements
+var asteroid = new Orb.Kepler({
+  "gm": 2.9591220828559093*Math.pow(10,-4), //(au^3/d^2) default value is the sun, so you can omit this line.
+  "eccentricity":"0.08728849329001058",
+  "inclination":"6.812676631845272",
+  "longitude_of_ascending_node":"250.5660658100269",
+  "argument_of_periapsis":"95.63473165761138",
+  "time_of_periapsis":"2456918.756066796",
+  "semi_major_axis":"1.001911878091084"
+});
+
+const results_asteroid = {
+  "xyz":asteroid.xyz(date), // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
+  "radec":asteroid.radec(date) // equatorial spherical coordinates(ra, dec, distance)
+}
+display(".results_asteroid",results_asteroid);
+
+var asteroid_elements = new Orb.CartesianToKeplerian(results_asteroid.xyz)
+display(".asteroid_elements",asteroid_elements);
+
+
 </script>
 
 ## Preparation
@@ -132,4 +154,46 @@ display(".results_sun",results_sun);
 ```
 <pre class="results_sun"></pre>
 
+## Moon
+```JavaScript
+var luna = new Orb.Moon();
+var luna_xyz = luna.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+var luna_radec = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+  const results_moon = {
+    "Moon":{
+      "xyz":luna_xyz,
+      "radec":luna_radec
+    }
+  }
+  display(".results_moon",results_moon);
+
+```
 <pre class="results_moon"></pre>
+
+
+## Asteroid (Keplerian elements from/to Cartesian elements)
+```JavaScript
+// Kepler orbital elements
+const asteroid = new Orb.Kepler({
+  "gm": 2.9591220828559093*Math.pow(10,-4), //(au^3/d^2) default value is the sun, so you can omit this line.
+  "eccentricity":"0.08728849329001058",
+  "inclination":"6.812676631845272",
+  "longitude_of_ascending_node":"250.5660658100269",
+  "argument_of_periapsis":"95.63473165761138",
+  "time_of_periapsis":"2456918.756066796",
+  "semi_major_axis":"1.001911878091084"
+});
+const results_asteroid = {
+  "xyz":asteroid.xyz(date), // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
+  "radec":asteroid.radec(date) // equatorial spherical coordinates(ra, dec, distance)
+}
+display(".results_asteroid",results_asteroid);
+
+var asteroid_elements = new Orb.CartesianToKeplerian(results_asteroid.xyz)
+display(".asteroid_elements",asteroid_elements);
+
+```
+
+<pre class="results_asteroid"></pre>
+
+<pre class="asteroid_elements"></pre>
