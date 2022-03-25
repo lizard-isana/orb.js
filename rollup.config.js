@@ -8,7 +8,7 @@ export default {
       name:"Orb",
       file: "dist/orb.js",
       format: "umd",
-      sourcemap: "inline",
+      sourcemap: true,
     },
     { 
       name:"Orb",
