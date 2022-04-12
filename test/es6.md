@@ -92,6 +92,25 @@ const results_satellite = {
 }
 display(".results_satellite",results_satellite);
 
+var your_location = {
+  "latitude":35.658,
+  "longitude":139.741,
+  "altitude":0
+}
+
+var observe_mars = new Orb.Observation({"observer":your_location,"target":mars});
+var mars_horizontal = observe_mars.azel(date); // horizontal coordinates(azimuth, elevation)
+
+var observe_satellite = new Orb.Observation({"observer":your_location,"target":satellite});
+var satellite_horizontal = observe_satellite.azel(date); // horizontal coordinates(azimuth, elevation)
+
+const results_observation = {
+  "mars horizontal": mars_horizontal,
+  "satellite horizontal": satellite_horizontal,
+}
+
+display(".results_observation",results_observation);
+
 </script>
 
 ## Preparation
@@ -226,3 +245,31 @@ display(".results_satellite",results_satellite);
 ```
 
 <pre class="results_satellite"></pre>
+
+
+
+## Observation
+
+```JavaScript
+var your_location = {
+  "latitude":35.658,
+  "longitude":139.741,
+  "altitude":0
+}
+
+var observe_mars = new Orb.Observation({"observer":your_location,"target":mars});
+var mars_horizontal = observe_mars.azel(date); // horizontal coordinates(azimuth, elevation)
+
+var observe_satellite = new Orb.Observation({"observer":your_location,"target":satellite});
+var satellite_horizontal = observe_satellite.azel(date); // horizontal coordinates(azimuth, elevation)
+
+const results_observation = {
+  "mars horizontal": mars_horizontal,
+  "satellite horizontal": satellite_horizontal,
+}
+
+display(".results_observation",results_observation);
+
+```
+<pre class="results_observation"></pre>
+

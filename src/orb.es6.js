@@ -7,3 +7,4 @@ export * from './orb-sun.js';
 export * from './orb-luna.js';
 export * from './orb-kepler.js';
 export * from './orb-sgp4.js';
+export * from './orb-observation.js';
