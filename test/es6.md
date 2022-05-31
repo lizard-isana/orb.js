@@ -20,6 +20,36 @@
     "delta_t":delta_t,
     "doy":doy,
   }
+  var hours2hms = (hours) => {
+    let sign = "";
+    if (hours<0){
+     sign = "-";
+    }
+    const hours_abs = Math.abs(hours);
+    const hours_integer = Math.floor(hours_abs);
+    const hours_fractional = hours_abs - hours_integer;
+    const minutes = hours_fractional * 60;
+    const minutes_integer = Math.floor(minutes);
+    const minutes_fractional = minutes - minutes_integer;
+    const seconds = minutes_fractional * 60;
+    return `${sign}${hours_integer}h ${minutes_integer}m ${seconds.toFixed(2)}s`
+  }
+  var deg2dms = (deg) => {
+    let sign = "";
+    if (deg<0){
+     sign = "-";
+    }
+    const deg_abs = Math.abs(deg);
+    const deg_integer = Math.floor(deg_abs);
+    const deg_fractional = deg_abs - deg_integer;
+    const minutes = deg_fractional * 60;
+    const minutes_integer = Math.floor(minutes);
+    const minutes_fractional = minutes - minutes_integer;
+    const seconds = minutes_fractional * 60;
+    return `${sign}${deg_integer}° ${minutes_integer}′ ${seconds.toFixed(2)}″`
+  }
+
+
   display(".results_time",results_time);
   const earth = new Orb.Earth();
   const earth_xyz = earth.xyz(date);
@@ -34,7 +64,10 @@
   const results_planets = {
     "Mars":{
       "xyz":mars_xyz,
-      "radec":mars_radec
+      "radec":{
+        ra:hours2hms(mars_radec.ra),
+        dec:deg2dms(mars_radec.dec)
+      }
     }
   }
   display(".results_planets",results_planets);
@@ -82,8 +115,8 @@ display(".asteroid_elements",asteroid_elements);
 
 // Position of artificial satellites from Two Line Elements(TLE)
 var tle = {
-  first_line:"1 25544U 98067A   20014.52632156  .00016717  00000-0  10270-3 0  9015",
-  second_line:"2 25544  51.6423  33.7380 0004871 130.9389 229.2183 15.49556564  8038"
+  first_line:"1 25544U 98067A   22102.31652132  .00008077  00000-0  14924-3 0  9995",
+  second_line:"2 25544  51.6437 302.8427 0004455  14.2422 158.8889 15.50019435334962"
 }
 var satellite = new Orb.SGP4(tle);
 const results_satellite = {
@@ -105,8 +138,16 @@ var observe_satellite = new Orb.Observation({"observer":your_location,"target":s
 var satellite_horizontal = observe_satellite.azel(date); // horizontal coordinates(azimuth, elevation)
 
 const results_observation = {
-  "mars horizontal": mars_horizontal,
-  "satellite horizontal": satellite_horizontal,
+  "mars horizontal": {
+    output:mars_horizontal,
+    azimuth:deg2dms(mars_horizontal.azimuth),
+    elevation:deg2dms(mars_horizontal.elevation)
+  },
+  "satellite horizontal":{
+    output:satellite_horizontal,
+    azimuth:deg2dms(satellite_horizontal.azimuth),
+    elevation:deg2dms(satellite_horizontal.elevation)
+  },
 }
 
 display(".results_observation",results_observation);
@@ -264,7 +305,10 @@ var observe_satellite = new Orb.Observation({"observer":your_location,"target":s
 var satellite_horizontal = observe_satellite.azel(date); // horizontal coordinates(azimuth, elevation)
 
 const results_observation = {
-  "mars horizontal": mars_horizontal,
+  "mars horizontal": {
+    azimuth:deg2dms(mars_horizontal.azimuth),
+    elevation:deg2dms(mars_horizontal.elevation)
+    },
   "satellite horizontal": satellite_horizontal,
 }
 
