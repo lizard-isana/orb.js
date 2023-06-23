@@ -186,9 +186,9 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
        var b= Math.atan2(2,(3*l))/2
        var tanb = Math.tan(b)
        var tang = Math.pow(tanb,(1/3))
-       var true_anomary = Math.atan2((1-tang*tang),tang)*2
-       var cosf= Math.cos(true_anomary)
-       var sinf=Math.sin(true_anomary)
+       var true_anomaly = Math.atan2((1-tang*tang),tang)*2
+       var cosf= Math.cos(true_anomaly)
+       var sinf=Math.sin(true_anomaly)
        var r =(2*perihelion_distance)/(1+cosf)
        var x = r*cosf
        var y = r*sinf
@@ -298,9 +298,9 @@ Orb.SolarSystem = Orb.SolarSystem || function(){
     //true longitude of the Sun
     var true_longitude = mean_longitude + equation;
     //true anomary of the Sun
-    var true_anomary = mean_anomaly + equation;
+    var true_anomaly = mean_anomaly + equation;
     //radius vector, distance between center of the Sun and the Earth
-    var radius = (1.000001018*(1-eccentricity*eccentricity))/(1 + eccentricity*Math.cos(true_anomary*rad));
+    var radius = (1.000001018*(1-eccentricity*eccentricity))/(1 + eccentricity*Math.cos(true_anomaly*rad));
     var nao = new NutationAndObliquity(time)
     var nutation = nao.nutation;
     var obliquity = nao.obliquity;
