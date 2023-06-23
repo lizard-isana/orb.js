@@ -2307,6 +2307,7 @@ Orb.EclipticToEquatorial = function (parameter) {
 }
 //observation.js
 //require core.js, time.js, coordinates.js, earth.js
+
 Orb.Observer = Orb.Observer ||  function(position){
   var rad = Orb.Constant.RAD;
   var a = 6377.39715500; // earth radius
@@ -2381,6 +2382,7 @@ Orb.Observation.prototype = {
       "atmospheric_refraction":atmospheric_refraction
      }
   },
+  
   RectToHorizontal: function(time,rect){
     function get_distance_unit(target){
       if(target.unit_keywords.match(/km/)){

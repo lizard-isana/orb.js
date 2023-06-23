@@ -2307,6 +2307,7 @@ Orb.EclipticToEquatorial = function (parameter) {
 }
 //observation.js
 //require core.js, time.js, coordinates.js, earth.js
+
 Orb.Observer = Orb.Observer ||  function(position){
   var rad = Orb.Constant.RAD;
   var a = 6377.39715500; // earth radius
@@ -2381,6 +2382,7 @@ Orb.Observation.prototype = {
       "atmospheric_refraction":atmospheric_refraction
      }
   },
+  
   RectToHorizontal: function(time,rect){
     function get_distance_unit(target){
       if(target.unit_keywords.match(/km/)){
@@ -2587,9 +2589,9 @@ Orb.Kepler.prototype = {
     var b = Math.atan2(2, (3 * l)) / 2
     var tanb = Math.tan(b)
     var tang = Math.pow(tanb, (1 / 3))
-    var true_anomary = Math.atan2((1 - tang * tang), tang) * 2
-    var cosf = Math.cos(true_anomary)
-    var sinf = Math.sin(true_anomary)
+    var true_anomaly = Math.atan2((1 - tang * tang), tang) * 2
+    var cosf = Math.cos(true_anomaly)
+    var sinf = Math.sin(true_anomaly)
     var r = (2 * periapsis_distance) / (1 + cosf)
     var x = r * cosf
     var y = r * sinf
@@ -2831,8 +2833,8 @@ Orb.Sun.prototype = {
     equation += (0.019993 - 0.000101 * t) * Math.sin(2 * mean_anomaly * rad);
     equation += 0.000289 * Math.sin(3 * mean_anomaly * rad);
     var true_longitude = mean_longitude + equation;
-    var true_anomary = mean_anomaly + equation;
-    var radius = (1.000001018 * (1 - eccentricity * eccentricity)) / (1 + eccentricity * Math.cos(true_anomary * rad));
+    var true_anomaly = mean_anomaly + equation;
+    var radius = (1.000001018 * (1 - eccentricity * eccentricity)) / (1 + eccentricity * Math.cos(true_anomaly * rad));
     var nao = new Orb.NutationAndObliquity(date)
     var nutation = nao.nutation;
     var obliquity = nao.obliquity;
