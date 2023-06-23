@@ -21,8 +21,8 @@ export class Sun{
     equation += (0.019993 - 0.000101 * t) * Math.sin(2 * mean_anomaly * rad);
     equation += 0.000289 * Math.sin(3 * mean_anomaly * rad);
     const true_longitude = mean_longitude + equation;
-    const true_anomary = mean_anomaly + equation;
-    const radius = (1.000001018 * (1 - eccentricity * eccentricity)) / (1 + eccentricity * Math.cos(true_anomary * rad));
+    const true_anomaly = mean_anomaly + equation;
+    const radius = (1.000001018 * (1 - eccentricity * eccentricity)) / (1 + eccentricity * Math.cos(true_anomaly * rad));
     const nutation = Nutation(date);
     const obliquity = Obliquity(date);
     const apparent_longitude = true_longitude + nutation;

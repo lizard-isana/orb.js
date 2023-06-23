@@ -5,15 +5,17 @@
     <meta charset="utf-8">
     <title>Skosh </title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="./skosh/js/skosh.js"></script>
     <script src="./skosh/js/plugins/moskosh_navbar.js"></script>
     <script src="./skosh/js/plugins/moskosh_toc.js"></script>
     <script src="./skosh/js/plugins/moskosh_highlight.js"></script>
+    <!--
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="./skosh/js/plugins/moskosh_mathjax.js"></script>
     <script src="./skosh/js/plugins/moskosh_chart.js"></script>
     <script src="./skosh/js/plugins/moskosh_flowchart.js"></script>
     <script src="./skosh/js/plugins/moskosh_diagram.js"></script>
+    -->
     <link rel="stylesheet" href="./skosh/css/default.css" />
   </head>
 
@@ -29,10 +31,10 @@
       // load extensions
       const skosh_navbar = new MoSkosh.NavBar();
       const skosh_highlight = new MoSkosh.CodeHighlight();
-      const skosh_math = new MoSkosh.MathJax();
-      const skosh_chart = new MoSkosh.Chart();
-      const skosh_flowchart = new MoSkosh.FlowChart();
-      const skosh_diagram = new MoSkosh.Diagram();
+      //const skosh_math = new MoSkosh.MathJax();
+      //const skosh_chart = new MoSkosh.Chart();
+      //const skosh_flowchart = new MoSkosh.FlowChart();
+      //const skosh_diagram = new MoSkosh.Diagram();
 
       window.addEventListener('load', function () {
         // init header
@@ -111,10 +113,10 @@
         skosh_highlight.append(main, {
           line_number: true
         });
-        skosh_math.append(main);
-        skosh_chart.append(main);
-        skosh_flowchart.append(main);
-        skosh_diagram.append(main);
+        //skosh_math.append(main);
+        //skosh_chart.append(main);
+        //skosh_flowchart.append(main);
+        //skosh_diagram.append(main);
 
         const toc = new MoSkosh.Toc(main);
 
