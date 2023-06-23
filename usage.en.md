@@ -363,6 +363,8 @@ Orb.KeplerianToCartesian() is same as above
     var xyz = asteroid.xyz(date); // x, y, z, xdot, ydot, zdot -> ecliptic rectangular coordinates in au and au/d
     var radec = asteroid.radec(date); // ra, dec, distance -> equatorial spherical coordinates, distance in au
 
+Please note, Parabolic(eccentricity<0) and Hyperbolic(eccentricity=0) orbits need the "periapsis_distance" insted of "semi_major_axis". 
+
 "gm" has default value "2.9591220828559093E-4" so you can omit "gm" for the Sun.
 
 

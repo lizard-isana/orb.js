@@ -182,8 +182,9 @@ or minified file
     var radec = sun.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
 ### ケプラー軌道要素による太陽系内天体の位置(Orb.Kepler)
-ケプラー軌道要素で指定された天体の直交座標（デカルト軌道要素）を計算します。
-Orb.KeplerianToCartesian()と書いても同じです。
+ケプラー軌道要素で指定された天体の直交座標（デカルト軌道要素）を計算します。Orb.KeplerianToCartesian()と書いても同じです。
+
+以下の例では、楕円軌道上の物体の位置を計算しています。
 
     var asteroid = new Orb.Kepler({
       "gm": 2.9591220828559093*Math.pow(10,-4), //au^3/d^2 中心天体が太陽の場合は省略可
@@ -197,6 +198,7 @@ Orb.KeplerianToCartesian()と書いても同じです。
     var xyz = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
     var radec = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
 
+双曲線軌道(Hyperbolic Orbit / eccentricity = 0)と放物線軌道(Parabolic Orbit / eccentricity < 0)の場合は、"semi_major_axis"（軌道長半径）の代わりに、"periapsis_distance"（近点距離）を使用してください。
 
 ### 直交座標からケプラー軌道要素への変換(Orb.CartesianToKeplerian)
 直交座標（デカルト軌道要素)からケプラー軌道要素への変換を行います。Orb.Keplerの逆を行う関数です。
