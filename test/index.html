@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MDView: Markdown Viewer Component</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lizard-isana/mdview@latest/dist/css/default.css">
+  <script src="https://cdn.jsdelivr.net/gh/lizard-isana/mdview@latest/dist/js/mdview.js"></script>
+  <script src="../build/orb.v2.js"></script>
+</head>
+<body>
+  <main>
+
+    <mdview-content id="main" data-html="true" data-sanitize="false">
+      <mdview-plugins>
+        <mdview-plugin-toc></mdview-plugin-toc>
+        <mdview-plugin-highlight></mdview-plugin-highlight>
+        <mdview-plugin-math></mdview-plugin-math>
+        <mdview-plugin-graph></mdview-plugin-graph>
+        <mdview-plugin-chart></mdview-plugin-chart>
+      </mdview-plugins>
+    </mdview-content>
+
+<template data-target="main">
+  # Orb.js Test Bench
+  <script>
+  var results = function(id,value){
+    document.getElementById(id).innerHTML = JSON.stringify(value, null, "  ");
+  }
+  var date = new Date();
+  //var date = new Date(Date.UTC(2000, 0, 1, 12, 0));
+  //var date = new Date(Date.UTC(1987, 3, 10, 0, 0));
+  results("date",date.toISOString())
+  var time = new Orb.Time(date)
+  // Position of planets
+  var mars = new Orb.VSOP("Mars");
+  var xyz = mars.xyz(date); // ecliptic rectangular coordinates(x, y, z)
+  var radec = mars.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+  var equatorial = Orb.EclipticToEquatorial({"date":date,"ecliptic":xyz})
+  results("mars_xyz",equatorial);
+  results("mars_radec",radec);
+  // Position of the moon
+  var luna = new Orb.Luna();
+  var xyz = luna.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+  var radec = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+  results("luna_xyz",xyz);
+  results("luna_radec",radec);
+  // Apparent position of the Sun
+  var sun = new Orb.Sun();
+  var xyz = sun.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+  var radec = sun.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+  results("sun_xyz",xyz);
+  results("sun_radec",radec);
+  // Kepler orbital elements
+  var asteroid = new Orb.Kepler({
+    "gm": 2.9591220828559093*Math.pow(10,-4), //(au^3/d^2) default value is the sun, so you can omit this line.
+    "eccentricity":"0.08728849329001058",
+    "inclination":"6.812676631845272",
+    "longitude_of_ascending_node":"250.5660658100269",
+    "argument_of_periapsis":"95.63473165761138",
+    "time_of_periapsis":"2456918.756066796",
+    "semi_major_axis":"1.001911878091084"
+  });
+  var xyz = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
+  var radec = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+  results("asteroid_xyz",xyz);
+  results("asteroid_radec",radec);
+  // Cartesian state vectors to Kepler orbital elements
+  var orbital_elements = new Orb.CartesianToKeplerian(xyz)
+  results("asteroid_elements",orbital_elements);
+  // Position of artificial satellites from Two Line Elements(TLE)
+  var tle = {
+    first_line:"1 25544U 98067A   20014.52632156  .00016717  00000-0  10270-3 0  9015",
+    second_line:"2 25544  51.6423  33.7380 0004871 130.9389 229.2183 15.49556564  8038"
+  }
+  var satellite = new Orb.SGP4(tle);
+  var xyz = satellite.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z, xdot, ydot, zdot)
+  var latlng = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude, velocity)
+  results("satellite_xyz",xyz);
+  results("satellite_latlng",latlng);
+  // Azimuth and Elevation
+  var your_location = {
+    "latitude":35.658,
+    "longitude":139.741,
+    "altitude":0
+  }
+  var observe_mars = new Orb.Observation({"observer":your_location,"target":mars});
+  var horizontal = observe_mars.azel(date); // horizontal coordinates(azimuth, elevation)
+  results("mars_horizontal",horizontal);
+  var observe_satellite = new Orb.Observation({"observer":your_location,"target":satellite});
+  var horizontal = observe_satellite.azel(date); // horizontal coordinates(azimuth, elevation)
+  results("satellite_horizontal",horizontal);
+  var sirius = {
+    "ra":6.75257,
+    "dec":-16.7131,
+    "distance":543300
+  }
+  var observe_star = new Orb.Observation({
+    "observer":your_location ,
+    "target":sirius
+  });
+  var horizontal = observe_star.azel(date); // horizontal coordinates(azimuth, elevation)
+  results("star_horizontal",horizontal);
+  console.log(time.delta_t())
+  console.log(sirius.dec)
+  console.log(horizontal.azimuth)
+  // Time conversion
+  var time = new Orb.Time(date);
+  var gmst = time.gmst();
+  var julian_date = time.jd();
+  var time_in_day = time.time_in_day();
+  var day_of_year = time.doy();
+  results("gmst","GMST:" + gmst);
+  results("julian_date","Julian Date: " + julian_date);
+  results("time_in_day","Time in Day: " + time_in_day);
+  results("day_of_year","Day Of Year(DOY): " + day_of_year);
+  // Coordinates conversion
+  var equatorial_rectangular = Orb.RadecToXYZ(sirius)
+  var ecliptic_rectangular = Orb.EquatorialToEcliptic({"date":date,"equatorial":equatorial_rectangular})
+  results("equatorial_rectangular",equatorial_rectangular);
+  results("ecliptic_rectangular",ecliptic_rectangular);
+  var equatorial_rectangular_reverse = Orb.EclipticToEquatorial({"date":date,"ecliptic":ecliptic_rectangular})
+  var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
+  results("equatorial_rectangular_reverse",equatorial_rectangular_reverse);
+  results("equatorial_spherical",equatorial_spherical);
+  </script>
+  
+  ### Preparation
+  ```html
+  <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js/build/orb.v2.js"></script>
+  ```
+  ```javascript
+  var results = function(id,value){
+    document.getElementById(id).innerHTML = JSON.stringify(value, null, "  ");
+  }
+  var date = new Date();
+  results("date",date.toISOString())
+  ```
+  <pre id="date"></pre>
+  
+  ### Mars
+  ```javascript
+  // Position of planets
+  var mars = new Orb.VSOP("Mars");
+  var xyz = mars.xyz(date); // ecliptic rectangular coordinates(x, y, z)
+  var radec = mars.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+  
+  results("mars_xyz",xyz);
+  results("mars_radec",radec);
+  
+  ```
+  <pre id="mars_xyz"></pre>
+  <pre id="mars_radec"></pre>
+  
+  ### Moon
+  ```javascript
+  // Position of the moon
+  var luna = new Orb.Luna();
+  var xyz = luna.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+  var radec = luna.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+  results("luna_xyz",xyz);
+  results("luna_radec",radec);
+  ```
+  <pre id="luna_xyz"></pre>
+  <pre id="luna_radec"></pre>
+  
+  ### Sun
+  ```javascript
+  // Apparent position of the Sun
+  var sun = new Orb.Sun();
+  var xyz = sun.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z)
+  var radec = sun.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+  results("sun_xyz",xyz);
+  results("sun_radec",radec);
+  ```
+  <pre id="sun_xyz"></pre>
+  <pre id="sun_radec"></pre>
+  
+  ### Asteroid
+  ```javascript
+  // Kepler orbital elements
+  var asteroid = new Orb.Kepler({
+    "gm": 2.9591220828559093*Math.pow(10,-4), //(au^3/d^2) default value is the sun, so you can omit this line.
+    "eccentricity":"0.08728849329001058",
+    "inclination":"6.812676631845272",
+    "longitude_of_ascending_node":"250.5660658100269",
+    "argument_of_periapsis":"95.63473165761138",
+    "time_of_periapsis":"2456918.756066796",
+    "semi_major_axis":"1.001911878091084"
+  });
+  var xyz = asteroid.xyz(date); // ecliptic rectangular coordinates(x, y, z, xdot, ydot, zdot)
+  var radec = asteroid.radec(date); // equatorial spherical coordinates(ra, dec, distance)
+  results("asteroid_xyz",xyz);
+  results("asteroid_radec",radec);
+  ```
+  <pre id="asteroid_xyz"></pre>
+  <pre id="asteroid_radec"></pre>
+  <pre id="asteroid_elements"></pre>
+  
+  ### Satellite
+  ```javascript
+  // Position of artificial satellites from Two Line Elements(TLE)
+  var tle = {
+    first_line:"1 25544U 98067A   20014.52632156  .00016717  00000-0  10270-3 0  9015",
+    second_line:"2 25544  51.6423  33.7380 0004871 130.9389 229.2183 15.49556564  8038"
+  }
+  var satellite = new Orb.SGP4(tle);
+  var xyz = satellite.xyz(date); // Earth centered equatorial rectangular coordinates (x, y, z, xdot, ydot, zdot)
+  var latlng = satellite.latlng(date); // geographic spherical coordinates(latitude, longitude, altitude, velocity)
+  results("satellite_xyz",xyz);
+  results("satellite_latlng",latlng);
+  ```
+  <pre id="satellite_xyz"></pre>
+  <pre id="satellite_latlng"></pre>
+  
+  ### Observation
+  
+  ```javascript
+  // Azimuth and Elevation
+  var your_location = {
+    "latitude":35.658,
+    "longitude":139.741,
+    "altitude":0
+  }
+  var observe_mars = new Orb.Observation({"observer":your_location,"target":mars});
+  var horizontal = observe_mars.azel(date); // horizontal coordinates(azimuth, elevation)
+  results("mars_horizontal",horizontal);
+  var observe_satellite = new Orb.Observation({"observer":your_location,"target":satellite});
+  var horizontal = observe_satellite.azel(date); // horizontal coordinates(azimuth, elevation)
+  results("satellite_horizontal",horizontal);
+  
+  var sirius = {
+    "ra":6.75257,
+    "dec":-16.7131,
+    "distance":543300
+  }
+  var observe_star = new Orb.Observation({
+    "observer":your_location ,
+    "target":sirius
+  });
+  var horizontal = observe_star.azel(date); // horizontal coordinates(azimuth, elevation)
+  results("star_horizontal",horizontal);
+  ```
+  #### Mars
+  <pre id="mars_horizontal"></pre>
+  
+  #### Satellite
+  <pre id="satellite_horizontal"></pre>
+  
+  #### Star
+  <pre id="star_horizontal"></pre>
+  
+  ### Conversion
+
+  ```javascript
+  // Time conversion
+  var time = new Orb.Time(date);
+  var gmst = time.gmst();
+  var julian_date = time.jd();
+  var time_in_day = time.time_in_day();
+  var day_of_year = time.doy();
+  results("gmst",gmst);
+  results("julian_date",julian_date);
+  results("time_in_day",time_in_day);
+  results("day_of_year",day_of_year);
+  // Coordinates conversion
+  var equatorial_rectangular = Orb.RadecToXYZ(sirius)
+  var ecliptic_rectangular = Orb.EquatorialToEcliptic({"date":date,"equatorial":equatorial_rectangular})
+  results("equatorial_rectangular",equatorial_rectangular);
+  results("ecliptic_rectangular",ecliptic_rectangular);
+  var equatorial_rectangular_reverse = Orb.EclipticToEquatorial({"date":date,"ecliptic":ecliptic_rectangular})
+  results("equatorial_rectangular_reverse",equatorial_rectangular_reverse);
+  var equatorial_spherical = Orb.XYZtoRadec(equatorial_rectangular)
+  results("equatorial_spherical",equatorial_spherical);
+  ```
+  
+  #### Time Conversion
+  <pre id="gmst"></pre>
+  <pre id="julian_date"></pre>
+  <pre id="time_in_day"></pre>
+  <pre id="day_of_year"></pre>
+  
+  #### Coordinates Conversion
+  <pre id="equatorial_rectangular"></pre>
+  <pre id="ecliptic_rectangular"></pre>
+  <pre id="equatorial_rectangular_reverse"></pre>
+  <pre id="equatorial_spherical"></pre>
+  
+</template>
+</main>
+<footer>
+<mdview-content id="footer" data-html="true"></mdview-content>
+<template data-target="footer">
+Powered by [MDView](https://github.com/lizard-isana/mdview) &copy; Isana Kashiwai{.footer}
+<style>
+.footer{
+  text-align:right;
+  color:#bbb;
+  font-size:10px;
+  padding: 5px;
+}
+.footer a{
+  color:#bbb;
+  text-decoration:none;
+}
+.footer a:hover{
+  text-decoration:underline;
+}
+</style>
+
+</template>
+</footer>
+</body>
+</html>
