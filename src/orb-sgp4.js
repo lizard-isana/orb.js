@@ -88,7 +88,7 @@ export class SGP4{
       "MEAN_ANOMALY": Number(line2.substring(43, 51)),
       "EPHEMERIS_TYPE": Number(line1.substring(62, 63)),
       "CLASSIFICATION_TYPE": Number(line1.slice(7, 7)),
-      "NORAD_CAT_ID": Number(line1.slice(2, 6)),
+      "NORAD_CAT_ID": Number(line1.slice(2, 7)),
       "ELEMENT_SET_NO": Number(line1.substring(64, 68)),
       "REV_AT_EPOCH": Number(line2.substring(64, 68)),
       "BSTAR": bstar,
