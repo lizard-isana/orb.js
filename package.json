@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/lizard-isana/orb.js",
   "browserslist": [
-    "defaults,not ie 11,not ie_mob 11"
+    "defaults"
   ],
   "devDependencies": {
     "@babel/core": "^7.17.5",
