@@ -22,10 +22,10 @@ export class Time {
 
   // Meeus, J. 1998. Astronomical Algorithms (2nd ed.). Willmann-Bell.
   jd = () => {
-    const year = this.year;
-    const month = this.month;;
-    const day = this.day;
-    const time_in_day = this.time_in_day()
+    let year = this.year;
+    let month = this.month;;
+    let day = this.day;
+    let time_in_day = this.time_in_day()
     if (month <= 2) {
       year = year - 1;
       month = month + 12;
