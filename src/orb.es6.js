@@ -8,3 +8,5 @@ export * from './orb-luna.js';
 export * from './orb-kepler.js';
 export * from './orb-sgp4.js';
 export * from './orb-observation.js';
+export * from './orb-obliquity.js';
+export * from './orb-precession.js';

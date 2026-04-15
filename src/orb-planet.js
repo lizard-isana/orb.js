@@ -3,7 +3,7 @@
 
 import {Time} from './orb-time.js'
 import * as COEF from './orb-vsop87a.js'
-import {EclipticToEquatorial, XYZtoRadec} from './orb-coordinates.js'
+import {EclipticToEquatorial, EclipticToEquatorialOfDate, XYZtoRadec} from './orb-coordinates.js'
 
 export class VSOP {
   constructor(target){
@@ -60,7 +60,18 @@ export class VSOP {
     var spherical = XYZtoRadec(rectangular);
     return spherical;
   }
-  
+
+  radecOfDate = (date) => {
+    const target_pos = this.exec_vsop(date);
+    const rectangular = EclipticToEquatorialOfDate({
+      ecliptic: target_pos,
+      date: date,
+      "coordinate_keywords": "ecliptic rectangular",
+      "unit_keywords": "au"
+    });
+    return XYZtoRadec(rectangular);
+  }
+
 }
 
 //Orb.Earth is defined in earth.js

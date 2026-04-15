@@ -369,10 +369,14 @@
     };
   };
 
+  var MeanObliquity = function MeanObliquity(date) {
+    var coef = ObliquityCoef(date);
+    return 23 + 26.0 / 60 + 21.448 / 3600 - 46.8150 / 3600 * coef.t - 0.00059 / 3600 * coef.t * coef.t + 0.001813 / 3600 * coef.t * coef.t * coef.t;
+  };
   var Obliquity = function Obliquity(date) {
     var rad = Constant.RAD;
     var coef = ObliquityCoef(date);
-    var mean_obliquity = 23 + 26.0 / 60 + 21.448 / 3600 - 46.8150 / 3600 * coef.t - 0.00059 / 3600 * coef.t * coef.t + 0.001813 / 3600 * coef.t * coef.t * coef.t;
+    var mean_obliquity = MeanObliquity(date);
     var obliquity_delta = 9.20 / 3600 * Math.cos(coef.omega * rad) + 0.57 / 3600 * Math.cos(2 * coef.L0 * rad) + 0.10 / 3600 * Math.cos(2 * coef.L1 * rad) - 0.09 / 3600 * Math.cos(2 * coef.omega * rad);
     var obliquity = mean_obliquity + obliquity_delta;
     return obliquity;
@@ -384,7 +388,144 @@
     return nutation;
   };
 
+  var J2000 = new Date(Date.UTC(2000, 0, 1, 12, 0, 0));
+
+  var julianCentury = function julianCentury(date) {
+    var time = new Time(date);
+    return (time.jd() - 2451545.0) / 36525;
+  };
+
+  var Precession = function Precession(parameter) {
+    var from = parameter.from || J2000;
+    var to = parameter.to || parameter.date;
+    var ra = parameter.ra * 15;
+    var dec = parameter.dec;
+    var rad = Math.PI / 180;
+    var T = julianCentury(from);
+    var t = julianCentury(to) - T;
+    var zeta = ((2306.2181 + 1.39656 * T - 0.000139 * T * T) * t + (0.30188 - 0.000344 * T) * t * t + 0.017998 * t * t * t) / 3600;
+    var z = ((2306.2181 + 1.39656 * T - 0.000139 * T * T) * t + (1.09468 + 0.000066 * T) * t * t + 0.018203 * t * t * t) / 3600;
+    var theta = ((2004.3109 - 0.85330 * T - 0.000217 * T * T) * t - (0.42665 + 0.000217 * T) * t * t - 0.041833 * t * t * t) / 3600;
+    var A = Math.cos(dec * rad) * Math.sin((ra + zeta) * rad);
+    var B = Math.cos(theta * rad) * Math.cos(dec * rad) * Math.cos((ra + zeta) * rad) - Math.sin(theta * rad) * Math.sin(dec * rad);
+    var C = Math.sin(theta * rad) * Math.cos(dec * rad) * Math.cos((ra + zeta) * rad) + Math.cos(theta * rad) * Math.sin(dec * rad);
+    var precessedRa = Math.atan2(A, B) / rad + z;
+
+    if (precessedRa < 0) {
+      precessedRa = precessedRa % 360 + 360;
+    }
+
+    if (precessedRa > 360) {
+      precessedRa = precessedRa % 360;
+    }
+
+    return {
+      ra: precessedRa / 15,
+      dec: Math.asin(C) / rad,
+      distance: parameter.distance,
+      date: to,
+      coordinate_keywords: "equatorial spherical",
+      unit_keywords: "hours degree"
+    };
+  };
+  var J2000Epoch = J2000;
+
   //coodinates.js
+
+  var cloneRectangular = function cloneRectangular() {
+    var position = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    return {
+      x: Number(position.x) || 0,
+      y: Number(position.y) || 0,
+      z: Number(position.z) || 0
+    };
+  };
+
+  var normalizeEpoch = function normalizeEpoch(epoch) {
+    var normalized = String(epoch ? epoch : '').trim().toLowerCase();
+    return normalized === 'j2000' ? 'j2000' : 'of_date';
+  };
+
+  var resolveObliquityForEpoch = function resolveObliquityForEpoch() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$date = _ref.date,
+        date = _ref$date === void 0 ? null : _ref$date,
+        _ref$epoch = _ref.epoch,
+        epoch = _ref$epoch === void 0 ? 'of_date' : _ref$epoch;
+
+    var targetDate = date instanceof Date ? date : new Date(date ? date : Date.now());
+    var referenceDate = normalizeEpoch(epoch) === 'j2000' ? J2000Epoch : targetDate;
+    return Obliquity(referenceDate);
+  };
+
+  var geocentricEcliptic = function geocentricEcliptic(parameter) {
+    var date = parameter.date;
+    var ecliptic = parameter.ecliptic;
+    var earth = new Earth();
+    var ep = earth.xyz(date);
+    return {
+      x: ecliptic.x - ep.x,
+      y: ecliptic.y - ep.y,
+      z: ecliptic.z - ep.z,
+      date: date,
+      coordinate_keywords: "ecliptic rectangular",
+      unit_keywords: ecliptic.unit_keywords || ""
+    };
+  };
+
+  var rotateEclipticToEquatorial = function rotateEclipticToEquatorial(parameter) {
+    var rad = Const.RAD;
+    var obliquity = parameter.obliquity;
+    var ecliptic = parameter.ecliptic;
+    return {
+      x: ecliptic.x,
+      y: ecliptic.y * Math.cos(obliquity * rad) - ecliptic.z * Math.sin(obliquity * rad),
+      z: ecliptic.y * Math.sin(obliquity * rad) + ecliptic.z * Math.cos(obliquity * rad)
+    };
+  };
+
+  var rotateRectangularOnXAxis = function rotateRectangularOnXAxis(position, radians) {
+    var source = cloneRectangular(position);
+    var cos = Math.cos(radians);
+    var sin = Math.sin(radians);
+    return {
+      x: source.x,
+      y: cos * source.y - sin * source.z,
+      z: sin * source.y + cos * source.z
+    };
+  };
+
+  var ConvertRectangularPlane = function ConvertRectangularPlane() {
+    var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref2$position = _ref2.position,
+        position = _ref2$position === void 0 ? {} : _ref2$position,
+        _ref2$from_plane = _ref2.from_plane,
+        from_plane = _ref2$from_plane === void 0 ? 'ecliptic' : _ref2$from_plane,
+        _ref2$to_plane = _ref2.to_plane,
+        to_plane = _ref2$to_plane === void 0 ? 'ecliptic' : _ref2$to_plane,
+        _ref2$date = _ref2.date,
+        date = _ref2$date === void 0 ? new Date() : _ref2$date,
+        _ref2$epoch = _ref2.epoch,
+        epoch = _ref2$epoch === void 0 ? 'of_date' : _ref2$epoch;
+
+    var sourcePlane = String(from_plane ? from_plane : '').trim().toLowerCase() === 'equatorial' ? 'equatorial' : 'ecliptic';
+    var targetPlane = String(to_plane ? to_plane : '').trim().toLowerCase() === 'equatorial' ? 'equatorial' : 'ecliptic';
+
+    if (sourcePlane === targetPlane) {
+      return cloneRectangular(position);
+    }
+
+    var obliquity = resolveObliquityForEpoch({
+      date: date,
+      epoch: epoch
+    }) * Const.RAD;
+
+    if (sourcePlane === 'ecliptic' && targetPlane === 'equatorial') {
+      return rotateRectangularOnXAxis(position, obliquity);
+    }
+
+    return rotateRectangularOnXAxis(position, -obliquity);
+  };
   var RadecToXYZ = function RadecToXYZ(parameter) {
     // equatorial spherical(ra,dec) to rectangular(x,y,z)
     var rad = Const.RAD;
@@ -464,6 +605,28 @@
       "unit_keywords": "hours degree"
     };
   };
+  var XYZtoRadecOfDate = function XYZtoRadecOfDate(parameter) {
+    var date = parameter.date || new Date();
+    var spherical;
+
+    if (parameter.coordinate_keywords && parameter.coordinate_keywords.match(/ecliptic/)) {
+      var rect = EclipticToEquatorialJ2000({
+        date: date,
+        ecliptic: parameter
+      });
+      spherical = XYZtoRadec(rect);
+    } else {
+      spherical = XYZtoRadec(parameter);
+    }
+
+    return Precession({
+      ra: spherical.ra,
+      dec: spherical.dec,
+      distance: spherical.distance,
+      from: J2000Epoch,
+      to: date
+    });
+  };
   var EquatorialToEcliptic = function EquatorialToEcliptic(parameter) {
     // equatorial rectangular(x,y,z) to ecliptic rectangular(x,y,z)
     var date = parameter.date;
@@ -487,24 +650,54 @@
   var EclipticToEquatorial = function EclipticToEquatorial(parameter) {
     // ecliptic rectangular(x,y,z) to equatorial rectangular(x,y,z)
     var date = parameter.date;
-    var ecliptic = parameter.ecliptic;
-    var rad = Const.RAD;
-    var earth = new Earth();
-    var ep = earth.xyz(date);
-    var gcx = ecliptic.x - ep.x;
-    var gcy = ecliptic.y - ep.y;
-    var gcz = ecliptic.z - ep.z;
+    var ecliptic = geocentricEcliptic(parameter);
     var obliquity = Obliquity(parameter.date);
-    var ecl = obliquity;
-    var equatorial = {
-      x: gcx,
-      y: gcy * Math.cos(ecl * rad) - gcz * Math.sin(ecl * rad),
-      z: gcy * Math.sin(ecl * rad) + gcz * Math.cos(ecl * rad)
-    };
+    var equatorial = rotateEclipticToEquatorial({
+      ecliptic: ecliptic,
+      obliquity: obliquity
+    });
     return {
       'x': equatorial.x,
       'y': equatorial.y,
       'z': equatorial.z,
+      'date': date,
+      "coordinate_keywords": "equatorial rectangular",
+      "unit_keywords": ""
+    };
+  };
+  var EclipticToEquatorialJ2000 = function EclipticToEquatorialJ2000(parameter) {
+    var date = parameter.date;
+    var ecliptic = geocentricEcliptic(parameter);
+    var obliquity = MeanObliquity(J2000Epoch);
+    var equatorial = rotateEclipticToEquatorial({
+      ecliptic: ecliptic,
+      obliquity: obliquity
+    });
+    return {
+      'x': equatorial.x,
+      'y': equatorial.y,
+      'z': equatorial.z,
+      'date': date,
+      "coordinate_keywords": "equatorial rectangular",
+      "unit_keywords": ""
+    };
+  };
+  var EclipticToEquatorialOfDate = function EclipticToEquatorialOfDate(parameter) {
+    var date = parameter.date;
+    var rectJ2000 = EclipticToEquatorialJ2000(parameter);
+    var spherical = XYZtoRadec(rectJ2000);
+    var precessed = Precession({
+      ra: spherical.ra,
+      dec: spherical.dec,
+      distance: spherical.distance,
+      from: J2000Epoch,
+      to: date
+    });
+    var rect = RadecToXYZ(precessed);
+    return {
+      'x': rect.x,
+      'y': rect.y,
+      'z': rect.z,
       'date': date,
       "coordinate_keywords": "equatorial rectangular",
       "unit_keywords": ""
@@ -557,6 +750,18 @@
       });
       var spherical = XYZtoRadec(rectangular);
       return spherical;
+    });
+
+    _defineProperty(this, "radecOfDate", function (date) {
+      var target_pos = _this.exec_vsop(date);
+
+      var rectangular = EclipticToEquatorialOfDate({
+        ecliptic: target_pos,
+        date: date,
+        "coordinate_keywords": "ecliptic rectangular",
+        "unit_keywords": "au"
+      });
+      return XYZtoRadec(rectangular);
     });
 
     //target = ["Mercury","Venus","Earth","Mars","Jupiter","Saturn","Uranus","Neptune"],
@@ -711,13 +916,17 @@
 
     _classCallCheck(this, Luna);
 
-    _defineProperty(this, "latlng", function (date) {
+    _defineProperty(this, "getTerrestrialTimeDate", function (date) {
       var time = new Time(date);
-      var rad = Constant.RAD; //var dt = DeltaT()/86400;
-      //var dt = 64/86400;
+      return new Date(date.getTime() + time.delta_t() * 1000);
+    });
 
-      var jd = time.jd(); // + dt;
-      //ephemeris days from the epch J2000.0
+    _defineProperty(this, "latlng", function (date) {
+      var tt_date = _this.getTerrestrialTimeDate(date);
+
+      var time = new Time(tt_date);
+      var rad = Constant.RAD;
+      var jd = time.jd(); //ephemeris days from the epch J2000.0
 
       var t = (jd - 2451545.0) / 36525;
       var t2 = t * t;
@@ -828,8 +1037,8 @@
       var true_longitude = L1 / rad % 360 + sigma_l / 1000000;
       var latitude = sigma_b / 1000000;
       var distance = 385000.56 + sigma_r / 1000;
-      var nutation = Nutation(date);
-      var obliquity = Obliquity(date);
+      var nutation = Nutation(tt_date);
+      var obliquity = Obliquity(tt_date);
       var apparent_longitude = true_longitude + nutation;
       var longitude = apparent_longitude;
       return {
@@ -990,6 +1199,15 @@
     B: [[0, 0, 0, 1, 5128122], [0, 0, 1, 1, 280602], [0, 0, 1, -1, 277693], [2, 0, 0, -1, 173237], [2, 0, -1, 1, 55413], [2, 0, -1, -1, 46271], [2, 0, 0, 1, 32573], [0, 0, 2, 1, 17198], [2, 0, 1, -1, 9266], [0, 0, 2, -1, 8822], [2, -1, 0, -1, 8216], [2, 0, -2, -1, 4324], [2, 0, 1, 1, 4200], [2, 1, 0, -1, -3359], [2, -1, -1, 1, 2463], [2, -1, 0, 1, 2211], [2, -1, -1, -1, 2065], [0, 1, -1, -1, -1870], [4, 0, -1, -1, 1828], [0, 1, 0, 1, -1794], [0, 0, 0, 3, -1749], [0, 1, -1, 1, -1565], [1, 0, 0, 1, -1491], [0, 1, 1, 1, -1475], [0, 1, 1, -1, -1410], [0, 1, 0, -1, -1344], [1, 0, 0, -1, -1335], [0, 0, 3, 1, 1107], [4, 0, 0, -1, 1021], [4, 0, -1, 1, 833], [0, 0, 1, -3, 777], [4, 0, -2, 1, 671], [2, 0, 0, -3, 607], [2, 0, 2, -1, 596], [2, -1, 1, -1, 491], [2, 0, -2, 1, -451], [0, 0, 3, -1, 439], [2, 0, 2, 1, 422], [2, 0, -3, -1, 421], [2, 1, -1, 1, -366], [2, 1, 0, 1, -351], [4, 0, 0, 1, 331], [2, -1, 1, 1, 315], [2, -2, 0, -1, 302], [0, 0, 1, 3, -283], [2, 1, 1, -1, -229], [1, 1, 0, -1, 223], [1, 1, 0, 1, 223], [0, 1, -2, -1, -220], [2, 1, -1, -1, -220], [1, 0, 1, 1, -185], [2, -1, -2, -1, 181], [0, 1, 2, 1, -177], [4, 0, -2, -1, 176], [4, -1, -1, -1, 166], [1, 0, 1, -1, -164], [4, 0, 1, -1, 132], [1, 0, -1, -1, -119], [4, -1, 0, -1, 115], [2, -2, 0, 1, 107]]
   };
 
+  var hasFiniteOrbitalValue = function hasFiniteOrbitalValue(value) {
+    return value !== null && value !== undefined && Number.isFinite(Number(value));
+  };
+
+  var normalizeDegrees = function normalizeDegrees(value) {
+    var normalized = Number(value) % 360;
+    return normalized < 0 ? normalized + 360 : normalized;
+  };
+
   Math.cosh = Math.cosh || function (x) {
     var y = Math.exp(x);
     return (y + 1 / y) / 2;
@@ -1036,18 +1254,17 @@
       var mean_motion = Math.sqrt(gm / (semi_major_axis * semi_major_axis * semi_major_axis)) / rad;
       var elapsed_time = Number(time.jd()) - Number(epoch);
 
-      if (orbital_elements.mean_anomaly && orbital_elements.epoch) {
+      if (hasFiniteOrbitalValue(orbital_elements.mean_anomaly) && hasFiniteOrbitalValue(orbital_elements.epoch)) {
         var mean_anomaly = Number(orbital_elements.mean_anomaly);
         var l = mean_motion * elapsed_time + mean_anomaly;
-      } else if (orbital_elements.time_of_periapsis) {
+      } else if (hasFiniteOrbitalValue(orbital_elements.time_of_periapsis)) {
         var mean_anomaly = mean_motion * elapsed_time;
         var l = mean_anomaly;
+      } else {
+        var l = 0;
       }
 
-      if (l > 360) {
-        l = l % 360;
-      }
-
+      l = normalizeDegrees(l);
       l = l * rad;
       var u = l;
       var i = 0;
@@ -1094,18 +1311,17 @@
       var mean_motion = Math.sqrt(gm / (semi_major_axis * semi_major_axis * semi_major_axis)) / rad;
       var elapsed_time = Number(time.jd()) - Number(epoch);
 
-      if (orbital_elements.mean_anomaly && orbital_elements.epoch) {
+      if (hasFiniteOrbitalValue(orbital_elements.mean_anomaly) && hasFiniteOrbitalValue(orbital_elements.epoch)) {
         var mean_anomaly = Number(orbital_elements.mean_anomaly);
         var l = mean_motion * elapsed_time + mean_anomaly;
-      } else if (orbital_elements.time_of_periapsis) {
+      } else if (hasFiniteOrbitalValue(orbital_elements.time_of_periapsis)) {
         var mean_anomaly = mean_motion * elapsed_time;
         var l = mean_anomaly;
+      } else {
+        var l = 0;
       }
 
-      if (l > 360) {
-        l = l % 360;
-      }
-
+      l = normalizeDegrees(l);
       l = l * rad;
       var u = l;
       var i = 0;
@@ -1270,7 +1486,7 @@
 
     this.gm = _gm;
 
-    if (_orbital_elements.time_of_periapsis) {
+    if (hasFiniteOrbitalValue(_orbital_elements.time_of_periapsis)) {
       var _epoch = _orbital_elements.time_of_periapsis;
     } else {
       var _epoch = _orbital_elements.epoch;
@@ -2194,20 +2410,28 @@
   exports.CartesianToKeplerian = CartesianToKeplerian;
   exports.Const = Const;
   exports.Constant = Constant;
+  exports.ConvertRectangularPlane = ConvertRectangularPlane;
   exports.Earth = Earth;
   exports.EclipticToEquatorial = EclipticToEquatorial;
+  exports.EclipticToEquatorialJ2000 = EclipticToEquatorialJ2000;
+  exports.EclipticToEquatorialOfDate = EclipticToEquatorialOfDate;
   exports.EquatorialToEcliptic = EquatorialToEcliptic;
+  exports.J2000Epoch = J2000Epoch;
   exports.Jupiter = Jupiter;
   exports.Kepler = Kepler;
   exports.KeplerianToCartesian = KeplerianToCartesian;
   exports.Luna = Luna;
   exports.Mars = Mars;
+  exports.MeanObliquity = MeanObliquity;
   exports.Mercury = Mercury;
   exports.Moon = Moon;
   exports.Neptune = Neptune;
+  exports.Nutation = Nutation;
+  exports.Obliquity = Obliquity;
   exports.Observation = Observation;
   exports.Observer = Observer;
   exports.Planet = Planet;
+  exports.Precession = Precession;
   exports.RadecToXYZ = RadecToXYZ;
   exports.RoundAngle = RoundAngle;
   exports.SGP4 = SGP4;
@@ -2219,6 +2443,7 @@
   exports.VSOP = VSOP;
   exports.Venus = Venus;
   exports.XYZtoRadec = XYZtoRadec;
+  exports.XYZtoRadecOfDate = XYZtoRadecOfDate;
   exports.ZeroFill = ZeroFill;
 
   Object.defineProperty(exports, '__esModule', { value: true });

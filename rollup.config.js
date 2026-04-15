@@ -4,6 +4,11 @@ import { terser } from "rollup-plugin-terser";
 export default {
   input:"src/orb.es6.js",
   output:[
+    {
+      file: "dist/orb.esm.js",
+      format: "es",
+      sourcemap: true,
+    },
     { 
       name:"Orb",
       file: "dist/orb.js",

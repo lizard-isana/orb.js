@@ -6,6 +6,15 @@ import {Time} from './orb-time.js'
 import {EclipticToEquatorial, XYZtoRadec} from './orb-coordinates.js'
 import {Nutation,Obliquity} from './orb-obliquity.js'
 
+const hasFiniteOrbitalValue = (value) => {
+  return value !== null && value !== undefined && Number.isFinite(Number(value));
+}
+
+const normalizeDegrees = (value) => {
+  const normalized = Number(value) % 360;
+  return normalized < 0 ? normalized + 360 : normalized;
+}
+
 Math.cosh = Math.cosh || function (x) {
   var y = Math.exp(x);
   return (y + 1 / y) / 2;
@@ -40,7 +49,7 @@ export class Kepler{
       var gm = Constant.GM;
     }
     this.gm = gm;
-    if (orbital_elements.time_of_periapsis) {
+    if (hasFiniteOrbitalValue(orbital_elements.time_of_periapsis)) {
       var epoch = orbital_elements.time_of_periapsis;
     } else {
       var epoch = orbital_elements.epoch;
@@ -64,14 +73,16 @@ export class Kepler{
     }
     var mean_motion = Math.sqrt(gm / (semi_major_axis * semi_major_axis * semi_major_axis)) / rad;
     var elapsed_time = Number(time.jd()) - Number(epoch);
-    if (orbital_elements.mean_anomaly && orbital_elements.epoch) {
+    if (hasFiniteOrbitalValue(orbital_elements.mean_anomaly) && hasFiniteOrbitalValue(orbital_elements.epoch)) {
       var mean_anomaly = Number(orbital_elements.mean_anomaly);
       var l = (mean_motion * elapsed_time) + mean_anomaly;
-    } else if (orbital_elements.time_of_periapsis) {
+    } else if (hasFiniteOrbitalValue(orbital_elements.time_of_periapsis)) {
       var mean_anomaly = mean_motion * elapsed_time;
       var l = mean_anomaly;
+    } else {
+      var l = 0;
     }
-    if (l > 360) { l = l % 360 }
+    l = normalizeDegrees(l);
     l = l * rad
     var u = l
     var i = 0;
@@ -109,14 +120,16 @@ export class Kepler{
     }
     var mean_motion = Math.sqrt(gm / (semi_major_axis * semi_major_axis * semi_major_axis)) / rad;
     var elapsed_time = Number(time.jd()) - Number(epoch);
-    if (orbital_elements.mean_anomaly && orbital_elements.epoch) {
+    if (hasFiniteOrbitalValue(orbital_elements.mean_anomaly) && hasFiniteOrbitalValue(orbital_elements.epoch)) {
       var mean_anomaly = Number(orbital_elements.mean_anomaly);
       var l = (mean_motion * elapsed_time) + mean_anomaly;
-    } else if (orbital_elements.time_of_periapsis) {
+    } else if (hasFiniteOrbitalValue(orbital_elements.time_of_periapsis)) {
       var mean_anomaly = mean_motion * elapsed_time;
       var l = mean_anomaly;
+    } else {
+      var l = 0;
     }
-    if (l > 360) { l = l % 360 }
+    l = normalizeDegrees(l);
     l = l * rad
     var u = l
     var i = 0;

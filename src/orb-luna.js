@@ -7,12 +7,16 @@ import {Nutation,Obliquity} from './orb-obliquity.js'
 export class Luna{
   constructor(){}
 
+  getTerrestrialTimeDate = (date) => {
+    var time = new Time(date);
+    return new Date(date.getTime() + time.delta_t() * 1000);
+  }
+
   latlng = (date) => {
-    var time = new Time(date)
+    var tt_date = this.getTerrestrialTimeDate(date);
+    var time = new Time(tt_date)
     var rad = Constant.RAD;
-    //var dt = DeltaT()/86400;
-    //var dt = 64/86400;
-    var jd = time.jd(); // + dt;
+    var jd = time.jd();
 
     //ephemeris days from the epch J2000.0
     var t = (jd - 2451545.0) / 36525;
@@ -112,8 +116,8 @@ export class Luna{
     var true_longitude = (L1 / rad) % 360 + (sigma_l) / 1000000;
     var latitude = (sigma_b) / 1000000;
     var distance = 385000.56 + sigma_r / 1000;
-    var nutation = Nutation(date);
-    var obliquity = Obliquity(date);
+    var nutation = Nutation(tt_date);
+    var obliquity = Obliquity(tt_date);
     var apparent_longitude = true_longitude + nutation;
     var longitude = apparent_longitude;
     return {
