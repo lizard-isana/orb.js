@@ -3,6 +3,17 @@
   "version": "3.0.0",
   "description": "JavaScript library for astronomical calculations",
   "main": "orb.v3.js",
+  "exports": {
+    ".": {
+      "import": "./dist/orb.esm.js",
+      "default": "./dist/orb.js"
+    },
+    "./dist/*": "./dist/*",
+    "./src/*": "./src/*",
+    "./vsop87a/*.js": "./src/vsop87a/*.js",
+    "./vsop87a/*": "./src/vsop87a/*.js",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c rollup.config.js"

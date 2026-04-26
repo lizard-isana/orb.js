@@ -2,24 +2,15 @@
 //requre core.js, time.js, earth.js ,coordinates.js
 
 import {Time} from './orb-time.js'
-import * as COEF from './orb-vsop87a.js'
+import {resolveVSOP87ACoefficients} from './orb-vsop87a-registry.js'
 import {EclipticToEquatorial, EclipticToEquatorialOfDate, XYZtoRadec} from './orb-coordinates.js'
 
 export class VSOP {
-  constructor(target){
+  constructor(target, options = {}){
     //target = ["Mercury","Venus","Earth","Mars","Jupiter","Saturn","Uranus","Neptune"],
-    const COEFFICIENTS = {
-      "Mercury":COEF.MERCURY_COEF,
-      "Venus":COEF.VENUS_COEF,
-      "Earth":COEF.EARTH_COEF,
-      "Mars":COEF.MARS_COEF,
-      "Jupiter":COEF.JUPITER_COEF,
-      "Saturn":COEF.SATURN_COEF,
-      "Uranus":COEF.URANUS_COEF,
-      "Neptune":COEF.NEPTUNE_COEF
-    }
     this.target = target;
-    this.vsop_target = COEFFICIENTS[target];
+    this.vsop_options = options;
+    this.vsop_target = resolveVSOP87ACoefficients(target, options);
   }
 
   exec_vsop = (date) => {
@@ -31,8 +22,16 @@ export class VSOP {
     for (var i = 0, ln = target_data.length; i < ln; i++) {
       var tmp_data = target_data[i];
       var n = tmp_data[0];
-      var sum = Math.pow(t, Number(tmp_data[1])) * Number(tmp_data[2]) * Math.cos(Number(tmp_data[3]) + Number(tmp_data[4]) * t);
-      v[n] = v[n] + sum;
+      if(Array.isArray(tmp_data[2])){
+        var order_factor = Math.pow(t, Number(tmp_data[1]));
+        var grouped_terms = tmp_data[2];
+        for(var j = 0, terms_ln = grouped_terms.length; j < terms_ln; j = j + 3){
+          v[n] = v[n] + order_factor * Number(grouped_terms[j]) * Math.cos(Number(grouped_terms[j + 1]) + Number(grouped_terms[j + 2]) * t);
+        }
+      }else{
+        var sum = Math.pow(t, Number(tmp_data[1])) * Number(tmp_data[2]) * Math.cos(Number(tmp_data[3]) + Number(tmp_data[4]) * t);
+        v[n] = v[n] + sum;
+      }
     }
     return {
       x: v[0],
@@ -76,43 +75,43 @@ export class VSOP {
 
 //Orb.Earth is defined in earth.js
 export class Mercury{ 
-  constructor(){
-    return new VSOP("Mercury")
+  constructor(options = {}){
+    return new VSOP("Mercury", options)
   }
 };
 export class Venus{ 
-  constructor(){
-    return new VSOP("Venus")
+  constructor(options = {}){
+    return new VSOP("Venus", options)
   }
 };
 
 export class Mars{ 
-  constructor(){
-    return new VSOP("Mars")
+  constructor(options = {}){
+    return new VSOP("Mars", options)
   }
 };
 
 export class Jupiter{ 
-  constructor(){
-    return new VSOP("Jupiter")
+  constructor(options = {}){
+    return new VSOP("Jupiter", options)
   }
 };
 
 export class Saturn{ 
-  constructor(){
-    return new VSOP("Saturn")
+  constructor(options = {}){
+    return new VSOP("Saturn", options)
   }
 };
 
 export class Uranus{ 
-  constructor(){
-    return new VSOP("Uranus")
+  constructor(options = {}){
+    return new VSOP("Uranus", options)
   }
 };
 
 export class Neptune{ 
-  constructor(){
-    return new VSOP("Neptune")
+  constructor(options = {}){
+    return new VSOP("Neptune", options)
   }
 };
 export const Planet = VSOP;
