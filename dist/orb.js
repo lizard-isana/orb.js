@@ -2146,7 +2146,8 @@
       var target_date, rect, horizontal, radec, distance_unit;
 
       if (target.ra != undefined && target.dec != undefined) {
-        _this2.RadecToHorizontal(time, target);
+        horizontal = _this2.RadecToHorizontal(time, target);
+        distance_unit = target.unit_keywords != undefined ? get_distance_unit(target) : "";
       } else if (target.x != undefined && target.y != undefined && target.z != undefined) {
         if (target.coordinate_keywords.match(/ecliptic/)) {
           if (target.date != undefined) {
