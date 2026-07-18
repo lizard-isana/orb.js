@@ -51,51 +51,6 @@ export class Kepler{
     }  
   }
 
-  EllipticalOrbit = (time) =>{
-    var rad = Constant.RAD;
-    var gm = this.gm;
-    var epoch = this.epoch;
-    var orbital_elements = this.orbital_elements;
-    var eccentricity = Number(orbital_elements.eccentricity);
-    if (orbital_elements.semi_major_axis) {
-      var semi_major_axis = orbital_elements.semi_major_axis;
-    } else if (orbital_elements.periapsis_distance) {
-      var semi_major_axis = (orbital_elements.periapsis_distance) / (1 - eccentricity)
-    }
-    var mean_motion = Math.sqrt(gm / (semi_major_axis * semi_major_axis * semi_major_axis)) / rad;
-    var elapsed_time = Number(time.jd()) - Number(epoch);
-    if (orbital_elements.mean_anomaly != undefined && orbital_elements.epoch != undefined) {
-      var mean_anomaly = Number(orbital_elements.mean_anomaly);
-      var l = (mean_motion * elapsed_time) + mean_anomaly;
-    } else if (orbital_elements.time_of_periapsis) {
-      var mean_anomaly = mean_motion * elapsed_time;
-      var l = mean_anomaly;
-    }
-    if (l > 360) { l = l % 360 }
-    l = l * rad
-    var u = l
-    var i = 0;
-    do {
-      var ut = u;
-      var delta_u = (l - u + (eccentricity * Math.sin(u))) / (1 - (eccentricity * Math.cos(u)));
-      u = u + delta_u;
-      if (i > 1000000) { break; }
-      i++
-    } while (Math.abs(ut - u) > 0.0000001);
-    var eccentric_anomaly = u;
-    var p = Math.abs(semi_major_axis * (1 - eccentricity * eccentricity))
-    var true_anomaly = 2 * Math.atan(Math.sqrt((1 + eccentricity) / (1 - eccentricity)) * Math.tan(eccentric_anomaly / 2));
-    var r = p / (1 + eccentricity * Math.cos(true_anomaly));
-    var orbital_plane = {
-      r: r,
-      x: r * Math.cos(true_anomaly),
-      y: r * Math.sin(true_anomaly),
-      xdot: -Math.sqrt(gm / p) * Math.sin(true_anomaly),
-      ydot: Math.sqrt(gm / p) * (eccentricity + Math.cos(true_anomaly))
-    };
-    return orbital_plane;
-  }
-
   EllipticalOrbit = (time) => {
     var rad = Constant.RAD;
     var gm = this.gm;
