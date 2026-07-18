@@ -33,13 +33,13 @@
       "radius": 4879.4 / 2,
       "obliquity": 0.027,
       "mass": Number("3.301E+23"),
-      "gm": 220329
+      "gm": 22032.9
     },
     "Venus": {
       "radius": 12103.6 / 2,
       "obliquity": 177.36,
       "mass": Number("4.867E+24"),
-      "gm": 3248599
+      "gm": 324859.9
     },
     "Earth": {
       "radius": 12756.3 / 2,
@@ -51,7 +51,7 @@
       "radius": 1737.4,
       "obliquity": 1.5424,
       "mass": Number("7.346E+22"),
-      "gm": 4904.86959
+      "gm": 4902.800066
     },
     "Mars": {
       "radius": 6794.4 / 2,
@@ -63,25 +63,25 @@
       "radius": 142984 / 2,
       "obliquity": 3.08,
       "mass": Number("1.899E+27"),
-      "gm": 1266865349
+      "gm": 126686534.9
     },
     "Saturn": {
       "radius": 120536 / 2,
       "obliquity": 26.7,
       "mass": Number("5.685E+26"),
-      "gm": 379311879
+      "gm": 37931187.9
     },
     "Uranus": {
       "radius": 51118 / 2,
       "obliquity": 97.9,
-      "mass": Number("8.682E+26"),
-      "gm": 57939399
+      "mass": Number("8.681E+25"),
+      "gm": 5793939.9
     },
     "Neptune": {
       "radius": 49572 / 2,
       "obliquity": 29.6,
       "mass": Number("1.024E+26"),
-      "gm": 68365299
+      "gm": 6836529.9
     }
   };
   var Const = Constant;
