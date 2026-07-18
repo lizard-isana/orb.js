@@ -6,13 +6,9 @@ import {EclipticToEquatorial} from './orb-coordinates.js'
 
 export class Observer {
   constructor(position){
-    const rad = Constant.RAD;
-    const a = 6377.39715500; // earth radius
-    const e2 = 0.006674372230614;
-    const n = a/(Math.sqrt(1-e2*Math.cos(position.latitude*rad)))
     this.latitude = position.latitude
     this.longitude = position.longitude
-    this.altitude = position.altitude  
+    this.altitude = position.altitude
   }
 
   rectangular = (time) =>{

@@ -1984,13 +1984,6 @@
       };
     });
 
-    var _rad = Constant.RAD;
-    var _a = 6377.39715500; // earth radius
-
-    var e2 = 0.006674372230614;
-
-    _a / Math.sqrt(1 - e2 * Math.cos(position.latitude * _rad));
-
     this.latitude = position.latitude;
     this.longitude = position.longitude;
     this.altitude = position.altitude;
