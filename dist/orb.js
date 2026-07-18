@@ -1036,7 +1036,7 @@
       var mean_motion = Math.sqrt(gm / (semi_major_axis * semi_major_axis * semi_major_axis)) / rad;
       var elapsed_time = Number(time.jd()) - Number(epoch);
 
-      if (orbital_elements.mean_anomaly && orbital_elements.epoch) {
+      if (orbital_elements.mean_anomaly != undefined && orbital_elements.epoch != undefined) {
         var mean_anomaly = Number(orbital_elements.mean_anomaly);
         var l = mean_motion * elapsed_time + mean_anomaly;
       } else if (orbital_elements.time_of_periapsis) {
@@ -1094,7 +1094,7 @@
       var mean_motion = Math.sqrt(gm / (semi_major_axis * semi_major_axis * semi_major_axis)) / rad;
       var elapsed_time = Number(time.jd()) - Number(epoch);
 
-      if (orbital_elements.mean_anomaly && orbital_elements.epoch) {
+      if (orbital_elements.mean_anomaly != undefined && orbital_elements.epoch != undefined) {
         var mean_anomaly = Number(orbital_elements.mean_anomaly);
         var l = mean_motion * elapsed_time + mean_anomaly;
       } else if (orbital_elements.time_of_periapsis) {
