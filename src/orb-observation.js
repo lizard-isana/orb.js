@@ -17,7 +17,7 @@ export class Observer {
     const lng = this.longitude;
     const gmst = time.gmst();
     const lst = gmst*15 + lng;
-    const a = 6378.135 + this.altitude;  //Earth's equational radius in WGS-72 (km)
+    const a = 6378.135 + this.altitude;  //Earth's equatorial radius in WGS-72 (km)
     const f = 0.00335277945 //Earth's flattening term in WGS-72 (= 1/298.26)
     const sin_lat =Math.sin(lat*rad);
     const c = 1/Math.sqrt(1+f*(f-2)*sin_lat*sin_lat);

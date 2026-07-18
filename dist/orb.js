@@ -1812,7 +1812,7 @@
       var lst = gmst * 15;
       var f = 0.00335277945; //Earth's flattening term in WGS-72 (= 1/298.26)
 
-      var a = 6378.135; //Earth's equational radius in WGS-72 (km)
+      var a = 6378.135; //Earth's equatorial radius in WGS-72 (km)
 
       var r = Math.sqrt(xkm * xkm + ykm * ykm);
       var lng = Math.atan2(ykm, xkm) / rad - lst;
@@ -1863,7 +1863,7 @@
         "ydot": rect.ydot,
         "zdot": rect.zdot,
         "date": date,
-        "coordinate_keywords": "equational rectangular",
+        "coordinate_keywords": "equatorial rectangular",
         "unit_keywords": "km km/s"
       };
     });
@@ -1941,7 +1941,7 @@
       var lng = _this.longitude;
       var gmst = time.gmst();
       var lst = gmst * 15 + lng;
-      var a = 6378.135 + _this.altitude; //Earth's equational radius in WGS-72 (km)
+      var a = 6378.135 + _this.altitude; //Earth's equatorial radius in WGS-72 (km)
 
       var f = 0.00335277945; //Earth's flattening term in WGS-72 (= 1/298.26)
 
