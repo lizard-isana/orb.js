@@ -1402,7 +1402,7 @@
       var doy = Number(line1.substring(20, 32));
       var year2 = epoch_year - 1;
       var epoch = new Date(Date.UTC(year2, 11, 31, 0, 0, 0) + doy * 24 * 60 * 60 * 1000);
-      var epoch_str = epoch.getUTCFullYear() + "-" + ZeroFill(epoch.getUTCMonth() + 1, 2) + "-" + ZeroFill(epoch.getUTCDate(), 2) + "T" + ZeroFill(epoch.getUTCHours(), 2) + ":" + ZeroFill(epoch.getUTCMinutes(), 2) + ":" + ZeroFill(epoch.getUTCSeconds(), 2);
+      var epoch_str = epoch.getUTCFullYear() + "-" + ZeroFill(epoch.getUTCMonth() + 1, 2) + "-" + ZeroFill(epoch.getUTCDate(), 2) + "T" + ZeroFill(epoch.getUTCHours(), 2) + ":" + ZeroFill(epoch.getUTCMinutes(), 2) + ":" + ZeroFill(epoch.getUTCSeconds(), 2) + "." + ZeroFill(epoch.getUTCMilliseconds(), 3);
       var bstar_mantissa = Number(line1.substring(53, 59)) * 1e-5;
       var bstar_exponent = Number("1e" + Number(line1.substring(59, 61)));
       var bstar = bstar_mantissa * bstar_exponent;
@@ -1547,10 +1547,10 @@
 
         if (perigee <= 98.0) {
           s4 = 20.0;
-        } else {
-          var qoms24 = Math.pow((120.0 - s4) * ae / xkmper, 4);
-          s4 = s4 / xkmper + ae;
         }
+
+        qoms24 = Math.pow((120.0 - s4) * ae / xkmper, 4);
+        s4 = s4 / xkmper + ae;
       }
 
       var pinvsq = 1.0 / (aodp * aodp * betao2 * betao2);
