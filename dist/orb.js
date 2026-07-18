@@ -1121,6 +1121,29 @@
       return orbital_plane;
     });
 
+    _defineProperty(this, "ParabolicOrbit", function (time) {
+      var gm = _this.gm;
+      var epoch = _this.epoch;
+      var orbital_elements = _this.orbital_elements;
+      var periapsis_distance = Number(orbital_elements.periapsis_distance);
+      var elapsed_time = Number(time.jd()) - Number(epoch); //Barker's equation: D^3/3 + D = A, D = tan(true_anomaly/2)
+
+      var a = 1.5 * Math.sqrt(gm / (2 * periapsis_distance * periapsis_distance * periapsis_distance)) * elapsed_time;
+      var b = Math.cbrt(a + Math.sqrt(a * a + 1));
+      var d = b - 1 / b;
+      var true_anomaly = 2 * Math.atan(d);
+      var r = periapsis_distance * (1 + d * d);
+      var p = 2 * periapsis_distance;
+      var orbital_plane = {
+        r: r,
+        x: r * Math.cos(true_anomaly),
+        y: r * Math.sin(true_anomaly),
+        xdot: -Math.sqrt(gm / p) * Math.sin(true_anomaly),
+        ydot: Math.sqrt(gm / p) * (1 + Math.cos(true_anomaly))
+      };
+      return orbital_plane;
+    });
+
     _defineProperty(this, "EclipticRectangular", function (orbital_plane, date) {
       var rad = Constant.RAD;
       var orbital_elements = _this.orbital_elements;
