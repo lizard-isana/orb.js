@@ -127,8 +127,8 @@ export class Time {
 
   doy = () =>  {
     const d = this.date
-    const d0 = new Date(Date.UTC(d.getFullYear() - 1, 11, 31, 0, 0, 0));
-    const doy = ((d.getTime() - d.getTimezoneOffset() - d0.getTime()) / (1000 * 60 * 60 * 24)).toFixed(8);
+    const d0 = Date.UTC(d.getUTCFullYear() - 1, 11, 31, 0, 0, 0);
+    const doy = (d.getTime() - d0) / (1000 * 60 * 60 * 24);
     return doy
   }
 }

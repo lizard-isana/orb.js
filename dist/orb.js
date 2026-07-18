@@ -287,8 +287,8 @@
 
     _defineProperty(this, "doy", function () {
       var d = _this.date;
-      var d0 = new Date(Date.UTC(d.getFullYear() - 1, 11, 31, 0, 0, 0));
-      var doy = ((d.getTime() - d.getTimezoneOffset() - d0.getTime()) / (1000 * 60 * 60 * 24)).toFixed(8);
+      var d0 = Date.UTC(d.getUTCFullYear() - 1, 11, 31, 0, 0, 0);
+      var doy = (d.getTime() - d0) / (1000 * 60 * 60 * 24);
       return doy;
     });
 
