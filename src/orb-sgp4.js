@@ -62,12 +62,13 @@ export class SGP4{
     var doy = Number(line1.substring(20, 32))
     var year2 = epoch_year - 1;
     var epoch = new Date(Date.UTC(year2, 11, 31, 0, 0, 0) + (doy * 24 * 60 * 60 * 1000));
-    var epoch_str = epoch.getUTCFullYear() + "-" + ZeroFill(epoch.getUTCMonth() + 1, 2) + "-" + ZeroFill(epoch.getUTCDate(), 2) + "T" + ZeroFill(epoch.getUTCHours(), 2) + ":" + ZeroFill(epoch.getUTCMinutes(), 2) + ":" + ZeroFill(epoch.getUTCSeconds(), 2);
+    var epoch_str = epoch.getUTCFullYear() + "-" + ZeroFill(epoch.getUTCMonth() + 1, 2) + "-" + ZeroFill(epoch.getUTCDate(), 2) + "T" + ZeroFill(epoch.getUTCHours(), 2) + ":" + ZeroFill(epoch.getUTCMinutes(), 2) + ":" + ZeroFill(epoch.getUTCSeconds(), 2) + "." + ZeroFill(epoch.getUTCMilliseconds(), 3);
     var bstar_mantissa = Number(line1.substring(53, 59)) * 1e-5;
     var bstar_exponent = Number("1e" + Number(line1.substring(59, 61)));
     var bstar = bstar_mantissa * bstar_exponent
-    var mm_ddot = line1.substring(45, 52).split("-");
-    var mean_motion_ddot = Number(mm_ddot[0]) * 10 ^ (0 - Number(mm_ddot[1]))
+    var nddot_mantissa = Number(line1.substring(44, 50)) * 1e-5;
+    var nddot_exponent = Number(line1.substring(50, 52));
+    var mean_motion_ddot = nddot_mantissa * Math.pow(10, nddot_exponent);
     var omm = {
       "CCSDS_OMM_VERS": "2.0",
       "COMMENT": "GENERATED VIA ORB.JS",
@@ -87,7 +88,7 @@ export class SGP4{
       "ARG_OF_PERICENTER": Number(line2.substring(34, 42)),
       "MEAN_ANOMALY": Number(line2.substring(43, 51)),
       "EPHEMERIS_TYPE": Number(line1.substring(62, 63)),
-      "CLASSIFICATION_TYPE": Number(line1.slice(7, 7)),
+      "CLASSIFICATION_TYPE": line1.slice(7, 8),
       "NORAD_CAT_ID": Number(line1.slice(2, 7)),
       "ELEMENT_SET_NO": Number(line1.substring(64, 68)),
       "REV_AT_EPOCH": Number(line2.substring(64, 68)),
@@ -118,9 +119,9 @@ export class SGP4{
     var bstar = bstar_mantissa * bstar_exponent
     var orbital_elements = {
       name: name,
-      line_number_1: Number(line1.slice(0, 0)),
-      catalog_no_1: Number(line1.slice(2, 6)),
-      security_classification: Number(line1.slice(7, 7)),
+      line_number_1: Number(line1.slice(0, 1)),
+      catalog_no_1: Number(line1.slice(2, 7)),
+      security_classification: line1.slice(7, 8),
       international_identification: Number(line1.slice(9, 17)),
       epoch_year: epoch_year,
       epoch: Number(line1.substring(20, 32)),
@@ -131,17 +132,17 @@ export class SGP4{
       bstar: bstar,
       ephemeris_type: Number(line1.substring(62, 63)),
       element_number: Number(line1.substring(64, 68)),
-      check_sum_1: Number(line1.substring(69, 69)),
-      line_number_2: Number(line1.slice(0, 0)),
+      check_sum_1: Number(line1.substring(68, 69)),
+      line_number_2: Number(line2.slice(0, 1)),
       catalog_no_2: Number(line2.slice(2, 7)),
       inclination: Number(line2.substring(8, 16)),
       right_ascension: Number(line2.substring(17, 25)),
-      eccentricity: Number(line2.substring(26, 33)),
+      eccentricity: Number(line2.substring(26, 33)) * 1e-7,
       argument_of_perigee: Number(line2.substring(34, 42)),
       mean_anomaly: Number(line2.substring(43, 51)),
       mean_motion: Number(line2.substring(52, 63)),
       rev_number_at_epoch: Number(line2.substring(64, 68)),
-      check_sum_2: Number(line1.substring(68, 69))
+      check_sum_2: Number(line2.substring(68, 69))
     }
     return orbital_elements
   }
@@ -197,10 +198,9 @@ export class SGP4{
       s4 = perigee - 78.0;
       if (perigee <= 98.0) {
         s4 = 20.0;
-      } else {
-        var qoms24 = Math.pow(((120.0 - s4) * ae / xkmper), 4);
-        s4 = s4 / xkmper + ae;
       }
+      qoms24 = Math.pow(((120.0 - s4) * ae / xkmper), 4);
+      s4 = s4 / xkmper + ae;
     }
     var pinvsq = 1.0 / (aodp * aodp * betao2 * betao2);
     var tsi = 1.0 / (aodp - s4);
@@ -478,7 +478,7 @@ export class SGP4{
     var gmst = time.gmst();
     var lst = gmst * 15;
     var f = 0.00335277945 //Earth's flattening term in WGS-72 (= 1/298.26)
-    var a = 6378.135  //Earth's equational radius in WGS-72 (km)
+    var a = 6378.135  //Earth's equatorial radius in WGS-72 (km)
     var r = Math.sqrt(xkm * xkm + ykm * ykm);
     var lng = Math.atan2(ykm, xkm) / rad - lst;
     if (lng > 360) { lng = lng % 360; }
@@ -514,7 +514,7 @@ export class SGP4{
       "ydot": rect.ydot,
       "zdot": rect.zdot,
       "date": date,
-      "coordinate_keywords": "equational rectangular",
+      "coordinate_keywords": "equatorial rectangular",
       "unit_keywords": "km km/s"
     }
   }

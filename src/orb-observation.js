@@ -6,13 +6,9 @@ import {EclipticToEquatorial} from './orb-coordinates.js'
 
 export class Observer {
   constructor(position){
-    const rad = Constant.RAD;
-    const a = 6377.39715500; // earth radius
-    const e2 = 0.006674372230614;
-    const n = a/(Math.sqrt(1-e2*Math.cos(position.latitude*rad)))
     this.latitude = position.latitude
     this.longitude = position.longitude
-    this.altitude = position.altitude  
+    this.altitude = position.altitude
   }
 
   rectangular = (time) =>{
@@ -21,7 +17,7 @@ export class Observer {
     const lng = this.longitude;
     const gmst = time.gmst();
     const lst = gmst*15 + lng;
-    const a = 6378.135 + this.altitude;  //Earth's equational radius in WGS-72 (km)
+    const a = 6378.135 + this.altitude;  //Earth's equatorial radius in WGS-72 (km)
     const f = 0.00335277945 //Earth's flattening term in WGS-72 (= 1/298.26)
     const sin_lat =Math.sin(lat*rad);
     const c = 1/Math.sqrt(1+f*(f-2)*sin_lat*sin_lat);
@@ -90,6 +86,17 @@ export class Observation {
         return ""
       }
     }
+    // The observer position is in km; convert the target to km when it
+    // comes in astronomical units so the topocentric subtraction is valid.
+    if (rect.unit_keywords != undefined && rect.unit_keywords.match(/au/)) {
+      rect = {
+        x: rect.x * Constant.AU,
+        y: rect.y * Constant.AU,
+        z: rect.z * Constant.AU,
+        coordinate_keywords: rect.coordinate_keywords,
+        unit_keywords: rect.unit_keywords.replace(/au/, "km")
+      }
+    }
     const distance_unit = get_distance_unit(rect)
     const rad = Constant.RAD;
     const observer = this.observer;
@@ -140,8 +147,8 @@ export class Observation {
     let target_date,rect,horizontal,radec,distance_unit
 
     if(target.ra != undefined && target.dec != undefined){
-      const horizontal = this.RadecToHorizontal(time,target)
-      const distance_unit = " au"
+      horizontal = this.RadecToHorizontal(time,target)
+      distance_unit = target.unit_keywords != undefined ? get_distance_unit(target) : ""
     }else if(target.x != undefined && target.y != undefined && target.z != undefined){
       if(target.coordinate_keywords.match(/ecliptic/)){
         if(target.date != undefined ){
@@ -154,7 +161,7 @@ export class Observation {
         rect = target
       }
       horizontal = this.RectToHorizontal(time,rect)
-      distance_unit = get_distance_unit(rect)
+      distance_unit = get_distance_unit(horizontal)
     }else if(target.radec != undefined){
       radec = target.radec(date)
       horizontal = this.RadecToHorizontal(time,radec)
@@ -162,7 +169,7 @@ export class Observation {
     }else if(target.xyz != undefined){
       rect = target.xyz(date);
       horizontal = this.RectToHorizontal(time,rect)
-      distance_unit = get_distance_unit(rect)
+      distance_unit = get_distance_unit(horizontal)
     }
 
     return {

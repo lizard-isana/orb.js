@@ -33,13 +33,13 @@
       "radius": 4879.4 / 2,
       "obliquity": 0.027,
       "mass": Number("3.301E+23"),
-      "gm": 220329
+      "gm": 22032.9
     },
     "Venus": {
       "radius": 12103.6 / 2,
       "obliquity": 177.36,
       "mass": Number("4.867E+24"),
-      "gm": 3248599
+      "gm": 324859.9
     },
     "Earth": {
       "radius": 12756.3 / 2,
@@ -51,7 +51,7 @@
       "radius": 1737.4,
       "obliquity": 1.5424,
       "mass": Number("7.346E+22"),
-      "gm": 4904.86959
+      "gm": 4902.800066
     },
     "Mars": {
       "radius": 6794.4 / 2,
@@ -63,25 +63,25 @@
       "radius": 142984 / 2,
       "obliquity": 3.08,
       "mass": Number("1.899E+27"),
-      "gm": 1266865349
+      "gm": 126686534.9
     },
     "Saturn": {
       "radius": 120536 / 2,
       "obliquity": 26.7,
       "mass": Number("5.685E+26"),
-      "gm": 379311879
+      "gm": 37931187.9
     },
     "Uranus": {
       "radius": 51118 / 2,
       "obliquity": 97.9,
-      "mass": Number("8.682E+26"),
-      "gm": 57939399
+      "mass": Number("8.681E+25"),
+      "gm": 5793939.9
     },
     "Neptune": {
       "radius": 49572 / 2,
       "obliquity": 29.6,
       "mass": Number("1.024E+26"),
-      "gm": 68365299
+      "gm": 6836529.9
     }
   };
   var Const = Constant;
@@ -145,10 +145,6 @@
 
     return obj;
   }
-
-  Math.trunc = Math.trunc || function (x) {
-    return x < 0 ? Math.ceil(x) : Math.floor(x);
-  };
 
   var Time = /*#__PURE__*/_createClass(function Time() {
     var _this = this;
@@ -238,7 +234,7 @@
         dt = -20 + 32 * u * u;
       } else if (year > -500 && year <= 500) {
         u = y / 100;
-        dt = 10583.6 - 1014.41 * u + 33.78311 * u * u - 5.952053 * u * u * u - 0.1798452 * u * u * u * u + 0.022174192 * u * u * u * u * u + 0.0090316521 * u * u * u * u * u;
+        dt = 10583.6 - 1014.41 * u + 33.78311 * u * u - 5.952053 * u * u * u - 0.1798452 * u * u * u * u + 0.022174192 * u * u * u * u * u + 0.0090316521 * u * u * u * u * u * u;
       } else if (year > 500 && year <= 1600) {
         u = (y - 1000) / 100;
         dt = 1574.2 - 556.01 * u + 71.23472 * u * u + 0.319781 * u * u * u - 0.8503463 * u * u * u * u - 0.005050998 * u * u * u * u * u + 0.0083572073 * u * u * u * u * u * u;
@@ -287,8 +283,8 @@
 
     _defineProperty(this, "doy", function () {
       var d = _this.date;
-      var d0 = new Date(Date.UTC(d.getFullYear() - 1, 11, 31, 0, 0, 0));
-      var doy = ((d.getTime() - d.getTimezoneOffset() - d0.getTime()) / (1000 * 60 * 60 * 24)).toFixed(8);
+      var d0 = Date.UTC(d.getUTCFullYear() - 1, 11, 31, 0, 0, 0);
+      var doy = (d.getTime() - d0) / (1000 * 60 * 60 * 24);
       return doy;
     });
 
@@ -748,7 +744,7 @@
       'z': ecliptic.z,
       'date': date,
       "coordinate_keywords": "ecliptic rectangular",
-      "unit_keywords": ""
+      "unit_keywords": equatorial.unit_keywords != undefined ? equatorial.unit_keywords : ""
     };
   };
   var EclipticToEquatorial = function EclipticToEquatorial(parameter) {
@@ -766,7 +762,7 @@
       'z': equatorial.z,
       'date': date,
       "coordinate_keywords": "equatorial rectangular",
-      "unit_keywords": ""
+      "unit_keywords": ecliptic.unit_keywords != undefined ? ecliptic.unit_keywords : ""
     };
   };
   var EclipticToEquatorialJ2000 = function EclipticToEquatorialJ2000(parameter) {
@@ -1516,6 +1512,29 @@
       return orbital_plane;
     });
 
+    _defineProperty(this, "ParabolicOrbit", function (time) {
+      var gm = _this.gm;
+      var epoch = _this.epoch;
+      var orbital_elements = _this.orbital_elements;
+      var periapsis_distance = Number(orbital_elements.periapsis_distance);
+      var elapsed_time = Number(time.jd()) - Number(epoch); //Barker's equation: D^3/3 + D = A, D = tan(true_anomaly/2)
+
+      var a = 1.5 * Math.sqrt(gm / (2 * periapsis_distance * periapsis_distance * periapsis_distance)) * elapsed_time;
+      var b = Math.cbrt(a + Math.sqrt(a * a + 1));
+      var d = b - 1 / b;
+      var true_anomaly = 2 * Math.atan(d);
+      var r = periapsis_distance * (1 + d * d);
+      var p = 2 * periapsis_distance;
+      var orbital_plane = {
+        r: r,
+        x: r * Math.cos(true_anomaly),
+        y: r * Math.sin(true_anomaly),
+        xdot: -Math.sqrt(gm / p) * Math.sin(true_anomaly),
+        ydot: Math.sqrt(gm / p) * (1 + Math.cos(true_anomaly))
+      };
+      return orbital_plane;
+    });
+
     _defineProperty(this, "EclipticRectangular", function (orbital_plane, date) {
       var rad = Constant.RAD;
       var orbital_elements = _this.orbital_elements;
@@ -1774,12 +1793,13 @@
       var doy = Number(line1.substring(20, 32));
       var year2 = epoch_year - 1;
       var epoch = new Date(Date.UTC(year2, 11, 31, 0, 0, 0) + doy * 24 * 60 * 60 * 1000);
-      var epoch_str = epoch.getUTCFullYear() + "-" + ZeroFill(epoch.getUTCMonth() + 1, 2) + "-" + ZeroFill(epoch.getUTCDate(), 2) + "T" + ZeroFill(epoch.getUTCHours(), 2) + ":" + ZeroFill(epoch.getUTCMinutes(), 2) + ":" + ZeroFill(epoch.getUTCSeconds(), 2);
+      var epoch_str = epoch.getUTCFullYear() + "-" + ZeroFill(epoch.getUTCMonth() + 1, 2) + "-" + ZeroFill(epoch.getUTCDate(), 2) + "T" + ZeroFill(epoch.getUTCHours(), 2) + ":" + ZeroFill(epoch.getUTCMinutes(), 2) + ":" + ZeroFill(epoch.getUTCSeconds(), 2) + "." + ZeroFill(epoch.getUTCMilliseconds(), 3);
       var bstar_mantissa = Number(line1.substring(53, 59)) * 1e-5;
       var bstar_exponent = Number("1e" + Number(line1.substring(59, 61)));
       var bstar = bstar_mantissa * bstar_exponent;
-      var mm_ddot = line1.substring(45, 52).split("-");
-      var mean_motion_ddot = Number(mm_ddot[0]) * 10 ^ 0 - Number(mm_ddot[1]);
+      var nddot_mantissa = Number(line1.substring(44, 50)) * 1e-5;
+      var nddot_exponent = Number(line1.substring(50, 52));
+      var mean_motion_ddot = nddot_mantissa * Math.pow(10, nddot_exponent);
       var omm = {
         "CCSDS_OMM_VERS": "2.0",
         "COMMENT": "GENERATED VIA ORB.JS",
@@ -1799,7 +1819,7 @@
         "ARG_OF_PERICENTER": Number(line2.substring(34, 42)),
         "MEAN_ANOMALY": Number(line2.substring(43, 51)),
         "EPHEMERIS_TYPE": Number(line1.substring(62, 63)),
-        "CLASSIFICATION_TYPE": Number(line1.slice(7, 7)),
+        "CLASSIFICATION_TYPE": line1.slice(7, 8),
         "NORAD_CAT_ID": Number(line1.slice(2, 7)),
         "ELEMENT_SET_NO": Number(line1.substring(64, 68)),
         "REV_AT_EPOCH": Number(line2.substring(64, 68)),
@@ -1836,9 +1856,9 @@
       var bstar = bstar_mantissa * bstar_exponent;
       var orbital_elements = {
         name: name,
-        line_number_1: Number(line1.slice(0, 0)),
-        catalog_no_1: Number(line1.slice(2, 6)),
-        security_classification: Number(line1.slice(7, 7)),
+        line_number_1: Number(line1.slice(0, 1)),
+        catalog_no_1: Number(line1.slice(2, 7)),
+        security_classification: line1.slice(7, 8),
         international_identification: Number(line1.slice(9, 17)),
         epoch_year: epoch_year,
         epoch: Number(line1.substring(20, 32)),
@@ -1849,17 +1869,17 @@
         bstar: bstar,
         ephemeris_type: Number(line1.substring(62, 63)),
         element_number: Number(line1.substring(64, 68)),
-        check_sum_1: Number(line1.substring(69, 69)),
-        line_number_2: Number(line1.slice(0, 0)),
+        check_sum_1: Number(line1.substring(68, 69)),
+        line_number_2: Number(line2.slice(0, 1)),
         catalog_no_2: Number(line2.slice(2, 7)),
         inclination: Number(line2.substring(8, 16)),
         right_ascension: Number(line2.substring(17, 25)),
-        eccentricity: Number(line2.substring(26, 33)),
+        eccentricity: Number(line2.substring(26, 33)) * 1e-7,
         argument_of_perigee: Number(line2.substring(34, 42)),
         mean_anomaly: Number(line2.substring(43, 51)),
         mean_motion: Number(line2.substring(52, 63)),
         rev_number_at_epoch: Number(line2.substring(64, 68)),
-        check_sum_2: Number(line1.substring(68, 69))
+        check_sum_2: Number(line2.substring(68, 69))
       };
       return orbital_elements;
     });
@@ -1918,10 +1938,10 @@
 
         if (perigee <= 98.0) {
           s4 = 20.0;
-        } else {
-          var qoms24 = Math.pow((120.0 - s4) * ae / xkmper, 4);
-          s4 = s4 / xkmper + ae;
         }
+
+        qoms24 = Math.pow((120.0 - s4) * ae / xkmper, 4);
+        s4 = s4 / xkmper + ae;
       }
 
       var pinvsq = 1.0 / (aodp * aodp * betao2 * betao2);
@@ -2212,7 +2232,7 @@
       var lst = gmst * 15;
       var f = 0.00335277945; //Earth's flattening term in WGS-72 (= 1/298.26)
 
-      var a = 6378.135; //Earth's equational radius in WGS-72 (km)
+      var a = 6378.135; //Earth's equatorial radius in WGS-72 (km)
 
       var r = Math.sqrt(xkm * xkm + ykm * ykm);
       var lng = Math.atan2(ykm, xkm) / rad - lst;
@@ -2263,7 +2283,7 @@
         "ydot": rect.ydot,
         "zdot": rect.zdot,
         "date": date,
-        "coordinate_keywords": "equational rectangular",
+        "coordinate_keywords": "equatorial rectangular",
         "unit_keywords": "km km/s"
       };
     });
@@ -2341,7 +2361,7 @@
       var lng = _this.longitude;
       var gmst = time.gmst();
       var lst = gmst * 15 + lng;
-      var a = 6378.135 + _this.altitude; //Earth's equational radius in WGS-72 (km)
+      var a = 6378.135 + _this.altitude; //Earth's equatorial radius in WGS-72 (km)
 
       var f = 0.00335277945; //Earth's flattening term in WGS-72 (= 1/298.26)
 
@@ -2354,13 +2374,6 @@
         z: a * s * Math.sin(lat * rad)
       };
     });
-
-    var _rad = Constant.RAD;
-    var _a = 6377.39715500; // earth radius
-
-    var e2 = 0.006674372230614;
-
-    _a / Math.sqrt(1 - e2 * Math.cos(position.latitude * _rad));
 
     this.latitude = position.latitude;
     this.longitude = position.longitude;
@@ -2425,6 +2438,18 @@
         } else {
           return "";
         }
+      } // The observer position is in km; convert the target to km when it
+      // comes in astronomical units so the topocentric subtraction is valid.
+
+
+      if (rect.unit_keywords != undefined && rect.unit_keywords.match(/au/)) {
+        rect = {
+          x: rect.x * Constant.AU,
+          y: rect.y * Constant.AU,
+          z: rect.z * Constant.AU,
+          coordinate_keywords: rect.coordinate_keywords,
+          unit_keywords: rect.unit_keywords.replace(/au/, "km")
+        };
       }
 
       var distance_unit = get_distance_unit(rect);
@@ -2483,7 +2508,8 @@
       var target_date, rect, horizontal, radec, distance_unit;
 
       if (target.ra != undefined && target.dec != undefined) {
-        _this2.RadecToHorizontal(time, target);
+        horizontal = _this2.RadecToHorizontal(time, target);
+        distance_unit = target.unit_keywords != undefined ? get_distance_unit(target) : "";
       } else if (target.x != undefined && target.y != undefined && target.z != undefined) {
         if (target.coordinate_keywords.match(/ecliptic/)) {
           if (target.date != undefined) {
@@ -2501,7 +2527,7 @@
         }
 
         horizontal = _this2.RectToHorizontal(time, rect);
-        distance_unit = get_distance_unit(rect);
+        distance_unit = get_distance_unit(horizontal);
       } else if (target.radec != undefined) {
         radec = target.radec(date);
         horizontal = _this2.RadecToHorizontal(time, radec);
@@ -2509,7 +2535,7 @@
       } else if (target.xyz != undefined) {
         rect = target.xyz(date);
         horizontal = _this2.RectToHorizontal(time, rect);
-        distance_unit = get_distance_unit(rect);
+        distance_unit = get_distance_unit(horizontal);
       }
 
       return {

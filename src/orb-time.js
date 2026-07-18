@@ -1,9 +1,5 @@
 import {Constant} from './orb-core.js';
 
-Math.trunc = Math.trunc || function(x) {
-  return x < 0 ? Math.ceil(x) : Math.floor(x);
-}
-
 export class Time {
   constructor(date = new Date()) {
     this.date = date;
@@ -78,7 +74,7 @@ export class Time {
       dt = -20 + 32 * u * u;
     } else if (year > -500 && year <= 500) {
       u = y / 100;
-      dt = 10583.6 - 1014.41 * u + 33.78311 * u * u - 5.952053 * u * u * u - 0.1798452 * u * u * u * u + 0.022174192 * u * u * u * u * u + 0.0090316521 * u * u * u * u * u;
+      dt = 10583.6 - 1014.41 * u + 33.78311 * u * u - 5.952053 * u * u * u - 0.1798452 * u * u * u * u + 0.022174192 * u * u * u * u * u + 0.0090316521 * u * u * u * u * u * u;
     } else if (year > 500 && year <= 1600) {
       u = (y - 1000) / 100;
       dt = 1574.2 - 556.01 * u + 71.23472 * u * u + 0.319781 * u * u * u - 0.8503463 * u * u * u * u - 0.005050998 * u * u * u * u * u + 0.0083572073 * u * u * u * u * u * u;
@@ -127,8 +123,8 @@ export class Time {
 
   doy = () =>  {
     const d = this.date
-    const d0 = new Date(Date.UTC(d.getFullYear() - 1, 11, 31, 0, 0, 0));
-    const doy = ((d.getTime() - d.getTimezoneOffset() - d0.getTime()) / (1000 * 60 * 60 * 24)).toFixed(8);
+    const d0 = Date.UTC(d.getUTCFullYear() - 1, 11, 31, 0, 0, 0);
+    const doy = (d.getTime() - d0) / (1000 * 60 * 60 * 24);
     return doy
   }
 }
