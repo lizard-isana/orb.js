@@ -6,31 +6,6 @@ import {Time} from './orb-time.js'
 import {EclipticToEquatorial, XYZtoRadec} from './orb-coordinates.js'
 import {Nutation,Obliquity} from './orb-obliquity.js'
 
-Math.cosh = Math.cosh || function (x) {
-  var y = Math.exp(x);
-  return (y + 1 / y) / 2;
-};
-
-Math.sinh = Math.sinh || function (x) {
-  var y = Math.exp(x);
-  return (y - 1 / y) / 2;
-};
-
-Math.tanh = Math.tanh || function (x) {
-  if (x === Infinity) {
-    return 1;
-  } else if (x === -Infinity) {
-    return -1;
-  } else {
-    var y = Math.exp(2 * x);
-    return (y - 1) / (y + 1);
-  }
-}
-
-Math.atanh = Math.atanh || function (x) {
-  return Math.log((1 + x) / (1 - x)) / 2;
-};
-
 export class Kepler{
   constructor(orbital_elements){
     this.orbital_elements = orbital_elements;

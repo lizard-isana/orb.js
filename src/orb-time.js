@@ -1,9 +1,5 @@
 import {Constant} from './orb-core.js';
 
-Math.trunc = Math.trunc || function(x) {
-  return x < 0 ? Math.ceil(x) : Math.floor(x);
-}
-
 export class Time {
   constructor(date = new Date()) {
     this.date = date;
