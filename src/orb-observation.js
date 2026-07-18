@@ -2,7 +2,7 @@
 
 import {Constant} from './orb-core.js'
 import {Time} from './orb-time.js'
-import {EclipticToEquatorial} from './orb-coordinates.js'
+import {EclipticToEquatorial, RadecToXYZ} from './orb-coordinates.js'
 
 export class Observer {
   constructor(position){
@@ -146,9 +146,26 @@ export class Observation {
     }
     let target_date,rect,horizontal,radec,distance_unit
 
+    // When the target's distance and its unit are known, go through the
+    // rectangular path so the observer's geocentric position is subtracted:
+    // this applies diurnal parallax (up to ~1 degree for the Moon). Targets
+    // without a usable distance keep the purely angular conversion.
+    const HorizontalFromRadec = (radec_obj) => {
+      if (radec_obj.distance != undefined && radec_obj.unit_keywords != undefined && radec_obj.unit_keywords.match(/km|au/)) {
+        return this.RectToHorizontal(time, RadecToXYZ(radec_obj))
+      }
+      return this.RadecToHorizontal(time, radec_obj)
+    }
+    const DistanceUnitFromRadec = (h, radec_obj) => {
+      if (h.unit_keywords != undefined) {
+        return get_distance_unit(h)
+      }
+      return radec_obj.unit_keywords != undefined ? get_distance_unit(radec_obj) : ""
+    }
+
     if(target.ra != undefined && target.dec != undefined){
-      horizontal = this.RadecToHorizontal(time,target)
-      distance_unit = target.unit_keywords != undefined ? get_distance_unit(target) : ""
+      horizontal = HorizontalFromRadec(target)
+      distance_unit = DistanceUnitFromRadec(horizontal, target)
     }else if(target.x != undefined && target.y != undefined && target.z != undefined){
       if(target.coordinate_keywords.match(/ecliptic/)){
         if(target.date != undefined ){
@@ -164,8 +181,8 @@ export class Observation {
       distance_unit = get_distance_unit(horizontal)
     }else if(target.radec != undefined){
       radec = target.radec(date)
-      horizontal = this.RadecToHorizontal(time,radec)
-      distance_unit = get_distance_unit(radec)
+      horizontal = HorizontalFromRadec(radec)
+      distance_unit = DistanceUnitFromRadec(horizontal, radec)
     }else if(target.xyz != undefined){
       rect = target.xyz(date);
       horizontal = this.RectToHorizontal(time,rect)

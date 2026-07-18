@@ -22,13 +22,21 @@ export const RadecToXYZ = (parameter) => {
     "y": distance * Math.cos(dec * rad) * Math.sin(ra * rad),
     "z": distance * Math.sin(dec * rad)
   }
+  let unit_keywords = "";
+  if (parameter.unit_keywords != undefined) {
+    if (parameter.unit_keywords.match(/km/)) {
+      unit_keywords = "km"
+    } else if (parameter.unit_keywords.match(/au/)) {
+      unit_keywords = "au"
+    }
+  }
   return {
     'x': xyz.x,
     'y': xyz.y,
     'z': xyz.z,
     'date': date,
     "coordinate_keywords": "equatorial rectangular",
-    "unit_keywords": ""
+    "unit_keywords": unit_keywords
   }
 }
 
@@ -64,13 +72,21 @@ export const XYZtoRadec = function (parameter) {
   ra = ra / 15
   const dec = Math.atan2(eqz, Math.sqrt(eqx * eqx + eqy * eqy)) / rad;
   const distance = Math.sqrt(eqx * eqx + eqy * eqy + eqz * eqz);
+  let distance_unit = "";
+  if (rect.unit_keywords != undefined) {
+    if (rect.unit_keywords.match(/km/)) {
+      distance_unit = " km"
+    } else if (rect.unit_keywords.match(/au/)) {
+      distance_unit = " au"
+    }
+  }
   return {
     "ra": ra,
     "dec": dec,
     "distance": distance,
     "date": date,
     "coordinate_keywords": "equatorial spherical",
-    "unit_keywords": "hours degree"
+    "unit_keywords": "hours degree" + distance_unit
   };
 }
 

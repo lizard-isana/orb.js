@@ -4,7 +4,6 @@
 const assert = require('assert');
 const Orb = require('../dist/orb.js');
 
-const AU = 149597870.7;
 let failed = 0;
 function test(name, fn) {
   try {
@@ -178,8 +177,24 @@ test('Observation.azel agrees between instance and xyz targets', () => {
   const a2 = new Orb.Observation({ observer, target: new Orb.Mars().xyz(date) }).azel(date);
   assert.ok(Math.abs(a1.azimuth - a2.azimuth) < 0.05, a1.azimuth + ' vs ' + a2.azimuth);
   assert.ok(Math.abs(a1.elevation - a2.elevation) < 0.05, a1.elevation + ' vs ' + a2.elevation);
-  assert.ok(a2.unit_keywords.match(/km/), 'converted distance must be labeled km');
-  assert.ok(Math.abs(a2.distance / AU - a1.distance) < 0.001, 'distances must agree');
+  assert.ok(a1.unit_keywords.match(/km/) && a2.unit_keywords.match(/km/), 'distances must be labeled km');
+  assert.ok(Math.abs(a2.distance / a1.distance - 1) < 1e-4, 'distances must agree');
+});
+
+test('Observation.azel applies diurnal parallax for the Moon', () => {
+  const date = new Date(Date.UTC(2026, 6, 18, 12, 0, 0));
+  const luna = new Orb.Luna();
+  // instance (radec) path and xyz path must agree now that both are topocentric
+  const m1 = new Orb.Observation({ observer, target: luna }).azel(date);
+  const m2 = new Orb.Observation({ observer, target: luna.xyz(date) }).azel(date);
+  assert.ok(Math.abs(m1.elevation - m2.elevation) < 0.01, m1.elevation + ' vs ' + m2.elevation);
+  assert.ok(Math.abs(m1.azimuth - m2.azimuth) < 0.01, m1.azimuth + ' vs ' + m2.azimuth);
+  // the shift from the geocentric elevation must match parallax * cos(elevation)
+  const radec = luna.radec(date);
+  const geo = new Orb.Observation({ observer, target: { ra: radec.ra, dec: radec.dec } }).azel(date);
+  const shift = geo.elevation - m1.elevation;
+  const expected = luna.parallax(date) * Math.cos(m1.elevation * Math.PI / 180);
+  assert.ok(Math.abs(shift - expected) < 0.01, 'shift=' + shift + ' expected=' + expected);
 });
 
 test('Observation.azel works for a satellite xyz target', () => {
