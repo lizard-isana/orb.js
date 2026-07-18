@@ -1406,8 +1406,9 @@
       var bstar_mantissa = Number(line1.substring(53, 59)) * 1e-5;
       var bstar_exponent = Number("1e" + Number(line1.substring(59, 61)));
       var bstar = bstar_mantissa * bstar_exponent;
-      var mm_ddot = line1.substring(45, 52).split("-");
-      var mean_motion_ddot = Number(mm_ddot[0]) * 10 ^ 0 - Number(mm_ddot[1]);
+      var nddot_mantissa = Number(line1.substring(44, 50)) * 1e-5;
+      var nddot_exponent = Number(line1.substring(50, 52));
+      var mean_motion_ddot = nddot_mantissa * Math.pow(10, nddot_exponent);
       var omm = {
         "CCSDS_OMM_VERS": "2.0",
         "COMMENT": "GENERATED VIA ORB.JS",
@@ -1427,7 +1428,7 @@
         "ARG_OF_PERICENTER": Number(line2.substring(34, 42)),
         "MEAN_ANOMALY": Number(line2.substring(43, 51)),
         "EPHEMERIS_TYPE": Number(line1.substring(62, 63)),
-        "CLASSIFICATION_TYPE": Number(line1.slice(7, 7)),
+        "CLASSIFICATION_TYPE": line1.slice(7, 8),
         "NORAD_CAT_ID": Number(line1.slice(2, 7)),
         "ELEMENT_SET_NO": Number(line1.substring(64, 68)),
         "REV_AT_EPOCH": Number(line2.substring(64, 68)),
@@ -1464,9 +1465,9 @@
       var bstar = bstar_mantissa * bstar_exponent;
       var orbital_elements = {
         name: name,
-        line_number_1: Number(line1.slice(0, 0)),
-        catalog_no_1: Number(line1.slice(2, 6)),
-        security_classification: Number(line1.slice(7, 7)),
+        line_number_1: Number(line1.slice(0, 1)),
+        catalog_no_1: Number(line1.slice(2, 7)),
+        security_classification: line1.slice(7, 8),
         international_identification: Number(line1.slice(9, 17)),
         epoch_year: epoch_year,
         epoch: Number(line1.substring(20, 32)),
@@ -1477,17 +1478,17 @@
         bstar: bstar,
         ephemeris_type: Number(line1.substring(62, 63)),
         element_number: Number(line1.substring(64, 68)),
-        check_sum_1: Number(line1.substring(69, 69)),
-        line_number_2: Number(line1.slice(0, 0)),
+        check_sum_1: Number(line1.substring(68, 69)),
+        line_number_2: Number(line2.slice(0, 1)),
         catalog_no_2: Number(line2.slice(2, 7)),
         inclination: Number(line2.substring(8, 16)),
         right_ascension: Number(line2.substring(17, 25)),
-        eccentricity: Number(line2.substring(26, 33)),
+        eccentricity: Number(line2.substring(26, 33)) * 1e-7,
         argument_of_perigee: Number(line2.substring(34, 42)),
         mean_anomaly: Number(line2.substring(43, 51)),
         mean_motion: Number(line2.substring(52, 63)),
         rev_number_at_epoch: Number(line2.substring(64, 68)),
-        check_sum_2: Number(line1.substring(68, 69))
+        check_sum_2: Number(line2.substring(68, 69))
       };
       return orbital_elements;
     });
