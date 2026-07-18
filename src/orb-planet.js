@@ -25,7 +25,7 @@ export class VSOP {
   exec_vsop = (date) => {
     var target_data = this.vsop_target;
     var time = new Time(date)
-    var jd = time.jd();
+    var jd = time.jd_tt();
     var t = ((jd - 2451545.0) / 365250);
     var v = [0, 0, 0];
     for (var i = 0, ln = target_data.length; i < ln; i++) {

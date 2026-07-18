@@ -10,9 +10,7 @@ export class Luna{
   latlng = (date) => {
     var time = new Time(date)
     var rad = Constant.RAD;
-    //var dt = DeltaT()/86400;
-    //var dt = 64/86400;
-    var jd = time.jd(); // + dt;
+    var jd = time.jd_tt();
 
     //ephemeris days from the epch J2000.0
     var t = (jd - 2451545.0) / 36525;
@@ -176,7 +174,7 @@ export class Luna{
     var rad = Constant.RAD
     var time = new Time(date)
     var now = date;
-    var jd = time.jd();
+    var jd = time.jd_tt();
     var date_first = new Date(time.year, 0, 1, 0, 0, 0);
     var date_last = new Date(time.year, 11, 31, 11, 59, 59, 999);
     var since_new_year = (now - date_first) / (date_last - date_first);

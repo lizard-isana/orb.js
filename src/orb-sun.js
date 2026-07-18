@@ -10,9 +10,7 @@ export class Sun{
   EclipticLongitude = (date) => {
     const rad = Constant.RAD;
     const time = new Time(date)
-    //var dt = DeltaT()/86400;
-    //var dt = 64/86400;
-    const jd = time.jd();// + dt;
+    const jd = time.jd_tt();
     const t = (jd - 2451545.0) / 36525;
     const mean_longitude = 280.46646 + 36000.76983 * t + 0.0003032 * t * t;
     const mean_anomaly = 357.52911 + 35999.05029 * t - 0.0001537 * t * t;

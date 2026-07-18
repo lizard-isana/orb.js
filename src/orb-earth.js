@@ -7,7 +7,7 @@ export class Earth {
   constructor(){}
   xyz = (date) => {
     const time = new Time(date)
-    const jd = time.jd();
+    const jd = time.jd_tt();
     const t = ((jd - 2451545.0) / 365250);
     const v = [0, 0, 0];
     const target_data = EARTH_COEF;

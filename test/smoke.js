@@ -33,6 +33,26 @@ test('Time.delta_t follows the NASA polynomial', () => {
   assert.ok(Math.abs(t.delta_t() - 75.4) < 0.1, 'got ' + t.delta_t());
 });
 
+test('Time.tt_minus_utc uses the leap second table', () => {
+  assert.strictEqual(new Orb.Time(new Date(Date.UTC(2026, 6, 18))).tt_minus_utc(), 69.184);
+  assert.strictEqual(new Orb.Time(new Date(Date.UTC(1990, 5, 1))).tt_minus_utc(), 57.184);
+  assert.strictEqual(new Orb.Time(new Date(Date.UTC(1972, 0, 1))).tt_minus_utc(), 42.184);
+  // pre-1972: falls back to the delta_t polynomial
+  const dt1900 = new Orb.Time(new Date(Date.UTC(1900, 5, 1))).tt_minus_utc();
+  assert.ok(Math.abs(dt1900) < 10, '1900: ' + dt1900);
+});
+
+test('Luna.latlng reproduces Meeus example 47.a (1992 Apr 12.0 TD)', () => {
+  // Input date is TT; the equivalent UTC instant is 58.184s earlier.
+  const date = new Date(Date.UTC(1992, 3, 12, 0, 0, 0) - 58184);
+  const m = new Orb.Luna().latlng(date);
+  // Meeus: apparent longitude 133.167265 (full nutation; the library's
+  // 4-term nutation differs by ~2 arcsec), latitude -3.229126, distance 368409.7
+  assert.ok(Math.abs(m.longitude - 133.167265) < 0.002, 'longitude=' + m.longitude);
+  assert.ok(Math.abs(m.latitude - (-3.229126)) < 0.0001, 'latitude=' + m.latitude);
+  assert.ok(Math.abs(m.distance - 368409.7) < 0.5, 'distance=' + m.distance);
+});
+
 test('Sun.radec agrees with ephemeris (2026-07-18)', () => {
   // Reference: apparent RA/Dec ~ 7h49.5m, +21.05 deg
   const s = new Orb.Sun().radec(new Date(Date.UTC(2026, 6, 18, 0, 0, 0)));

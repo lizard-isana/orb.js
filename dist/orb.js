@@ -146,6 +146,7 @@
     return obj;
   }
 
+  var LEAP_SECONDS = [[Date.UTC(1972, 0, 1), 10], [Date.UTC(1972, 6, 1), 11], [Date.UTC(1973, 0, 1), 12], [Date.UTC(1974, 0, 1), 13], [Date.UTC(1975, 0, 1), 14], [Date.UTC(1976, 0, 1), 15], [Date.UTC(1977, 0, 1), 16], [Date.UTC(1978, 0, 1), 17], [Date.UTC(1979, 0, 1), 18], [Date.UTC(1980, 0, 1), 19], [Date.UTC(1981, 6, 1), 20], [Date.UTC(1982, 6, 1), 21], [Date.UTC(1983, 6, 1), 22], [Date.UTC(1985, 6, 1), 23], [Date.UTC(1988, 0, 1), 24], [Date.UTC(1990, 0, 1), 25], [Date.UTC(1991, 0, 1), 26], [Date.UTC(1992, 6, 1), 27], [Date.UTC(1993, 6, 1), 28], [Date.UTC(1994, 6, 1), 29], [Date.UTC(1996, 0, 1), 30], [Date.UTC(1997, 6, 1), 31], [Date.UTC(1999, 0, 1), 32], [Date.UTC(2006, 0, 1), 33], [Date.UTC(2009, 0, 1), 34], [Date.UTC(2012, 6, 1), 35], [Date.UTC(2015, 6, 1), 36], [Date.UTC(2017, 0, 1), 37]];
   var Time = /*#__PURE__*/_createClass(function Time() {
     var _this = this;
 
@@ -219,6 +220,35 @@
       }
 
       return gmst;
+    });
+
+    _defineProperty(this, "tt_minus_utc", function () {
+      //From 1972 on, TT-UTC is exactly 32.184s (TT-TAI) plus the accumulated
+      //leap seconds. The table's last entry carries forward: no leap second has
+      //been inserted since 2017 and the CGPM plans to discontinue them by 2035.
+      //Before 1972 UTC in its present form did not exist; fall back to the
+      //delta_t() polynomial, which estimates TT-UT1.
+      var ms = _this.date.getTime();
+
+      if (ms < LEAP_SECONDS[0][0]) {
+        return _this.delta_t();
+      }
+
+      var tai_utc = LEAP_SECONDS[0][1];
+
+      for (var i = 0; i < LEAP_SECONDS.length; i++) {
+        if (ms >= LEAP_SECONDS[i][0]) {
+          tai_utc = LEAP_SECONDS[i][1];
+        } else {
+          break;
+        }
+      }
+
+      return 32.184 + tai_utc;
+    });
+
+    _defineProperty(this, "jd_tt", function () {
+      return _this.jd() + _this.tt_minus_utc() / 86400;
     });
 
     _defineProperty(this, "delta_t", function () {
@@ -320,7 +350,7 @@
 
     _defineProperty(this, "xyz", function (date) {
       var time = new Time(date);
-      var jd = time.jd();
+      var jd = time.jd_tt();
       var t = (jd - 2451545.0) / 365250;
       var v = [0, 0, 0];
       var target_data = EARTH_COEF;
@@ -348,11 +378,8 @@
   });
 
   var ObliquityCoef = function ObliquityCoef(date) {
-    //var dt = DeltaT()/86400;
-    //var dt = 64/86400;
     var time = new Time(date);
-    var jd = time.jd(); // + dt;
-
+    var jd = time.jd_tt();
     var t = (jd - 2451545.0) / 36525;
     var omega = 125.04452 - 1934.136261 * t + 0.0020708 * t * t + t * t * t / 450000;
     var L0 = 280.4665 + 36000.7698 * t;
@@ -515,7 +542,7 @@
     _defineProperty(this, "exec_vsop", function (date) {
       var target_data = _this.vsop_target;
       var time = new Time(date);
-      var jd = time.jd();
+      var jd = time.jd_tt();
       var t = (jd - 2451545.0) / 365250;
       var v = [0, 0, 0];
 
@@ -614,11 +641,8 @@
 
     _defineProperty(this, "EclipticLongitude", function (date) {
       var rad = Constant.RAD;
-      var time = new Time(date); //var dt = DeltaT()/86400;
-      //var dt = 64/86400;
-
-      var jd = time.jd(); // + dt;
-
+      var time = new Time(date);
+      var jd = time.jd_tt();
       var t = (jd - 2451545.0) / 36525;
       var mean_longitude = 280.46646 + 36000.76983 * t + 0.0003032 * t * t;
       var mean_anomaly = 357.52911 + 35999.05029 * t - 0.0001537 * t * t;
@@ -709,11 +733,8 @@
 
     _defineProperty(this, "latlng", function (date) {
       var time = new Time(date);
-      var rad = Constant.RAD; //var dt = DeltaT()/86400;
-      //var dt = 64/86400;
-
-      var jd = time.jd(); // + dt;
-      //ephemeris days from the epch J2000.0
+      var rad = Constant.RAD;
+      var jd = time.jd_tt(); //ephemeris days from the epch J2000.0
 
       var t = (jd - 2451545.0) / 36525;
       var t2 = t * t;
@@ -891,7 +912,7 @@
       var rad = Constant.RAD;
       var time = new Time(date);
       var now = date;
-      var jd = time.jd();
+      var jd = time.jd_tt();
       var date_first = new Date(time.year, 0, 1, 0, 0, 0);
       var date_last = new Date(time.year, 11, 31, 11, 59, 59, 999);
       var since_new_year = (now - date_first) / (date_last - date_first);

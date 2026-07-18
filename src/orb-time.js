@@ -1,5 +1,37 @@
 import {Constant} from './orb-core.js';
 
+//TAI-UTC offset (leap seconds) since 1972: [effective date (ms), seconds]
+const LEAP_SECONDS = [
+  [Date.UTC(1972, 0, 1), 10],
+  [Date.UTC(1972, 6, 1), 11],
+  [Date.UTC(1973, 0, 1), 12],
+  [Date.UTC(1974, 0, 1), 13],
+  [Date.UTC(1975, 0, 1), 14],
+  [Date.UTC(1976, 0, 1), 15],
+  [Date.UTC(1977, 0, 1), 16],
+  [Date.UTC(1978, 0, 1), 17],
+  [Date.UTC(1979, 0, 1), 18],
+  [Date.UTC(1980, 0, 1), 19],
+  [Date.UTC(1981, 6, 1), 20],
+  [Date.UTC(1982, 6, 1), 21],
+  [Date.UTC(1983, 6, 1), 22],
+  [Date.UTC(1985, 6, 1), 23],
+  [Date.UTC(1988, 0, 1), 24],
+  [Date.UTC(1990, 0, 1), 25],
+  [Date.UTC(1991, 0, 1), 26],
+  [Date.UTC(1992, 6, 1), 27],
+  [Date.UTC(1993, 6, 1), 28],
+  [Date.UTC(1994, 6, 1), 29],
+  [Date.UTC(1996, 0, 1), 30],
+  [Date.UTC(1997, 6, 1), 31],
+  [Date.UTC(1999, 0, 1), 32],
+  [Date.UTC(2006, 0, 1), 33],
+  [Date.UTC(2009, 0, 1), 34],
+  [Date.UTC(2012, 6, 1), 35],
+  [Date.UTC(2015, 6, 1), 36],
+  [Date.UTC(2017, 0, 1), 37]
+];
+
 export class Time {
   constructor(date = new Date()) {
     this.date = date;
@@ -60,6 +92,33 @@ export class Time {
     if (gmst < 0) { gmst = gmst % 24 + 24; }
     if (gmst > 24) { gmst = gmst % 24; }
     return gmst
+  }
+
+  tt_minus_utc = () => {
+    //From 1972 on, TT-UTC is exactly 32.184s (TT-TAI) plus the accumulated
+    //leap seconds. The table's last entry carries forward: no leap second has
+    //been inserted since 2017 and the CGPM plans to discontinue them by 2035.
+    //Before 1972 UTC in its present form did not exist; fall back to the
+    //delta_t() polynomial, which estimates TT-UT1.
+    const ms = this.date.getTime();
+    if (ms < LEAP_SECONDS[0][0]) {
+      return this.delta_t();
+    }
+    let tai_utc = LEAP_SECONDS[0][1];
+    for (let i = 0; i < LEAP_SECONDS.length; i++) {
+      if (ms >= LEAP_SECONDS[i][0]) {
+        tai_utc = LEAP_SECONDS[i][1];
+      } else {
+        break;
+      }
+    }
+    return 32.184 + tai_utc;
+  }
+
+  //Julian date in Terrestrial Time: the time argument for ephemeris series
+  //(VSOP87, lunar theory). Sidereal time must keep using jd()/UTC.
+  jd_tt = () => {
+    return this.jd() + this.tt_minus_utc() / 86400;
   }
 
   delta_t = () =>  {
