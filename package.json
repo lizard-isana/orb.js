@@ -2,7 +2,15 @@
   "name": "orb.js",
   "version": "3.0.0",
   "description": "JavaScript library for astronomical calculations",
-  "main": "orb.v3.js",
+  "main": "dist/orb.js",
+  "files": [
+    "dist",
+    "src",
+    "readme.md",
+    "usage.en.md",
+    "usage.ja.md",
+    "MIT-LICENSE"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c rollup.config.js"
