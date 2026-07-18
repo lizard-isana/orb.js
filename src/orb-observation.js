@@ -90,6 +90,17 @@ export class Observation {
         return ""
       }
     }
+    // The observer position is in km; convert the target to km when it
+    // comes in astronomical units so the topocentric subtraction is valid.
+    if (rect.unit_keywords != undefined && rect.unit_keywords.match(/au/)) {
+      rect = {
+        x: rect.x * Constant.AU,
+        y: rect.y * Constant.AU,
+        z: rect.z * Constant.AU,
+        coordinate_keywords: rect.coordinate_keywords,
+        unit_keywords: rect.unit_keywords.replace(/au/, "km")
+      }
+    }
     const distance_unit = get_distance_unit(rect)
     const rad = Constant.RAD;
     const observer = this.observer;
@@ -154,7 +165,7 @@ export class Observation {
         rect = target
       }
       horizontal = this.RectToHorizontal(time,rect)
-      distance_unit = get_distance_unit(rect)
+      distance_unit = get_distance_unit(horizontal)
     }else if(target.radec != undefined){
       radec = target.radec(date)
       horizontal = this.RadecToHorizontal(time,radec)
@@ -162,7 +173,7 @@ export class Observation {
     }else if(target.xyz != undefined){
       rect = target.xyz(date);
       horizontal = this.RectToHorizontal(time,rect)
-      distance_unit = get_distance_unit(rect)
+      distance_unit = get_distance_unit(horizontal)
     }
 
     return {

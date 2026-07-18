@@ -481,7 +481,7 @@
       'z': ecliptic.z,
       'date': date,
       "coordinate_keywords": "ecliptic rectangular",
-      "unit_keywords": ""
+      "unit_keywords": equatorial.unit_keywords != undefined ? equatorial.unit_keywords : ""
     };
   };
   var EclipticToEquatorial = function EclipticToEquatorial(parameter) {
@@ -507,7 +507,7 @@
       'z': equatorial.z,
       'date': date,
       "coordinate_keywords": "equatorial rectangular",
-      "unit_keywords": ""
+      "unit_keywords": ecliptic.unit_keywords != undefined ? ecliptic.unit_keywords : ""
     };
   };
 
@@ -2054,6 +2054,18 @@
         } else {
           return "";
         }
+      } // The observer position is in km; convert the target to km when it
+      // comes in astronomical units so the topocentric subtraction is valid.
+
+
+      if (rect.unit_keywords != undefined && rect.unit_keywords.match(/au/)) {
+        rect = {
+          x: rect.x * Constant.AU,
+          y: rect.y * Constant.AU,
+          z: rect.z * Constant.AU,
+          coordinate_keywords: rect.coordinate_keywords,
+          unit_keywords: rect.unit_keywords.replace(/au/, "km")
+        };
       }
 
       var distance_unit = get_distance_unit(rect);
@@ -2131,7 +2143,7 @@
         }
 
         horizontal = _this2.RectToHorizontal(time, rect);
-        distance_unit = get_distance_unit(rect);
+        distance_unit = get_distance_unit(horizontal);
       } else if (target.radec != undefined) {
         radec = target.radec(date);
         horizontal = _this2.RadecToHorizontal(time, radec);
@@ -2139,7 +2151,7 @@
       } else if (target.xyz != undefined) {
         rect = target.xyz(date);
         horizontal = _this2.RectToHorizontal(time, rect);
-        distance_unit = get_distance_unit(rect);
+        distance_unit = get_distance_unit(horizontal);
       }
 
       return {

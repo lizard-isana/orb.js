@@ -91,7 +91,7 @@ export const EquatorialToEcliptic = function (parameter) {
     'z': ecliptic.z,
     'date': date,
     "coordinate_keywords": "ecliptic rectangular",
-    "unit_keywords": ""
+    "unit_keywords": equatorial.unit_keywords != undefined ? equatorial.unit_keywords : ""
   }
 }
 
@@ -118,6 +118,6 @@ export const EclipticToEquatorial = function (parameter) {
     'z': equatorial.z,
     'date': date,
     "coordinate_keywords": "equatorial rectangular",
-    "unit_keywords": ""
+    "unit_keywords": ecliptic.unit_keywords != undefined ? ecliptic.unit_keywords : ""
   }
 }
