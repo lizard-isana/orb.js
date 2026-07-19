@@ -80,6 +80,7 @@ observation.azel(date);
 | `tt_minus_utc()` | TT−UTC(秒)。1972年以降はうるう秒テーブルで厳密(2017年以降は 69.184 秒)、それ以前は NASA の ΔT 多項式 |
 | `delta_t()` | NASA 多項式による ΔT(TT−UT1)の推定値(秒) |
 | `gast()` | グリニッジ視恒星時(時) |
+| `gmst82()` | グリニッジ平均恒星時(IAU 1982、時)— TEME 座標系の回転角 |
 | `gmst()` | `gast()` の非推奨エイリアス — この関数は従来から*視*恒星時を返していました |
 | `doy()` | 年初からの通日(小数含む、UTC)、数値 |
 
@@ -112,8 +113,12 @@ observation.azel(date);
 
 `{first_line, second_line[, name]}` の TLE 文字列、または CCSDS OMM オブジェクト
 を受け付けます。`xyz(date)` は TEME 直交座標(km, km/s)、`latlng(date)` は
-直下点(WGS-72)。プロパティ: `orbital_period`(分)、`apogee` / `perigee`(km)、
-`orbital_elements`、`omm`。
+直下点(測地系は WGS-84、TEME の回転角は座標系の定義どおり GMST 1982)。
+周期225分以上の深宇宙軌道(静止衛星・GPS・モルニヤ等)は Vallado リファレンス
+実装の SDP4 項で扱われます。伝播に失敗した場合(大気圏突入済みの軌道、離心率の
+範囲外など)は Error を投げます。プロパティ: `orbital_period`(分)、
+`apogee` / `perigee`(km)、`orbital_elements`、`omm`。伝播コア(`sgp4init`,
+`sgp4`, `gstime`, `wgs72`)も直接利用できるようエクスポートされています。
 
 ### `Orb.Observation({observer, target})`
 
@@ -152,8 +157,12 @@ observation.azel(date);
   4項近似(約2″)。
 - 惑星: VSOP87A(ほぼ全項)+ IAU 1976 歳差。光行時間差と光行差は未適用のため、
   視位置としての精度は数十秒角程度。
-- 人工衛星: SGP4(Spacetrack Report #3)、TEME 座標系。SGP4 の一般的な制約
-  (km オーダー、TLE の経過日数とともに劣化)に従います。
+- 人工衛星: Vallado リファレンス実装("Revisiting Spacetrack Report #3")
+  から移植した SGP4/SDP4。深宇宙軌道(周期225分以上)を含めて python-sgp4 と
+  1e-9 km の精度で一致することを検証済み。伝播は WGS-72 重力定数(TLE の
+  フィットに使われている定数)、測地変換は WGS-84、TEME の回転角は GMST 1982
+  です。SGP4 の一般的な制約(km オーダー、TLE の経過日数とともに劣化)に
+  従います。
 - `azel` は日周視差を適用しますが、大気差(別途返却)と極運動は適用しません。
 
 ## このブランチでの挙動変更(移行メモ)
