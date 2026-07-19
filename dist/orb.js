@@ -3692,10 +3692,11 @@
   exports.XYZtoRadec = XYZtoRadec;
   exports.XYZtoRadecOfDate = XYZtoRadecOfDate;
   exports.ZeroFill = ZeroFill;
-  exports.gstime = gstime;
-  exports.sgp4 = sgp4;
-  exports.sgp4init = sgp4init;
-  exports.wgs72 = wgs72;
+  exports.hasVSOP87A = hasVSOP87A;
+  exports.normalizeVSOP87ABody = normalizeVSOP87ABody;
+  exports.registerVSOP87A = registerVSOP87A;
+  exports.resolveVSOP87ACoefficients = resolveVSOP87ACoefficients;
+  exports.unregisterVSOP87A = unregisterVSOP87A;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
