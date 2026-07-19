@@ -220,8 +220,7 @@
       return jd;
     });
 
-    _defineProperty(this, "gast", function () {
-      var rad = Constant.RAD;
+    _defineProperty(this, "gmst82", function () {
       var time_in_sec = _this.hours * 3600 + _this.minutes * 60 + _this.seconds + _this.milliseconds / 1000;
 
       var jd = _this.jd();
@@ -230,17 +229,31 @@
 
 
       var t = (jd0 - 2451545.0) / 36525;
-      var gmst_at_zero = (24110.5484 + 8640184.812866 * t + 0.093104 * t * t + 0.0000062 * t * t * t) / 3600;
+      var gmst_at_zero = (24110.54841 + 8640184.812866 * t + 0.093104 * t * t - 0.0000062 * t * t * t) / 3600;
 
       if (gmst_at_zero > 24) {
         gmst_at_zero = gmst_at_zero % 24;
       } //mean sidereal time at target time
 
 
-      var gast = gmst_at_zero + time_in_sec * 1.00273790925 / 3600; //equation of the equinoxes: nutation in longitude (degrees) projected
+      var gmst = gmst_at_zero + time_in_sec * 1.00273790935 / 3600;
+
+      if (gmst < 0) {
+        gmst = gmst % 24 + 24;
+      }
+
+      if (gmst > 24) {
+        gmst = gmst % 24;
+      }
+
+      return gmst;
+    });
+
+    _defineProperty(this, "gast", function () {
+      var rad = Constant.RAD; //equation of the equinoxes: nutation in longitude (degrees) projected
       //onto the equator; 15 degrees = 1 hour
 
-      gast = gast + Nutation(_this.date) * Math.cos(Obliquity(_this.date) * rad) / 15;
+      var gast = _this.gmst82() + Nutation(_this.date) * Math.cos(Obliquity(_this.date) * rad) / 15;
 
       if (gast < 0) {
         gast = gast % 24 + 24;
@@ -1913,8 +1926,9 @@
       var xdotkmps = rect.xdot;
       var ydotkmps = rect.ydot;
       var zdotkmps = rect.zdot;
-      var rad = Constant.RAD;
-      var gmst = time.gast();
+      var rad = Constant.RAD; //TEME pairs with mean sidereal time (GMST 1982), not apparent
+
+      var gmst = time.gmst82();
       var lst = gmst * 15;
       var f = 1 / 298.257223563; //Earth's flattening in WGS-84
 
@@ -1969,7 +1983,7 @@
         "ydot": rect.ydot,
         "zdot": rect.zdot,
         "date": date,
-        "coordinate_keywords": "equatorial rectangular",
+        "coordinate_keywords": "equatorial rectangular teme",
         "unit_keywords": "km km/s"
       };
     });
@@ -2041,11 +2055,11 @@
 
     _classCallCheck(this, Observer);
 
-    _defineProperty(this, "rectangular", function (time) {
+    _defineProperty(this, "rectangular", function (time, sidereal_time) {
       var rad = Constant.RAD;
       var lat = _this.latitude;
       var lng = _this.longitude;
-      var gmst = time.gast();
+      var gmst = sidereal_time != undefined ? sidereal_time : time.gast();
       var lst = gmst * 15 + lng;
       var a = 6378.137 + _this.altitude; //Earth's equatorial radius in WGS-84 (km)
 
@@ -2064,7 +2078,9 @@
     this.latitude = position.latitude;
     this.longitude = position.longitude;
     this.altitude = position.altitude;
-  });
+  } //sidereal_time (hours) defaults to apparent sidereal time; pass
+  //time.gmst82() to place the observer in the TEME frame instead.
+  );
   var Observation = /*#__PURE__*/_createClass(function Observation(param) {
     var _this2 = this;
 
@@ -2142,13 +2158,17 @@
       var rad = Constant.RAD;
       var observer = _this2.observer;
       var lat = observer.latitude;
-      var lng = observer.longitude;
+      var lng = observer.longitude; //TEME vectors (SGP4) pair with mean sidereal time (GMST 1982);
+      //apparent places pair with apparent sidereal time.
+
+      var is_teme = rect.coordinate_keywords != undefined && rect.coordinate_keywords.match(/teme/);
+      var st = is_teme ? time.gmst82() : time.gast();
       var obsv = new Observer(observer);
-      var ob = obsv.rectangular(time);
+      var ob = obsv.rectangular(time, st);
       var rx0 = rect.x - ob.x;
       var ry0 = rect.y - ob.y;
       var rz0 = rect.z - ob.z;
-      var gmst = time.gast();
+      var gmst = st;
       var lst = gmst * 15 + lng;
       var rs = Math.sin(lat * rad) * Math.cos(lst * rad) * rx0 + Math.sin(lat * rad) * Math.sin(lst * rad) * ry0 - Math.cos(lat * rad) * rz0;
       var re = -Math.sin(lst * rad) * rx0 + Math.cos(lst * rad) * ry0;

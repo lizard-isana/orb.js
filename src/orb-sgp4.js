@@ -475,7 +475,8 @@ export class SGP4{
     var ydotkmps = rect.ydot;
     var zdotkmps = rect.zdot;
     var rad = Constant.RAD;
-    var gmst = time.gast();
+    //TEME pairs with mean sidereal time (GMST 1982), not apparent
+    var gmst = time.gmst82();
     var lst = gmst * 15;
     var f = 1 / 298.257223563; //Earth's flattening in WGS-84
     var a = 6378.137;  //Earth's equatorial radius in WGS-84 (km)
@@ -514,7 +515,7 @@ export class SGP4{
       "ydot": rect.ydot,
       "zdot": rect.zdot,
       "date": date,
-      "coordinate_keywords": "equatorial rectangular",
+      "coordinate_keywords": "equatorial rectangular teme",
       "unit_keywords": "km km/s"
     }
   }

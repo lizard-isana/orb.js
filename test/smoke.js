@@ -41,6 +41,13 @@ test('Time.gast reproduces Meeus example 12.b', () => {
   assert.strictEqual(t.gmst(), t.gast());
 });
 
+test('Time.gmst82 reproduces Meeus example 12.b (mean sidereal time)', () => {
+  // 1987 Apr 10, 19:21:00 UT -> mean sidereal time 8h34m57.0896s
+  const t = new Orb.Time(new Date(Date.UTC(1987, 3, 10, 19, 21, 0)));
+  const ref = 8 + 34 / 60 + 57.0896 / 3600;
+  assert.ok(Math.abs(t.gmst82() - ref) * 3600 < 0.001, 'gmst82=' + t.gmst82());
+});
+
 test('Time.tt_minus_utc uses the leap second table', () => {
   assert.strictEqual(new Orb.Time(new Date(Date.UTC(2026, 6, 18))).tt_minus_utc(), 69.184);
   assert.strictEqual(new Orb.Time(new Date(Date.UTC(1990, 5, 1))).tt_minus_utc(), 57.184);
