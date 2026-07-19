@@ -477,8 +477,8 @@ export class SGP4{
     var rad = Constant.RAD;
     var gmst = time.gast();
     var lst = gmst * 15;
-    var f = 0.00335277945 //Earth's flattening term in WGS-72 (= 1/298.26)
-    var a = 6378.135  //Earth's equatorial radius in WGS-72 (km)
+    var f = 1 / 298.257223563; //Earth's flattening in WGS-84
+    var a = 6378.137;  //Earth's equatorial radius in WGS-84 (km)
     var r = Math.sqrt(xkm * xkm + ykm * ykm);
     var lng = Math.atan2(ykm, xkm) / rad - lst;
     if (lng > 360) { lng = lng % 360; }
