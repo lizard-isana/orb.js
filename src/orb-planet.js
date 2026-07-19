@@ -39,7 +39,7 @@ export class VSOP {
       y: v[1],
       z: v[2],
       "date": date,
-      "coordinate_keywords": "ecliptic rectangular",
+      "coordinate_keywords": "ecliptic rectangular j2000",
       "unit_keywords": "au"
     }
   }

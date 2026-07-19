@@ -76,6 +76,25 @@ test('Luna.radec returns plausible geocentric position', () => {
   assert.ok(m.distance > 356000 && m.distance < 407000, 'distance=' + m.distance);
 });
 
+test('VSOP pipeline agrees with the Sun theory (equinox of date)', () => {
+  // The geocentric Sun is minus the Earth's heliocentric position. Running
+  // the origin through the VSOP/J2000 pipeline must give the same apparent
+  // RA/Dec as the of-date Sun theory; before precession was applied the two
+  // frames disagreed by ~24 arcmin (accumulated precession since J2000).
+  const date = new Date(Date.UTC(2026, 6, 18, 0, 0, 0));
+  const s1 = new Orb.Sun().radec(date);
+  const rect = Orb.EclipticToEquatorial({
+    date,
+    ecliptic: { x: 0, y: 0, z: 0, unit_keywords: 'au', coordinate_keywords: 'ecliptic rectangular j2000' }
+  });
+  const s2 = Orb.XYZtoRadec(rect);
+  const dra = Math.abs(s1.ra - s2.ra) * 15 * Math.cos(s1.dec * Math.PI / 180);
+  const ddec = Math.abs(s1.dec - s2.dec);
+  // tolerance is the stated accuracy of the low-precision solar theory (~0.01 deg)
+  assert.ok(dra < 0.01, 'RA diff deg=' + dra);
+  assert.ok(ddec < 0.01, 'Dec diff deg=' + ddec);
+});
+
 test('VSOP planets return finite positions', () => {
   const date = new Date(Date.UTC(2026, 6, 18));
   for (const name of ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune']) {

@@ -16,10 +16,17 @@ const ObliquityCoef =  (date) => {
   }
 }
 
+//mean obliquity of the ecliptic in degrees (no nutation)
+export const MeanObliquity = (date) => {
+  const coef = ObliquityCoef(date);
+  return 23 + 26.0 / 60 + 21.448 / 3600 - (46.8150 / 3600) * coef.t - (0.00059 / 3600) * coef.t * coef.t + (0.001813 / 3600) * coef.t * coef.t * coef.t;
+}
+
+//true obliquity of the ecliptic in degrees (mean + nutation in obliquity)
 export const Obliquity = (date) => {
   const rad = Constant.RAD;
   const coef = ObliquityCoef(date);
-  const mean_obliquity = 23 + 26.0 / 60 + 21.448 / 3600 - (46.8150 / 3600) * coef.t - (0.00059 / 3600) * coef.t * coef.t + (0.001813 / 3600) * coef.t * coef.t * coef.t;
+  const mean_obliquity = MeanObliquity(date);
   const obliquity_delta = (9.20 / 3600) * Math.cos(coef.omega * rad) + (0.57 / 3600) * Math.cos(2 * coef.L0 * rad) + (0.10 / 3600) * Math.cos(2 * coef.L1 * rad) - (0.09 / 3600) * Math.cos(2 * coef.omega * rad);
   const obliquity = mean_obliquity + obliquity_delta;
   return obliquity;
