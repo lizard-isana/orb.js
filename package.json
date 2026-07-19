@@ -12,7 +12,7 @@
     "MIT-LICENSE"
   ],
   "scripts": {
-    "test": "node test/smoke.js",
+    "test": "node test/smoke.js && node test/v4/run.mjs",
     "build": "rollup -c rollup.config.js"
   },
   "repository": {
