@@ -238,7 +238,8 @@ export class Kepler{
       xdot: dotvec.x,
       ydot: dotvec.y,
       zdot: dotvec.z,
-      orbital_plane: orbital_plane
+      orbital_plane: orbital_plane,
+      "coordinate_keywords": "ecliptic rectangular j2000"
     };
   }
 
@@ -281,7 +282,7 @@ export class Kepler{
       'zdot': position.zdot,
       'orbital_plane': op,
       "date": date,
-      "coordinate_keywords": "ecliptic rectangular",
+      "coordinate_keywords": "ecliptic rectangular j2000",
       "unit_keywords": "au au/d"
     };
   }

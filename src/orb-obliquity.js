@@ -2,10 +2,8 @@ import {Constant} from './orb-core.js';
 import {Time} from './orb-time.js';
 
 const ObliquityCoef =  (date) => {
-  //var dt = DeltaT()/86400;
-  //var dt = 64/86400;
   const time = new Time(date)
-  const jd = time.jd();// + dt;
+  const jd = time.jd_tt();
   const t = (jd - 2451545.0) / 36525;
   const omega = 125.04452 - 1934.136261 * t + 0.0020708 * t * t + (t * t * t / 450000);
   const L0 = 280.4665 + 36000.7698 * t;

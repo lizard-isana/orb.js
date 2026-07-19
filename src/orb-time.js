@@ -1,4 +1,37 @@
 import {Constant} from './orb-core.js';
+import {Nutation, Obliquity} from './orb-obliquity.js';
+
+//TAI-UTC offset (leap seconds) since 1972: [effective date (ms), seconds]
+const LEAP_SECONDS = [
+  [Date.UTC(1972, 0, 1), 10],
+  [Date.UTC(1972, 6, 1), 11],
+  [Date.UTC(1973, 0, 1), 12],
+  [Date.UTC(1974, 0, 1), 13],
+  [Date.UTC(1975, 0, 1), 14],
+  [Date.UTC(1976, 0, 1), 15],
+  [Date.UTC(1977, 0, 1), 16],
+  [Date.UTC(1978, 0, 1), 17],
+  [Date.UTC(1979, 0, 1), 18],
+  [Date.UTC(1980, 0, 1), 19],
+  [Date.UTC(1981, 6, 1), 20],
+  [Date.UTC(1982, 6, 1), 21],
+  [Date.UTC(1983, 6, 1), 22],
+  [Date.UTC(1985, 6, 1), 23],
+  [Date.UTC(1988, 0, 1), 24],
+  [Date.UTC(1990, 0, 1), 25],
+  [Date.UTC(1991, 0, 1), 26],
+  [Date.UTC(1992, 6, 1), 27],
+  [Date.UTC(1993, 6, 1), 28],
+  [Date.UTC(1994, 6, 1), 29],
+  [Date.UTC(1996, 0, 1), 30],
+  [Date.UTC(1997, 6, 1), 31],
+  [Date.UTC(1999, 0, 1), 32],
+  [Date.UTC(2006, 0, 1), 33],
+  [Date.UTC(2009, 0, 1), 34],
+  [Date.UTC(2012, 6, 1), 35],
+  [Date.UTC(2015, 6, 1), 36],
+  [Date.UTC(2017, 0, 1), 37]
+];
 
 export class Time {
   constructor(date = new Date()) {
@@ -38,28 +71,60 @@ export class Time {
     return jd;
   }
 
-  gmst = () =>  {
+  //Greenwich Apparent Sidereal Time in hours: mean sidereal time (from UT)
+  //plus the equation of the equinoxes. This is the sidereal time to use for
+  //hour angles of apparent places.
+  gast = () => {
     const rad = Constant.RAD
     const time_in_sec = this.hours * 3600 + this.minutes * 60 + this.seconds + this.milliseconds / 1000;
     const jd = this.jd();
     const jd0 = jd - this.time_in_day();
-    //gmst at 0:00
+    //mean sidereal time at 0:00 UT
     const t = (jd0 - 2451545.0) / 36525;
     let gmst_at_zero = (24110.5484 + 8640184.812866 * t + 0.093104 * t * t + 0.0000062 * t * t * t) / 3600;
     if (gmst_at_zero > 24) { gmst_at_zero = gmst_at_zero % 24; }
-    //gmst at target time
-    let gmst = gmst_at_zero + (time_in_sec * 1.00273790925) / 3600;
-    //mean obliquity of the ecliptic
-    const e = 23 + 26.0 / 60 + 21.448 / 3600 - 46.8150 / 3600 * t - 0.00059 / 3600 * t * t + 0.001813 / 3600 * t * t * t;
-    //nutation in longitude
-    const omega = 125.04452 - 1934.136261 * t + 0.0020708 * t * t + t * t * t / 450000;
-    const long1 = 280.4665 + 36000.7698 * t;
-    const long2 = 218.3165 + 481267.8813 * t;
-    const phai = -17.20 * Math.sin(omega * rad) - (-1.32 * Math.sin(2 * long1 * rad)) - 0.23 * Math.sin(2 * long2 * rad) + 0.21 * Math.sin(2 * omega * rad);
-    gmst = gmst + ((phai / 15) * (Math.cos(e * rad))) / 3600
-    if (gmst < 0) { gmst = gmst % 24 + 24; }
-    if (gmst > 24) { gmst = gmst % 24; }
-    return gmst
+    //mean sidereal time at target time
+    let gast = gmst_at_zero + (time_in_sec * 1.00273790925) / 3600;
+    //equation of the equinoxes: nutation in longitude (degrees) projected
+    //onto the equator; 15 degrees = 1 hour
+    gast = gast + (Nutation(this.date) * Math.cos(Obliquity(this.date) * rad)) / 15;
+    if (gast < 0) { gast = gast % 24 + 24; }
+    if (gast > 24) { gast = gast % 24; }
+    return gast
+  }
+
+  //Deprecated: despite its name this has always returned APPARENT sidereal
+  //time. Kept as an alias of gast() for backward compatibility; a future
+  //major version may change it to return mean sidereal time.
+  gmst = () =>  {
+    return this.gast();
+  }
+
+  tt_minus_utc = () => {
+    //From 1972 on, TT-UTC is exactly 32.184s (TT-TAI) plus the accumulated
+    //leap seconds. The table's last entry carries forward: no leap second has
+    //been inserted since 2017 and the CGPM plans to discontinue them by 2035.
+    //Before 1972 UTC in its present form did not exist; fall back to the
+    //delta_t() polynomial, which estimates TT-UT1.
+    const ms = this.date.getTime();
+    if (ms < LEAP_SECONDS[0][0]) {
+      return this.delta_t();
+    }
+    let tai_utc = LEAP_SECONDS[0][1];
+    for (let i = 0; i < LEAP_SECONDS.length; i++) {
+      if (ms >= LEAP_SECONDS[i][0]) {
+        tai_utc = LEAP_SECONDS[i][1];
+      } else {
+        break;
+      }
+    }
+    return 32.184 + tai_utc;
+  }
+
+  //Julian date in Terrestrial Time: the time argument for ephemeris series
+  //(VSOP87, lunar theory). Sidereal time must keep using jd()/UTC.
+  jd_tt = () => {
+    return this.jd() + this.tt_minus_utc() / 86400;
   }
 
   delta_t = () =>  {

@@ -10,7 +10,7 @@ export class Earth {
   }
   xyz = (date) => {
     const time = new Time(date)
-    const jd = time.jd();
+    const jd = time.jd_tt();
     const t = ((jd - 2451545.0) / 365250);
     const v = [0, 0, 0];
     const target_data = this.vsop_target;
@@ -33,7 +33,7 @@ export class Earth {
       y: v[1],
       z: v[2],
       "date": date,
-      "coordinate_keywords": "ecliptic rectangular",
+      "coordinate_keywords": "ecliptic rectangular j2000",
       "unit_keywords": "au"
     }
   }
