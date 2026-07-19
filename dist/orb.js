@@ -159,14 +159,12 @@
       L0: L0,
       L1: L1
     };
-  }; //mean obliquity of the ecliptic in degrees (no nutation)
-
+  };
 
   var MeanObliquity = function MeanObliquity(date) {
     var coef = ObliquityCoef(date);
     return 23 + 26.0 / 60 + 21.448 / 3600 - 46.8150 / 3600 * coef.t - 0.00059 / 3600 * coef.t * coef.t + 0.001813 / 3600 * coef.t * coef.t * coef.t;
-  }; //true obliquity of the ecliptic in degrees (mean + nutation in obliquity)
-
+  };
   var Obliquity = function Obliquity(date) {
     var rad = Constant.RAD;
     var coef = ObliquityCoef(date);
@@ -516,73 +514,6 @@
     this.vsop_target = resolveVSOP87ACoefficients('Earth', options);
   });
 
-  //coodinates.js
-  //(as produced by VSOP87A and by typical published osculating elements) to
-  //the apparent ecliptic of date: rotate to the J2000 equator, apply the
-  //IAU 1976 precession angles (zeta, z, theta), rotate back through the mean
-  //obliquity of date, then rotate by the nutation in longitude to reach the
-  //true equinox of date.
-
-  var EclipticJ2000ToDate = function EclipticJ2000ToDate(vec, date) {
-    var rad = Const.RAD;
-    var time = new Time(date);
-    var t = (time.jd_tt() - 2451545.0) / 36525;
-    var asec = rad / 3600;
-    var zeta = (2306.2181 * t + 0.30188 * t * t + 0.017998 * t * t * t) * asec;
-    var z = (2306.2181 * t + 1.09468 * t * t + 0.018203 * t * t * t) * asec;
-    var theta = (2004.3109 * t - 0.42665 * t * t - 0.041833 * t * t * t) * asec; //J2000 ecliptic -> J2000 equatorial (mean obliquity at J2000.0: 23d26m21.448s)
-
-    var e0 = (23 + 26.0 / 60 + 21.448 / 3600) * rad;
-    var ex = vec.x;
-    var ey = Math.cos(e0) * vec.y - Math.sin(e0) * vec.z;
-    var ez = Math.sin(e0) * vec.y + Math.cos(e0) * vec.z; //precession: J2000 equator -> mean equator and equinox of date
-
-    var cz = Math.cos(zeta),
-        sz = Math.sin(zeta);
-    var cZ = Math.cos(z),
-        sZ = Math.sin(z);
-    var ct = Math.cos(theta),
-        st = Math.sin(theta);
-    var px = (cZ * ct * cz - sZ * sz) * ex + (-cZ * ct * sz - sZ * cz) * ey + -cZ * st * ez;
-    var py = (sZ * ct * cz + cZ * sz) * ex + (-sZ * ct * sz + cZ * cz) * ey + -sZ * st * ez;
-    var pz = st * cz * ex + -st * sz * ey + ct * ez; //mean equator of date -> mean ecliptic of date
-
-    var em = MeanObliquity(date) * rad;
-    var mx = px;
-    var my = Math.cos(em) * py + Math.sin(em) * pz;
-    var mz = -Math.sin(em) * py + Math.cos(em) * pz; //nutation in longitude: mean equinox -> true equinox of date
-
-    var dpsi = Nutation(date) * rad;
-    return {
-      x: Math.cos(dpsi) * mx - Math.sin(dpsi) * my,
-      y: Math.sin(dpsi) * mx + Math.cos(dpsi) * my,
-      z: mz,
-      'date': date,
-      "coordinate_keywords": "ecliptic rectangular",
-      "unit_keywords": vec.unit_keywords != undefined ? vec.unit_keywords : ""
-    };
-  };
-<<<<<<< HEAD
-
-  var MeanObliquity = function MeanObliquity(date) {
-    var coef = ObliquityCoef(date);
-    return 23 + 26.0 / 60 + 21.448 / 3600 - 46.8150 / 3600 * coef.t - 0.00059 / 3600 * coef.t * coef.t + 0.001813 / 3600 * coef.t * coef.t * coef.t;
-  };
-  var Obliquity = function Obliquity(date) {
-    var rad = Constant.RAD;
-    var coef = ObliquityCoef(date);
-    var mean_obliquity = MeanObliquity(date);
-    var obliquity_delta = 9.20 / 3600 * Math.cos(coef.omega * rad) + 0.57 / 3600 * Math.cos(2 * coef.L0 * rad) + 0.10 / 3600 * Math.cos(2 * coef.L1 * rad) - 0.09 / 3600 * Math.cos(2 * coef.omega * rad);
-    var obliquity = mean_obliquity + obliquity_delta;
-    return obliquity;
-  };
-  var Nutation = function Nutation(date) {
-    var rad = Constant.RAD;
-    var coef = ObliquityCoef(date);
-    var nutation = -17.20 / 3600 * Math.sin(coef.omega * rad) - -1.32 / 3600 * Math.sin(2 * coef.L0 * rad) - 0.23 / 3600 * Math.sin(2 * coef.L1 * rad) + 0.21 / 3600 * Math.sin(2 * coef.omega * rad);
-    return nutation;
-  };
-
   var J2000 = new Date(Date.UTC(2000, 0, 1, 12, 0, 0));
 
   var julianCentury = function julianCentury(date) {
@@ -721,8 +652,6 @@
 
     return rotateRectangularOnXAxis(position, -obliquity);
   };
-=======
->>>>>>> 48af9480b863e1e7cd426b71fc0679742948792a
   var RadecToXYZ = function RadecToXYZ(parameter) {
     // equatorial spherical(ra,dec) to rectangular(x,y,z)
     var rad = Const.RAD;
@@ -867,31 +796,7 @@
   var EclipticToEquatorial = function EclipticToEquatorial(parameter) {
     // ecliptic rectangular(x,y,z) to equatorial rectangular(x,y,z)
     var date = parameter.date;
-<<<<<<< HEAD
     var ecliptic = geocentricEcliptic(parameter);
-=======
-    var ecliptic = parameter.ecliptic;
-    var rad = Const.RAD;
-    var earth = new Earth();
-    var ep = earth.xyz(date);
-    var gc = {
-      x: ecliptic.x - ep.x,
-      y: ecliptic.y - ep.y,
-      z: ecliptic.z - ep.z,
-      unit_keywords: ecliptic.unit_keywords
-    }; //Vectors referred to the J2000 equinox (VSOP planets, osculating elements)
-    //are precessed/nutated to the equinox of date, so the resulting RA/Dec is
-    //an apparent place consistent with the Sun and Moon theories, which give
-    //coordinates of date directly.
-
-    if (ecliptic.coordinate_keywords != undefined && ecliptic.coordinate_keywords.match(/j2000/)) {
-      gc = EclipticJ2000ToDate(gc, date);
-    }
-
-    var gcx = gc.x;
-    var gcy = gc.y;
-    var gcz = gc.z;
->>>>>>> 48af9480b863e1e7cd426b71fc0679742948792a
     var obliquity = Obliquity(parameter.date);
     var equatorial = rotateEclipticToEquatorial({
       ecliptic: ecliptic,
@@ -955,7 +860,7 @@
     _defineProperty(this, "exec_vsop", function (date) {
       var target_data = _this.vsop_target;
       var time = new Time(date);
-      var jd = time.jd_tt();
+      var jd = time.jd();
       var t = (jd - 2451545.0) / 365250;
       var v = [0, 0, 0];
 
@@ -981,7 +886,7 @@
         y: v[1],
         z: v[2],
         "date": date,
-        "coordinate_keywords": "ecliptic rectangular j2000",
+        "coordinate_keywords": "ecliptic rectangular",
         "unit_keywords": "au"
       };
     });
@@ -1173,7 +1078,6 @@
 
     _defineProperty(this, "getTerrestrialTimeDate", function (date) {
       var time = new Time(date);
-<<<<<<< HEAD
       return new Date(date.getTime() + time.delta_t() * 1000);
     });
 
@@ -1183,10 +1087,6 @@
       var time = new Time(tt_date);
       var rad = Constant.RAD;
       var jd = time.jd(); //ephemeris days from the epch J2000.0
-=======
-      var rad = Constant.RAD;
-      var jd = time.jd_tt(); //ephemeris days from the epch J2000.0
->>>>>>> 48af9480b863e1e7cd426b71fc0679742948792a
 
       var t = (jd - 2451545.0) / 36525;
       var t2 = t * t;
@@ -2722,7 +2622,6 @@
   exports.Constant = Constant;
   exports.ConvertRectangularPlane = ConvertRectangularPlane;
   exports.Earth = Earth;
-  exports.EclipticJ2000ToDate = EclipticJ2000ToDate;
   exports.EclipticToEquatorial = EclipticToEquatorial;
   exports.EclipticToEquatorialJ2000 = EclipticToEquatorialJ2000;
   exports.EclipticToEquatorialOfDate = EclipticToEquatorialOfDate;

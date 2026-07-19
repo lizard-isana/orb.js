@@ -140,6 +140,41 @@ function _defineProperty(obj, key, value) {
   return obj;
 }
 
+var ObliquityCoef = function ObliquityCoef(date) {
+  var time = new Time(date);
+  var jd = time.jd_tt();
+  var t = (jd - 2451545.0) / 36525;
+  var omega = 125.04452 - 1934.136261 * t + 0.0020708 * t * t + t * t * t / 450000;
+  var L0 = 280.4665 + 36000.7698 * t;
+  var L1 = 218.3165 + 481267.8813 * t;
+  return {
+    t: t,
+    omega: omega,
+    L0: L0,
+    L1: L1
+  };
+};
+
+var MeanObliquity = function MeanObliquity(date) {
+  var coef = ObliquityCoef(date);
+  return 23 + 26.0 / 60 + 21.448 / 3600 - 46.8150 / 3600 * coef.t - 0.00059 / 3600 * coef.t * coef.t + 0.001813 / 3600 * coef.t * coef.t * coef.t;
+};
+var Obliquity = function Obliquity(date) {
+  var rad = Constant.RAD;
+  var coef = ObliquityCoef(date);
+  var mean_obliquity = MeanObliquity(date);
+  var obliquity_delta = 9.20 / 3600 * Math.cos(coef.omega * rad) + 0.57 / 3600 * Math.cos(2 * coef.L0 * rad) + 0.10 / 3600 * Math.cos(2 * coef.L1 * rad) - 0.09 / 3600 * Math.cos(2 * coef.omega * rad);
+  var obliquity = mean_obliquity + obliquity_delta;
+  return obliquity;
+};
+var Nutation = function Nutation(date) {
+  var rad = Constant.RAD;
+  var coef = ObliquityCoef(date);
+  var nutation = -17.20 / 3600 * Math.sin(coef.omega * rad) - -1.32 / 3600 * Math.sin(2 * coef.L0 * rad) - 0.23 / 3600 * Math.sin(2 * coef.L1 * rad) + 0.21 / 3600 * Math.sin(2 * coef.omega * rad);
+  return nutation;
+};
+
+var LEAP_SECONDS = [[Date.UTC(1972, 0, 1), 10], [Date.UTC(1972, 6, 1), 11], [Date.UTC(1973, 0, 1), 12], [Date.UTC(1974, 0, 1), 13], [Date.UTC(1975, 0, 1), 14], [Date.UTC(1976, 0, 1), 15], [Date.UTC(1977, 0, 1), 16], [Date.UTC(1978, 0, 1), 17], [Date.UTC(1979, 0, 1), 18], [Date.UTC(1980, 0, 1), 19], [Date.UTC(1981, 6, 1), 20], [Date.UTC(1982, 6, 1), 21], [Date.UTC(1983, 6, 1), 22], [Date.UTC(1985, 6, 1), 23], [Date.UTC(1988, 0, 1), 24], [Date.UTC(1990, 0, 1), 25], [Date.UTC(1991, 0, 1), 26], [Date.UTC(1992, 6, 1), 27], [Date.UTC(1993, 6, 1), 28], [Date.UTC(1994, 6, 1), 29], [Date.UTC(1996, 0, 1), 30], [Date.UTC(1997, 6, 1), 31], [Date.UTC(1999, 0, 1), 32], [Date.UTC(2006, 0, 1), 33], [Date.UTC(2009, 0, 1), 34], [Date.UTC(2012, 6, 1), 35], [Date.UTC(2015, 6, 1), 36], [Date.UTC(2017, 0, 1), 37]];
 var Time = /*#__PURE__*/_createClass(function Time() {
   var _this = this;
 
@@ -177,13 +212,13 @@ var Time = /*#__PURE__*/_createClass(function Time() {
     return jd;
   });
 
-  _defineProperty(this, "gmst", function () {
+  _defineProperty(this, "gast", function () {
     var rad = Constant.RAD;
     var time_in_sec = _this.hours * 3600 + _this.minutes * 60 + _this.seconds + _this.milliseconds / 1000;
 
     var jd = _this.jd();
 
-    var jd0 = jd - _this.time_in_day(); //gmst at 0:00
+    var jd0 = jd - _this.time_in_day(); //mean sidereal time at 0:00 UT
 
 
     var t = (jd0 - 2451545.0) / 36525;
@@ -191,28 +226,56 @@ var Time = /*#__PURE__*/_createClass(function Time() {
 
     if (gmst_at_zero > 24) {
       gmst_at_zero = gmst_at_zero % 24;
-    } //gmst at target time
+    } //mean sidereal time at target time
 
 
-    var gmst = gmst_at_zero + time_in_sec * 1.00273790925 / 3600; //mean obliquity of the ecliptic
+    var gast = gmst_at_zero + time_in_sec * 1.00273790925 / 3600; //equation of the equinoxes: nutation in longitude (degrees) projected
+    //onto the equator; 15 degrees = 1 hour
 
-    var e = 23 + 26.0 / 60 + 21.448 / 3600 - 46.8150 / 3600 * t - 0.00059 / 3600 * t * t + 0.001813 / 3600 * t * t * t; //nutation in longitude
+    gast = gast + Nutation(_this.date) * Math.cos(Obliquity(_this.date) * rad) / 15;
 
-    var omega = 125.04452 - 1934.136261 * t + 0.0020708 * t * t + t * t * t / 450000;
-    var long1 = 280.4665 + 36000.7698 * t;
-    var long2 = 218.3165 + 481267.8813 * t;
-    var phai = -17.20 * Math.sin(omega * rad) - -1.32 * Math.sin(2 * long1 * rad) - 0.23 * Math.sin(2 * long2 * rad) + 0.21 * Math.sin(2 * omega * rad);
-    gmst = gmst + phai / 15 * Math.cos(e * rad) / 3600;
-
-    if (gmst < 0) {
-      gmst = gmst % 24 + 24;
+    if (gast < 0) {
+      gast = gast % 24 + 24;
     }
 
-    if (gmst > 24) {
-      gmst = gmst % 24;
+    if (gast > 24) {
+      gast = gast % 24;
     }
 
-    return gmst;
+    return gast;
+  });
+
+  _defineProperty(this, "gmst", function () {
+    return _this.gast();
+  });
+
+  _defineProperty(this, "tt_minus_utc", function () {
+    //From 1972 on, TT-UTC is exactly 32.184s (TT-TAI) plus the accumulated
+    //leap seconds. The table's last entry carries forward: no leap second has
+    //been inserted since 2017 and the CGPM plans to discontinue them by 2035.
+    //Before 1972 UTC in its present form did not exist; fall back to the
+    //delta_t() polynomial, which estimates TT-UT1.
+    var ms = _this.date.getTime();
+
+    if (ms < LEAP_SECONDS[0][0]) {
+      return _this.delta_t();
+    }
+
+    var tai_utc = LEAP_SECONDS[0][1];
+
+    for (var i = 0; i < LEAP_SECONDS.length; i++) {
+      if (ms >= LEAP_SECONDS[i][0]) {
+        tai_utc = LEAP_SECONDS[i][1];
+      } else {
+        break;
+      }
+    }
+
+    return 32.184 + tai_utc;
+  });
+
+  _defineProperty(this, "jd_tt", function () {
+    return _this.jd() + _this.tt_minus_utc() / 86400;
   });
 
   _defineProperty(this, "delta_t", function () {
@@ -405,7 +468,7 @@ var Earth = /*#__PURE__*/_createClass(function Earth() {
 
   _defineProperty(this, "xyz", function (date) {
     var time = new Time(date);
-    var jd = time.jd();
+    var jd = time.jd_tt();
     var t = (jd - 2451545.0) / 365250;
     var v = [0, 0, 0];
     var target_data = _this.vsop_target;
@@ -432,7 +495,7 @@ var Earth = /*#__PURE__*/_createClass(function Earth() {
       y: v[1],
       z: v[2],
       "date": date,
-      "coordinate_keywords": "ecliptic rectangular",
+      "coordinate_keywords": "ecliptic rectangular j2000",
       "unit_keywords": "au"
     };
   });
@@ -444,43 +507,6 @@ var Earth = /*#__PURE__*/_createClass(function Earth() {
   this.vsop_options = options;
   this.vsop_target = resolveVSOP87ACoefficients('Earth', options);
 });
-
-var ObliquityCoef = function ObliquityCoef(date) {
-  //var dt = DeltaT()/86400;
-  //var dt = 64/86400;
-  var time = new Time(date);
-  var jd = time.jd(); // + dt;
-
-  var t = (jd - 2451545.0) / 36525;
-  var omega = 125.04452 - 1934.136261 * t + 0.0020708 * t * t + t * t * t / 450000;
-  var L0 = 280.4665 + 36000.7698 * t;
-  var L1 = 218.3165 + 481267.8813 * t;
-  return {
-    t: t,
-    omega: omega,
-    L0: L0,
-    L1: L1
-  };
-};
-
-var MeanObliquity = function MeanObliquity(date) {
-  var coef = ObliquityCoef(date);
-  return 23 + 26.0 / 60 + 21.448 / 3600 - 46.8150 / 3600 * coef.t - 0.00059 / 3600 * coef.t * coef.t + 0.001813 / 3600 * coef.t * coef.t * coef.t;
-};
-var Obliquity = function Obliquity(date) {
-  var rad = Constant.RAD;
-  var coef = ObliquityCoef(date);
-  var mean_obliquity = MeanObliquity(date);
-  var obliquity_delta = 9.20 / 3600 * Math.cos(coef.omega * rad) + 0.57 / 3600 * Math.cos(2 * coef.L0 * rad) + 0.10 / 3600 * Math.cos(2 * coef.L1 * rad) - 0.09 / 3600 * Math.cos(2 * coef.omega * rad);
-  var obliquity = mean_obliquity + obliquity_delta;
-  return obliquity;
-};
-var Nutation = function Nutation(date) {
-  var rad = Constant.RAD;
-  var coef = ObliquityCoef(date);
-  var nutation = -17.20 / 3600 * Math.sin(coef.omega * rad) - -1.32 / 3600 * Math.sin(2 * coef.L0 * rad) - 0.23 / 3600 * Math.sin(2 * coef.L1 * rad) + 0.21 / 3600 * Math.sin(2 * coef.omega * rad);
-  return nutation;
-};
 
 var J2000 = new Date(Date.UTC(2000, 0, 1, 12, 0, 0));
 
@@ -639,13 +665,23 @@ var RadecToXYZ = function RadecToXYZ(parameter) {
     "y": distance * Math.cos(dec * rad) * Math.sin(ra * rad),
     "z": distance * Math.sin(dec * rad)
   };
+  var unit_keywords = "";
+
+  if (parameter.unit_keywords != undefined) {
+    if (parameter.unit_keywords.match(/km/)) {
+      unit_keywords = "km";
+    } else if (parameter.unit_keywords.match(/au/)) {
+      unit_keywords = "au";
+    }
+  }
+
   return {
     'x': xyz.x,
     'y': xyz.y,
     'z': xyz.z,
     'date': date,
     "coordinate_keywords": "equatorial rectangular",
-    "unit_keywords": ""
+    "unit_keywords": unit_keywords
   };
 };
 var XYZtoRadec = function XYZtoRadec(parameter) {
@@ -690,13 +726,23 @@ var XYZtoRadec = function XYZtoRadec(parameter) {
   ra = ra / 15;
   var dec = Math.atan2(eqz, Math.sqrt(eqx * eqx + eqy * eqy)) / rad;
   var distance = Math.sqrt(eqx * eqx + eqy * eqy + eqz * eqz);
+  var distance_unit = "";
+
+  if (rect.unit_keywords != undefined) {
+    if (rect.unit_keywords.match(/km/)) {
+      distance_unit = " km";
+    } else if (rect.unit_keywords.match(/au/)) {
+      distance_unit = " au";
+    }
+  }
+
   return {
     "ra": ra,
     "dec": dec,
     "distance": distance,
     "date": date,
     "coordinate_keywords": "equatorial spherical",
-    "unit_keywords": "hours degree"
+    "unit_keywords": "hours degree" + distance_unit
   };
 };
 var XYZtoRadecOfDate = function XYZtoRadecOfDate(parameter) {
@@ -934,11 +980,8 @@ var Sun = /*#__PURE__*/_createClass(function Sun() {
 
   _defineProperty(this, "EclipticLongitude", function (date) {
     var rad = Constant.RAD;
-    var time = new Time(date); //var dt = DeltaT()/86400;
-    //var dt = 64/86400;
-
-    var jd = time.jd(); // + dt;
-
+    var time = new Time(date);
+    var jd = time.jd_tt();
     var t = (jd - 2451545.0) / 36525;
     var mean_longitude = 280.46646 + 36000.76983 * t + 0.0003032 * t * t;
     var mean_anomaly = 357.52911 + 35999.05029 * t - 0.0001537 * t * t;
@@ -1215,7 +1258,7 @@ var Luna = /*#__PURE__*/_createClass(function Luna() {
     var rad = Constant.RAD;
     var time = new Time(date);
     var now = date;
-    var jd = time.jd();
+    var jd = time.jd_tt();
     var date_first = new Date(time.year, 0, 1, 0, 0, 0);
     var date_last = new Date(time.year, 11, 31, 11, 59, 59, 999);
     var since_new_year = (now - date_first) / (date_last - date_first);
@@ -1554,7 +1597,8 @@ var Kepler = /*#__PURE__*/_createClass(function Kepler(_orbital_elements) {
       xdot: dotvec.x,
       ydot: dotvec.y,
       zdot: dotvec.z,
-      orbital_plane: orbital_plane
+      orbital_plane: orbital_plane,
+      "coordinate_keywords": "ecliptic rectangular j2000"
     };
   });
 
@@ -1605,7 +1649,7 @@ var Kepler = /*#__PURE__*/_createClass(function Kepler(_orbital_elements) {
       'zdot': position.zdot,
       'orbital_plane': op,
       "date": date,
-      "coordinate_keywords": "ecliptic rectangular",
+      "coordinate_keywords": "ecliptic rectangular j2000",
       "unit_keywords": "au au/d"
     };
   });
@@ -2222,7 +2266,7 @@ var SGP4 = /*#__PURE__*/_createClass(function SGP4(elements) {
     var ydotkmps = rect.ydot;
     var zdotkmps = rect.zdot;
     var rad = Constant.RAD;
-    var gmst = time.gmst();
+    var gmst = time.gast();
     var lst = gmst * 15;
     var f = 0.00335277945; //Earth's flattening term in WGS-72 (= 1/298.26)
 
@@ -2353,7 +2397,7 @@ var Observer = /*#__PURE__*/_createClass(function Observer(position) {
     var rad = Constant.RAD;
     var lat = _this.latitude;
     var lng = _this.longitude;
-    var gmst = time.gmst();
+    var gmst = time.gast();
     var lst = gmst * 15 + lng;
     var a = 6378.135 + _this.altitude; //Earth's equatorial radius in WGS-72 (km)
 
@@ -2402,7 +2446,7 @@ var Observation = /*#__PURE__*/_createClass(function Observation(param) {
     var longitude = Number(observer.longitude);
     Number(observer.altitude);
     dec = dec * rad;
-    var gmst = time.gmst();
+    var gmst = time.gast();
     var hour_angle = gmst * 15 + longitude - ra * 15;
     var h = hour_angle * rad;
     var lat = latitude * rad;
@@ -2456,7 +2500,7 @@ var Observation = /*#__PURE__*/_createClass(function Observation(param) {
     var rx0 = rect.x - ob.x;
     var ry0 = rect.y - ob.y;
     var rz0 = rect.z - ob.z;
-    var gmst = time.gmst();
+    var gmst = time.gast();
     var lst = gmst * 15 + lng;
     var rs = Math.sin(lat * rad) * Math.cos(lst * rad) * rx0 + Math.sin(lat * rad) * Math.sin(lst * rad) * ry0 - Math.cos(lat * rad) * rz0;
     var re = -Math.sin(lst * rad) * rx0 + Math.cos(lst * rad) * ry0;
@@ -2499,11 +2543,30 @@ var Observation = /*#__PURE__*/_createClass(function Observation(param) {
       }
     }
 
-    var target_date, rect, horizontal, radec, distance_unit;
+    var target_date, rect, horizontal, radec, distance_unit; // When the target's distance and its unit are known, go through the
+    // rectangular path so the observer's geocentric position is subtracted:
+    // this applies diurnal parallax (up to ~1 degree for the Moon). Targets
+    // without a usable distance keep the purely angular conversion.
+
+    var HorizontalFromRadec = function HorizontalFromRadec(radec_obj) {
+      if (radec_obj.distance != undefined && radec_obj.unit_keywords != undefined && radec_obj.unit_keywords.match(/km|au/)) {
+        return _this2.RectToHorizontal(time, RadecToXYZ(radec_obj));
+      }
+
+      return _this2.RadecToHorizontal(time, radec_obj);
+    };
+
+    var DistanceUnitFromRadec = function DistanceUnitFromRadec(h, radec_obj) {
+      if (h.unit_keywords != undefined) {
+        return get_distance_unit(h);
+      }
+
+      return radec_obj.unit_keywords != undefined ? get_distance_unit(radec_obj) : "";
+    };
 
     if (target.ra != undefined && target.dec != undefined) {
-      horizontal = _this2.RadecToHorizontal(time, target);
-      distance_unit = target.unit_keywords != undefined ? get_distance_unit(target) : "";
+      horizontal = HorizontalFromRadec(target);
+      distance_unit = DistanceUnitFromRadec(horizontal, target);
     } else if (target.x != undefined && target.y != undefined && target.z != undefined) {
       if (target.coordinate_keywords.match(/ecliptic/)) {
         if (target.date != undefined) {
@@ -2524,8 +2587,8 @@ var Observation = /*#__PURE__*/_createClass(function Observation(param) {
       distance_unit = get_distance_unit(horizontal);
     } else if (target.radec != undefined) {
       radec = target.radec(date);
-      horizontal = _this2.RadecToHorizontal(time, radec);
-      distance_unit = get_distance_unit(radec);
+      horizontal = HorizontalFromRadec(radec);
+      distance_unit = DistanceUnitFromRadec(horizontal, radec);
     } else if (target.xyz != undefined) {
       rect = target.xyz(date);
       horizontal = _this2.RectToHorizontal(time, rect);
