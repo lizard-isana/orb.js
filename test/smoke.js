@@ -32,6 +32,15 @@ test('Time.delta_t follows the NASA polynomial', () => {
   assert.ok(Math.abs(t.delta_t() - 75.4) < 0.1, 'got ' + t.delta_t());
 });
 
+test('Time.gast reproduces Meeus example 12.b', () => {
+  // 1987 Apr 10, 19:21:00 UT -> apparent sidereal time 8h34m56.853s
+  const t = new Orb.Time(new Date(Date.UTC(1987, 3, 10, 19, 21, 0)));
+  const ref = 8 + 34 / 60 + 56.853 / 3600;
+  assert.ok(Math.abs(t.gast() - ref) * 3600 < 0.2, 'gast=' + t.gast());
+  // gmst() is kept as a backward-compatible alias of gast()
+  assert.strictEqual(t.gmst(), t.gast());
+});
+
 test('Time.tt_minus_utc uses the leap second table', () => {
   assert.strictEqual(new Orb.Time(new Date(Date.UTC(2026, 6, 18))).tt_minus_utc(), 69.184);
   assert.strictEqual(new Orb.Time(new Date(Date.UTC(1990, 5, 1))).tt_minus_utc(), 57.184);

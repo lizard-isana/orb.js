@@ -15,7 +15,7 @@ export class Observer {
     const rad = Constant.RAD;
     const lat = this.latitude;
     const lng = this.longitude;
-    const gmst = time.gmst();
+    const gmst = time.gast();
     const lst = gmst*15 + lng;
     const a = 6378.135 + this.altitude;  //Earth's equatorial radius in WGS-72 (km)
     const f = 0.00335277945 //Earth's flattening term in WGS-72 (= 1/298.26)
@@ -58,7 +58,7 @@ export class Observation {
     const longitude = Number(observer.longitude);
     const altitude = Number(observer.altitude);
     dec = dec*rad
-    const gmst = time.gmst();
+    const gmst = time.gast();
     const hour_angle = (gmst*15 + longitude - (ra*15));
     const h = hour_angle*rad;
     const lat = latitude*rad;
@@ -107,7 +107,7 @@ export class Observation {
     const rx0 = rect.x - ob.x;
     const ry0 = rect.y - ob.y
     const rz0 = rect.z - ob.z
-    const gmst = time.gmst();
+    const gmst = time.gast();
     const lst = gmst*15 + lng;
     const rs = Math.sin(lat*rad)*Math.cos(lst*rad)*rx0 + Math.sin(lat*rad)*Math.sin(lst*rad)*ry0-Math.cos(lat*rad)*rz0;
     const re = -Math.sin(lst*rad)*rx0 + Math.cos(lst*rad)*ry0;

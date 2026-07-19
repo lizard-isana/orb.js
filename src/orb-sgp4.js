@@ -475,7 +475,7 @@ export class SGP4{
     var ydotkmps = rect.ydot;
     var zdotkmps = rect.zdot;
     var rad = Constant.RAD;
-    var gmst = time.gmst();
+    var gmst = time.gast();
     var lst = gmst * 15;
     var f = 0.00335277945 //Earth's flattening term in WGS-72 (= 1/298.26)
     var a = 6378.135  //Earth's equatorial radius in WGS-72 (km)

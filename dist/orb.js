@@ -146,6 +146,36 @@
     return obj;
   }
 
+  var ObliquityCoef = function ObliquityCoef(date) {
+    var time = new Time(date);
+    var jd = time.jd_tt();
+    var t = (jd - 2451545.0) / 36525;
+    var omega = 125.04452 - 1934.136261 * t + 0.0020708 * t * t + t * t * t / 450000;
+    var L0 = 280.4665 + 36000.7698 * t;
+    var L1 = 218.3165 + 481267.8813 * t;
+    return {
+      t: t,
+      omega: omega,
+      L0: L0,
+      L1: L1
+    };
+  };
+
+  var Obliquity = function Obliquity(date) {
+    var rad = Constant.RAD;
+    var coef = ObliquityCoef(date);
+    var mean_obliquity = 23 + 26.0 / 60 + 21.448 / 3600 - 46.8150 / 3600 * coef.t - 0.00059 / 3600 * coef.t * coef.t + 0.001813 / 3600 * coef.t * coef.t * coef.t;
+    var obliquity_delta = 9.20 / 3600 * Math.cos(coef.omega * rad) + 0.57 / 3600 * Math.cos(2 * coef.L0 * rad) + 0.10 / 3600 * Math.cos(2 * coef.L1 * rad) - 0.09 / 3600 * Math.cos(2 * coef.omega * rad);
+    var obliquity = mean_obliquity + obliquity_delta;
+    return obliquity;
+  };
+  var Nutation = function Nutation(date) {
+    var rad = Constant.RAD;
+    var coef = ObliquityCoef(date);
+    var nutation = -17.20 / 3600 * Math.sin(coef.omega * rad) - -1.32 / 3600 * Math.sin(2 * coef.L0 * rad) - 0.23 / 3600 * Math.sin(2 * coef.L1 * rad) + 0.21 / 3600 * Math.sin(2 * coef.omega * rad);
+    return nutation;
+  };
+
   var LEAP_SECONDS = [[Date.UTC(1972, 0, 1), 10], [Date.UTC(1972, 6, 1), 11], [Date.UTC(1973, 0, 1), 12], [Date.UTC(1974, 0, 1), 13], [Date.UTC(1975, 0, 1), 14], [Date.UTC(1976, 0, 1), 15], [Date.UTC(1977, 0, 1), 16], [Date.UTC(1978, 0, 1), 17], [Date.UTC(1979, 0, 1), 18], [Date.UTC(1980, 0, 1), 19], [Date.UTC(1981, 6, 1), 20], [Date.UTC(1982, 6, 1), 21], [Date.UTC(1983, 6, 1), 22], [Date.UTC(1985, 6, 1), 23], [Date.UTC(1988, 0, 1), 24], [Date.UTC(1990, 0, 1), 25], [Date.UTC(1991, 0, 1), 26], [Date.UTC(1992, 6, 1), 27], [Date.UTC(1993, 6, 1), 28], [Date.UTC(1994, 6, 1), 29], [Date.UTC(1996, 0, 1), 30], [Date.UTC(1997, 6, 1), 31], [Date.UTC(1999, 0, 1), 32], [Date.UTC(2006, 0, 1), 33], [Date.UTC(2009, 0, 1), 34], [Date.UTC(2012, 6, 1), 35], [Date.UTC(2015, 6, 1), 36], [Date.UTC(2017, 0, 1), 37]];
   var Time = /*#__PURE__*/_createClass(function Time() {
     var _this = this;
@@ -184,13 +214,13 @@
       return jd;
     });
 
-    _defineProperty(this, "gmst", function () {
+    _defineProperty(this, "gast", function () {
       var rad = Constant.RAD;
       var time_in_sec = _this.hours * 3600 + _this.minutes * 60 + _this.seconds + _this.milliseconds / 1000;
 
       var jd = _this.jd();
 
-      var jd0 = jd - _this.time_in_day(); //gmst at 0:00
+      var jd0 = jd - _this.time_in_day(); //mean sidereal time at 0:00 UT
 
 
       var t = (jd0 - 2451545.0) / 36525;
@@ -198,28 +228,27 @@
 
       if (gmst_at_zero > 24) {
         gmst_at_zero = gmst_at_zero % 24;
-      } //gmst at target time
+      } //mean sidereal time at target time
 
 
-      var gmst = gmst_at_zero + time_in_sec * 1.00273790925 / 3600; //mean obliquity of the ecliptic
+      var gast = gmst_at_zero + time_in_sec * 1.00273790925 / 3600; //equation of the equinoxes: nutation in longitude (degrees) projected
+      //onto the equator; 15 degrees = 1 hour
 
-      var e = 23 + 26.0 / 60 + 21.448 / 3600 - 46.8150 / 3600 * t - 0.00059 / 3600 * t * t + 0.001813 / 3600 * t * t * t; //nutation in longitude
+      gast = gast + Nutation(_this.date) * Math.cos(Obliquity(_this.date) * rad) / 15;
 
-      var omega = 125.04452 - 1934.136261 * t + 0.0020708 * t * t + t * t * t / 450000;
-      var long1 = 280.4665 + 36000.7698 * t;
-      var long2 = 218.3165 + 481267.8813 * t;
-      var phai = -17.20 * Math.sin(omega * rad) - -1.32 * Math.sin(2 * long1 * rad) - 0.23 * Math.sin(2 * long2 * rad) + 0.21 * Math.sin(2 * omega * rad);
-      gmst = gmst + phai / 15 * Math.cos(e * rad) / 3600;
-
-      if (gmst < 0) {
-        gmst = gmst % 24 + 24;
+      if (gast < 0) {
+        gast = gast % 24 + 24;
       }
 
-      if (gmst > 24) {
-        gmst = gmst % 24;
+      if (gast > 24) {
+        gast = gast % 24;
       }
 
-      return gmst;
+      return gast;
+    });
+
+    _defineProperty(this, "gmst", function () {
+      return _this.gast();
     });
 
     _defineProperty(this, "tt_minus_utc", function () {
@@ -376,36 +405,6 @@
       return null;
     });
   });
-
-  var ObliquityCoef = function ObliquityCoef(date) {
-    var time = new Time(date);
-    var jd = time.jd_tt();
-    var t = (jd - 2451545.0) / 36525;
-    var omega = 125.04452 - 1934.136261 * t + 0.0020708 * t * t + t * t * t / 450000;
-    var L0 = 280.4665 + 36000.7698 * t;
-    var L1 = 218.3165 + 481267.8813 * t;
-    return {
-      t: t,
-      omega: omega,
-      L0: L0,
-      L1: L1
-    };
-  };
-
-  var Obliquity = function Obliquity(date) {
-    var rad = Constant.RAD;
-    var coef = ObliquityCoef(date);
-    var mean_obliquity = 23 + 26.0 / 60 + 21.448 / 3600 - 46.8150 / 3600 * coef.t - 0.00059 / 3600 * coef.t * coef.t + 0.001813 / 3600 * coef.t * coef.t * coef.t;
-    var obliquity_delta = 9.20 / 3600 * Math.cos(coef.omega * rad) + 0.57 / 3600 * Math.cos(2 * coef.L0 * rad) + 0.10 / 3600 * Math.cos(2 * coef.L1 * rad) - 0.09 / 3600 * Math.cos(2 * coef.omega * rad);
-    var obliquity = mean_obliquity + obliquity_delta;
-    return obliquity;
-  };
-  var Nutation = function Nutation(date) {
-    var rad = Constant.RAD;
-    var coef = ObliquityCoef(date);
-    var nutation = -17.20 / 3600 * Math.sin(coef.omega * rad) - -1.32 / 3600 * Math.sin(2 * coef.L0 * rad) - 0.23 / 3600 * Math.sin(2 * coef.L1 * rad) + 0.21 / 3600 * Math.sin(2 * coef.omega * rad);
-    return nutation;
-  };
 
   //coodinates.js
   var RadecToXYZ = function RadecToXYZ(parameter) {
@@ -1849,7 +1848,7 @@
       var ydotkmps = rect.ydot;
       var zdotkmps = rect.zdot;
       var rad = Constant.RAD;
-      var gmst = time.gmst();
+      var gmst = time.gast();
       var lst = gmst * 15;
       var f = 0.00335277945; //Earth's flattening term in WGS-72 (= 1/298.26)
 
@@ -1980,7 +1979,7 @@
       var rad = Constant.RAD;
       var lat = _this.latitude;
       var lng = _this.longitude;
-      var gmst = time.gmst();
+      var gmst = time.gast();
       var lst = gmst * 15 + lng;
       var a = 6378.135 + _this.altitude; //Earth's equatorial radius in WGS-72 (km)
 
@@ -2029,7 +2028,7 @@
       var longitude = Number(observer.longitude);
       Number(observer.altitude);
       dec = dec * rad;
-      var gmst = time.gmst();
+      var gmst = time.gast();
       var hour_angle = gmst * 15 + longitude - ra * 15;
       var h = hour_angle * rad;
       var lat = latitude * rad;
@@ -2083,7 +2082,7 @@
       var rx0 = rect.x - ob.x;
       var ry0 = rect.y - ob.y;
       var rz0 = rect.z - ob.z;
-      var gmst = time.gmst();
+      var gmst = time.gast();
       var lst = gmst * 15 + lng;
       var rs = Math.sin(lat * rad) * Math.cos(lst * rad) * rx0 + Math.sin(lat * rad) * Math.sin(lst * rad) * ry0 - Math.cos(lat * rad) * rz0;
       var re = -Math.sin(lst * rad) * rx0 + Math.cos(lst * rad) * ry0;
