@@ -24,3 +24,5 @@ jobs:
       - name: Check dist is in sync with src
         run: git diff --exit-code dist/
       - run: npm test
+      # educational guide snippets must match the source they quote
+      - run: node tools/snippets.js --check

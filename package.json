@@ -13,7 +13,10 @@
   ],
   "scripts": {
     "test": "node test/smoke.js && node test/v4/run.mjs",
-    "build": "rollup -c rollup.config.js"
+    "build": "rollup -c rollup.config.js",
+    "edu:snippets": "node tools/snippets.js",
+    "edu:check": "node tools/snippets.js --check",
+    "edu:annotate": "node tools/annotate.js"
   },
   "repository": {
     "type": "git",
