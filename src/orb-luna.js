@@ -173,7 +173,7 @@ export class Luna{
   parallax = (date) =>  {
     var latlng = this.latlng(date);
     var rad = Constant.RAD
-    return Math.asin(6378.14 / latlng.distance) / rad
+    return Math.asin(6378.137 / latlng.distance) / rad
   }
 
   phase = (date) => {

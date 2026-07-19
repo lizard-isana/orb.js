@@ -81,6 +81,7 @@ observation.azel(date);
 | `tt_minus_utc()` | TT−UTC in seconds. Exact from 1972 via the leap-second table (69.184 s since 2017); NASA ΔT polynomial before 1972 |
 | `delta_t()` | NASA polynomial estimate of ΔT (TT−UT1), seconds |
 | `gast()` | Greenwich Apparent Sidereal Time, hours |
+| `gmst82()` | Greenwich Mean Sidereal Time (IAU 1982), hours — the rotation angle of the TEME frame |
 | `gmst()` | deprecated alias of `gast()` — it has always returned *apparent* sidereal time |
 | `doy()` | day of year including fraction (UTC), number |
 
@@ -115,8 +116,14 @@ state vector back to elements.
 
 Accepts `{first_line, second_line[, name]}` TLE strings or a CCSDS OMM
 object. `xyz(date)` returns TEME rectangular coordinates (km, km/s);
-`latlng(date)` returns the sub-satellite point (WGS-72). Properties:
-`orbital_period` (min), `apogee` / `perigee` (km), `orbital_elements`, `omm`.
+`latlng(date)` returns the sub-satellite point (WGS-84 geodetic; the TEME
+rotation uses GMST 1982 as the frame requires). Deep-space orbits (period
+>= 225 min: GEO, GPS, Molniya, ...) are handled by the SDP4 terms of the
+Vallado reference implementation; a propagation that fails (decayed orbit,
+eccentricity out of range) throws an Error. Properties: `orbital_period`
+(min), `apogee` / `perigee` (km), `orbital_elements`, `omm`. The
+propagation core (`sgp4init`, `sgp4`, `gstime`, `wgs72`) is also exported
+for direct use.
 
 ### `Orb.Observation({observer, target})`
 
@@ -158,7 +165,11 @@ i.e. it expects heliocentric input; vectors tagged `j2000` in
 - Planets: VSOP87A (nearly full series) with IAU 1976 precession; light-time
   and aberration are not applied, so apparent places are good to roughly
   tens of arcseconds.
-- Satellites: SGP4 (Spacetrack Report #3), TEME frame; the usual SGP4
+- Satellites: SGP4/SDP4 ported from the Vallado reference implementation
+  ("Revisiting Spacetrack Report #3"), verified against python-sgp4 to
+  1e-9 km, including deep-space (>= 225 min period) orbits. Propagation
+  uses WGS-72 gravity constants (TLEs are fitted with them); geodetic
+  output uses WGS-84. TEME output pairs with GMST 1982. The usual SGP4
   accuracy caveats apply (km-level, degrading with TLE age).
 - `azel` applies diurnal parallax but not refraction (returned separately)
   and not polar motion.

@@ -11,14 +11,16 @@ export class Observer {
     this.altitude = position.altitude
   }
 
-  rectangular = (time) =>{
+  //sidereal_time (hours) defaults to apparent sidereal time; pass
+  //time.gmst82() to place the observer in the TEME frame instead.
+  rectangular = (time, sidereal_time) =>{
     const rad = Constant.RAD;
     const lat = this.latitude;
     const lng = this.longitude;
-    const gmst = time.gast();
+    const gmst = sidereal_time != undefined ? sidereal_time : time.gast();
     const lst = gmst*15 + lng;
-    const a = 6378.135 + this.altitude;  //Earth's equatorial radius in WGS-72 (km)
-    const f = 0.00335277945 //Earth's flattening term in WGS-72 (= 1/298.26)
+    const a = 6378.137 + this.altitude;  //Earth's equatorial radius in WGS-84 (km)
+    const f = 1 / 298.257223563; //Earth's flattening in WGS-84
     const sin_lat =Math.sin(lat*rad);
     const c = 1/Math.sqrt(1+f*(f-2)*sin_lat*sin_lat);
     const s = (1-f)*(1-f)*c;
@@ -102,12 +104,16 @@ export class Observation {
     const observer = this.observer;
     const lat = observer.latitude;
     const lng = observer.longitude;
+    //TEME vectors (SGP4) pair with mean sidereal time (GMST 1982);
+    //apparent places pair with apparent sidereal time.
+    const is_teme = rect.coordinate_keywords != undefined && rect.coordinate_keywords.match(/teme/);
+    const st = is_teme ? time.gmst82() : time.gast();
     const obsv = new Observer(observer);
-    const ob = obsv.rectangular(time)
+    const ob = obsv.rectangular(time, st)
     const rx0 = rect.x - ob.x;
     const ry0 = rect.y - ob.y
     const rz0 = rect.z - ob.z
-    const gmst = time.gast();
+    const gmst = st;
     const lst = gmst*15 + lng;
     const rs = Math.sin(lat*rad)*Math.cos(lst*rad)*rx0 + Math.sin(lat*rad)*Math.sin(lst*rad)*ry0-Math.cos(lat*rad)*rz0;
     const re = -Math.sin(lst*rad)*rx0 + Math.cos(lst*rad)*ry0;

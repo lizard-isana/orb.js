@@ -71,23 +71,32 @@ export class Time {
     return jd;
   }
 
-  //Greenwich Apparent Sidereal Time in hours: mean sidereal time (from UT)
-  //plus the equation of the equinoxes. This is the sidereal time to use for
-  //hour angles of apparent places.
-  gast = () => {
-    const rad = Constant.RAD
+  //Greenwich Mean Sidereal Time (IAU 1982 model) in hours. This is also the
+  //rotation angle that pairs with the TEME frame of SGP4 (Vallado,
+  //Revisiting Spacetrack Report #3).
+  gmst82 = () => {
     const time_in_sec = this.hours * 3600 + this.minutes * 60 + this.seconds + this.milliseconds / 1000;
     const jd = this.jd();
     const jd0 = jd - this.time_in_day();
     //mean sidereal time at 0:00 UT
     const t = (jd0 - 2451545.0) / 36525;
-    let gmst_at_zero = (24110.5484 + 8640184.812866 * t + 0.093104 * t * t + 0.0000062 * t * t * t) / 3600;
+    let gmst_at_zero = (24110.54841 + 8640184.812866 * t + 0.093104 * t * t - 0.0000062 * t * t * t) / 3600;
     if (gmst_at_zero > 24) { gmst_at_zero = gmst_at_zero % 24; }
     //mean sidereal time at target time
-    let gast = gmst_at_zero + (time_in_sec * 1.00273790925) / 3600;
+    let gmst = gmst_at_zero + (time_in_sec * 1.00273790935) / 3600;
+    if (gmst < 0) { gmst = gmst % 24 + 24; }
+    if (gmst > 24) { gmst = gmst % 24; }
+    return gmst
+  }
+
+  //Greenwich Apparent Sidereal Time in hours: mean sidereal time (from UT)
+  //plus the equation of the equinoxes. This is the sidereal time to use for
+  //hour angles of apparent places.
+  gast = () => {
+    const rad = Constant.RAD
     //equation of the equinoxes: nutation in longitude (degrees) projected
     //onto the equator; 15 degrees = 1 hour
-    gast = gast + (Nutation(this.date) * Math.cos(Obliquity(this.date) * rad)) / 15;
+    let gast = this.gmst82() + (Nutation(this.date) * Math.cos(Obliquity(this.date) * rad)) / 15;
     if (gast < 0) { gast = gast % 24 + 24; }
     if (gast > 24) { gast = gast % 24; }
     return gast
