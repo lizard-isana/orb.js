@@ -4,9 +4,9 @@
 //  Vallado, Crawford, Hujsak, Kelso, "Revisiting Spacetrack Report #3",
 //  AIAA 2006-6753, as distributed in python-sgp4 (Brandon Rhodes, MIT
 //  license), which is itself a direct translation of Vallado's code.
-//Includes the deep-space (SDP4) secular and lunar-solar periodic terms and
-//the 12h/24h geopotential resonance handling that the previous near-earth
-//only implementation lacked. Verified numerically against python-sgp4.
+//Includes the deep-space (SDP4) secular and lunar-solar periodic terms
+//and the 12h/24h geopotential resonance handling. Verified numerically
+//against the python-sgp4 reference implementation.
 
 const pi = Math.PI;
 const twopi = 2.0 * pi;

@@ -61,36 +61,31 @@ orb.js の係数データは手で書き写したものではなく、`tools/vso
 ## 3.3 地球 — いちばん良いデータを使う天体
 
 地球だけは特別扱いです。すべての天体の地心位置は「− 地球」を含むので、
-地球の誤差は全天に伝染します。実際に v4 の開発中、JPL Horizons との照合で
-「v3 から継承した VSOP 係数ファイルが実は無言の打ち切り版で、地球に約
-8000 km(11″)の誤差があった」ことが発覚しました(`src/bodies/earth.js`):
+地球の誤差は全天に伝染します。だからこそ係数データの出所が重要になります。
+ネット上に流通する VSOP87 の係数には、項数を**無言で**間引いた再配布版が
+少なくありません — だから orb.js は公式配布ファイルを同梱して自前で
+間引き、検証します(§3.2)。そして地球には、惑星よりさらに一段上の
+データを使います(`src/bodies/earth.js`):
 
 <!-- snippet:earth-epv00 -->
 ```js
 // src/bodies/earth.js
-// The Earth deserves better data than the other planets: every
-// geocentric position of every body contains "minus the Earth", so an
-// Earth error contaminates the whole sky — and for the Sun (computed as
-// exactly minus the Earth) it shows up 1:1. This lesson was learned the
-// hard way: v4 originally reused the VSOP87A coefficient file inherited
-// from v3, and comparison against JPL Horizons revealed that file to be
-// a silent ~1500-term-per-planet truncation with an ~8000 km
-// (~11 arcsec) Earth error that had been masquerading as "theory
-// difference" for years.
+// The Earth gets the highest-grade series in the library, because its
+// errors contaminate the whole sky: every geocentric position contains
+// "minus the Earth", and the Sun is exactly minus the Earth, so an
+// Earth error shows up there at full weight.
 //
-// This module therefore uses the Earth ephemeris of ERFA's epv00
-// (SOFA-derived, BSD): a Simon et al. harmonic series fitted to JPL
-// DE405, good to milliarcseconds over 1900-2100 — three orders of
-// magnitude better than the truncated file, at ~1300 terms. The series
-// shape is the familiar one (amplitude, phase, frequency triples), with
-// an empirical rotation matrix aligning the model to the DE405/ICRS
-// equatorial frame, which is why this body natively reports the frame
-// 'equatorial-j2000' rather than the ecliptic.
+// The model is the epv00 ephemeris of ERFA (SOFA-derived, BSD): a
+// Simon et al. harmonic series fitted to JPL DE405, milliarcsecond
+// class over 1900-2100 at ~1300 terms. The series has the familiar
+// amplitude/phase/frequency form; an empirical rotation matrix aligns
+// the model to the DE405/ICRS equatorial frame, which is why this body
+// natively reports 'equatorial-j2000' rather than the ecliptic.
 ```
 <!-- /snippet -->
 
-外部の独立したリファレンスと突き合わせて初めて見つかる誤差がある —
-これが第3.5節の検証方針が「複数の独立実装との照合」を要求する理由です。
+データの由来を機械で追跡できるようにし、独立のリファレンスと突き合わせて
+初めて見つかる誤差がある — これが §3.6 の検証方針につながります。
 
 ## 3.4 太陽 — 理論を持たない天体
 
@@ -105,16 +100,17 @@ orb.js の係数データは手で書き写したものではなく、`tools/vso
 //
 //     r_sun(geocentric) = - r_earth(heliocentric)
 //
-// and the same for velocity. v3 carried an independent low-precision
-// solar theory alongside VSOP, and the two disagreed by ~17 arcseconds;
-// deriving the Sun from the one Earth series removes that second source
-// of truth entirely.
+// and the same for velocity. Deriving the Sun from the one Earth
+// series keeps a single source of truth: a separate low-precision
+// solar theory would disagree with the planetary frame at the
+// arcsecond level and the two could never be reconciled exactly.
 ```
 <!-- /snippet -->
 
-v3 には独立の簡易太陽理論があり、VSOP 系の座標と約17″食い違っていました。
-「真実の源をひとつにする」はソフトウェア設計の原則ですが、天文計算でも
-そのまま通用します。
+太陽に独立の簡易理論を持たせると、惑星系の座標と十数秒角の桁で食い違う
+「第二の真実」が生まれ、両者は原理的に一致させられません。「真実の源を
+ひとつにする」はソフトウェア設計の原則ですが、天文計算でもそのまま
+通用します。
 
 ## 3.5 月 — いちばん難しい天体
 
@@ -152,14 +148,16 @@ v3 には独立の簡易太陽理論があり、VSOP 系の座標と約17″食�
 
 ## 3.6 検証という設計
 
-`test/v4/bodies.mjs` の検証は3層構造です:
+このライブラリの位置計算は3層で検証されています:
 
-1. **コンパイラ検査** — フル版データは v3 と同じ係数なので、位置は
-   10⁻¹¹ au で一致しなければならない(一致しなければ生成ツールのバグ)
-2. **打ち切り検査** — 縮約版とフル版の差が公称 0.1″ 以内に収まっている
-3. **独立実装との照合** — Meeus 実例 47.a(月)、v3 の独立太陽理論との
-   突き合わせ。差が出る場合は「どのモデル差によるものか」を数字で説明
-   できること(例: 月の視黄経の 2.07″ 差 = 章動モデル 2000B と4項近似の差)
+1. **生成時の自己検証** — 係数データは公式配布ファイルから機械生成され、
+   間引き誤差が公称値(地球から見て 0.1″)以内であることを生成ツール
+   自身が全期間サンプルで確認してから書き出す(§3.2)
+2. **独立実装との固定値照合** — ERFA/pyerfa(地球)、Meeus の実例
+   47.a(月)など、別実装が出した数値をテストに焼き込んで突き合わせる
+3. **観測暦との照合** — JPL Horizons(DE441)の出力と視位置・距離を
+   比較する。残差が出る場合は「どのモデル差によるものか」を数字で説明
+   できること(例: 月の数秒角 = Meeus 60項打ち切りと完全理論の差)
 
 「答えが合う」だけでなく「**差が説明できる**」ことを合格条件にするのが、
 このライブラリの検証方針です。

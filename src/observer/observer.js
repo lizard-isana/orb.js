@@ -23,8 +23,6 @@ import { apparentGeocentric } from './apparent.js';
 import { refraction as refractionAngle } from './refraction.js';
 
 // observer({ latitude, longitude, height }) — degrees, degrees, METERS.
-// (v3 took kilometers here and real users passed meters; the unit is now
-// the conventional one and is stated everywhere.)
 export const observer = ({ latitude, longitude, height = 0 }) => {
   const geo = {
     latitude: latitude * DEG,

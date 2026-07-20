@@ -15,9 +15,7 @@
 //   sun:  ERFA epv00 earth (DE405 fit, mas class). Measured: 0.25",
 //         ~57 km — the pipeline itself at its accuracy floor.
 //   mars: official VSOP87A (CDS VI/81), truncated 0.1". Measured:
-//         0.4", ~37 km. (The first capture, against the v3-inherited
-//         coefficient file, showed a 50,000 km radial error and exposed
-//         that file as a silent truncation — see bodies/earth.js.)
+//         0.4", ~37 km.
 import assert from 'assert';
 
 import { Instant } from '../../src/time/instant.js';

@@ -8,7 +8,7 @@
 //
 //  1. The epoch is a two-digit year plus a fractional day-of-year with
 //     ~millisecond precision; rounding it to whole seconds moves a LEO
-//     satellite by kilometers along-track (a real v3 bug).
+//     satellite by kilometers along-track.
 //  2. These are MEAN elements fitted to the SGP4 model with WGS-72
 //     constants. They only make sense fed to SGP4 — treating them as
 //     osculating Kepler elements gives errors of tens of kilometers.

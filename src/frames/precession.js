@@ -8,8 +8,9 @@
 // Sun and Moon theories produce) and any position quoted "J2000" (as
 // VSOP87 produces) therefore differ by the accumulated precession —
 // about 0.4 degrees in 2026 and growing. Mixing the two frames without
-// converting was an actual bug in orb.js v3; in v4 the frame is part of
-// the state-vector type and this file supplies the conversion.
+// converting is one of the most common errors in astronomical software;
+// here the frame is part of the state-vector type and this file
+// supplies the conversion.
 //
 // The IAU 2006 parameterization used here (Fukushima-Williams angles
 // gamma_bar, phi_bar, psi_bar plus the mean obliquity) composes four

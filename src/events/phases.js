@@ -6,13 +6,12 @@
 //
 //     0 deg = new moon,  90 = first quarter,  180 = full,  270 = last quarter
 //
-// Classical almanac algorithms (Meeus ch. 49, used by v3) approximate
-// the TIMES of these events directly with a dedicated series. v4
-// instead reuses the position theories it already has and simply finds
-// where elongation(t) crosses each target angle. That is slower per
-// event but has one big property: the phases are exactly consistent
-// with the positions the rest of the library reports — there is no
-// second theory to disagree with.
+// Classical almanac algorithms (Meeus ch. 49) approximate the TIMES of
+// these events directly with a dedicated series. This module instead
+// reuses the position theories the library already has and finds where
+// elongation(t) crosses each target angle. That is slower per event
+// but exactly consistent with the positions the library reports —
+// there is no second theory to disagree with.
 //#endregion
 
 import { DEG, normalizeAngle } from '../math/angles.js';

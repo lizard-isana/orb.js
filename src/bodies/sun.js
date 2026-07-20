@@ -6,10 +6,10 @@
 //
 //     r_sun(geocentric) = - r_earth(heliocentric)
 //
-// and the same for velocity. v3 carried an independent low-precision
-// solar theory alongside VSOP, and the two disagreed by ~17 arcseconds;
-// deriving the Sun from the one Earth series removes that second source
-// of truth entirely.
+// and the same for velocity. Deriving the Sun from the one Earth
+// series keeps a single source of truth: a separate low-precision
+// solar theory would disagree with the planetary frame at the
+// arcsecond level and the two could never be reconciled exactly.
 //#endregion
 
 import { earth } from './earth.js';

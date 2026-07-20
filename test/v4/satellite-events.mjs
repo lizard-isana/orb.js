@@ -39,7 +39,7 @@ test('parseTle: fields, implied decimals, millisecond epoch', () => {
   assert.ok(Math.abs(el.eccentricity - 0.0004871) < 1e-10);
   assert.ok(Math.abs(el.bstar - 1.027e-4) < 1e-9);
   // epoch 20014.52632156 = 2020-01-14 12:37:54.182784 UTC — the sub-second
-  // part must survive (v3 lost it twice)
+  // part must survive; rounding it moves a LEO state by kilometers
   const iso = el.epoch.toDate().toISOString();
   assert.ok(iso.startsWith('2020-01-14T12:37:54.18'), iso);
 });

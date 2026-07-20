@@ -1,24 +1,17 @@
 // earth.js — heliocentric position and velocity of the Earth.
 //
 //#region edu:earth-epv00
-// The Earth deserves better data than the other planets: every
-// geocentric position of every body contains "minus the Earth", so an
-// Earth error contaminates the whole sky — and for the Sun (computed as
-// exactly minus the Earth) it shows up 1:1. This lesson was learned the
-// hard way: v4 originally reused the VSOP87A coefficient file inherited
-// from v3, and comparison against JPL Horizons revealed that file to be
-// a silent ~1500-term-per-planet truncation with an ~8000 km
-// (~11 arcsec) Earth error that had been masquerading as "theory
-// difference" for years.
+// The Earth gets the highest-grade series in the library, because its
+// errors contaminate the whole sky: every geocentric position contains
+// "minus the Earth", and the Sun is exactly minus the Earth, so an
+// Earth error shows up there at full weight.
 //
-// This module therefore uses the Earth ephemeris of ERFA's epv00
-// (SOFA-derived, BSD): a Simon et al. harmonic series fitted to JPL
-// DE405, good to milliarcseconds over 1900-2100 — three orders of
-// magnitude better than the truncated file, at ~1300 terms. The series
-// shape is the familiar one (amplitude, phase, frequency triples), with
-// an empirical rotation matrix aligning the model to the DE405/ICRS
-// equatorial frame, which is why this body natively reports the frame
-// 'equatorial-j2000' rather than the ecliptic.
+// The model is the epv00 ephemeris of ERFA (SOFA-derived, BSD): a
+// Simon et al. harmonic series fitted to JPL DE405, milliarcsecond
+// class over 1900-2100 at ~1300 terms. The series has the familiar
+// amplitude/phase/frequency form; an empirical rotation matrix aligns
+// the model to the DE405/ICRS equatorial frame, which is why this body
+// natively reports 'equatorial-j2000' rather than the ecliptic.
 //#endregion
 
 import { makeState } from '../frames/frames.js';

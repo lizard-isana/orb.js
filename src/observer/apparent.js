@@ -22,10 +22,10 @@
 // evaluating the geocentric position function at t - tau captures both
 // effects at once: the Sun lands 20.5" behind its geometric place, the
 // Moon only 0.7" — the textbook values — with no per-body special
-// cases. (An early v4 draft used that shortcut for planets too by
-// antedating the Earth as well; the direction comes out right to first
-// order, but the vector's LENGTH picks up a spurious v_earth*tau
-// — ~20,000 km for Mars — which the Horizons comparison caught.)
+// cases. (Antedating BOTH bodies is a well-known shortcut that also
+// gives the apparent direction of a planet to first order, but the
+// vector's LENGTH then differs from the light-path distance by
+// ~v_earth*tau — tens of thousands of km — so it is not used here.)
 //
 // Diurnal aberration (observer's rotation speed, up to 0.3") is below
 // this library's accuracy class and is ignored.

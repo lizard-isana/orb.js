@@ -77,9 +77,7 @@ test('mars diverges from v3 by exactly the documented data fix', () => {
 
 test('earth matches the ERFA epv00 reference exactly', () => {
   // Values pinned from pyerfa 2.0.1.5 (compiled liberfa) — same model,
-  // so agreement is at rounding level. This replaced the v3-inherited
-  // VSOP earth after a Horizons comparison exposed that file as a
-  // silent truncation with an ~8000 km error.
+  // so agreement is at rounding level.
   const cases = [
     ['2026-07-18T00:00:00Z',
       [0.4303010348, -0.8447527032, -0.3661869687],

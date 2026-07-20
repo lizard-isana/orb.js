@@ -1,9 +1,11 @@
-# 第2章 座標系 — 24分角ずれた実話
+# 第2章 座標系 — 「いつの春分点か」で24分角変わる
 
-この章の主役は「座標系の取り違え」です。抽象論ではありません。orb.js v3 には
-実際に、**火星の赤経が太陽・月と約24′(0.4°)ずれた基準系で計算されている**
-というバグがありました。原因を理解すると、天文計算の座標系がなぜこれほど
-細かく区別されるのかが見えてきます。
+この章の主役は「座標系の取り違え」です。天文計算ソフトウェアで最も多い
+誤りのひとつが、**J2000 分点の座標と当日分点の座標を変換せずに混ぜる**
+ことです。両者の差は2026年時点で約24′(0.4°)— 満月の直径に近く、
+「だいたい合っているが何かおかしい」という厄介な症状になります。原因を
+理解すると、天文計算の座標系がなぜこれほど細かく区別されるのかが見えて
+きます。
 
 ## 2.1 座標系を決める3つの要素
 
@@ -22,12 +24,12 @@
 ## 2.2 歳差 — 座標系が滑っていく
 
 地球の自転軸は約25,800年周期で首振り運動(歳差)をしており、春分点は
-年に約50″ずつ移動します。J2000 分点と当日分点の差は2026年時点で約22′。
-v3 の24′のずれは、まさにこの「溜まった歳差」でした — 惑星の J2000 座標を
-当日分点に変換し忘れていたのです。
+年に約50″ずつ移動します。冒頭の24′は、まさにこの「溜まった歳差」です。
+惑星理論(J2000 出力)の座標を当日分点へ変換し忘れると、太陽・月
+(当日分点出力)とちょうどこの分だけ食い違った空ができあがります。
 
-v4 での対策(`src/frames/precession.js`)。冒頭コメントに事故の記録ごと
-書いてあります:
+歳差の実装は `src/frames/precession.js` にあります。冒頭コメントに
+要点がまとまっています:
 
 <!-- snippet:precession -->
 ```js
@@ -39,8 +41,9 @@ v4 での対策(`src/frames/precession.js`)。冒頭コメントに事故の記�
 // Sun and Moon theories produce) and any position quoted "J2000" (as
 // VSOP87 produces) therefore differ by the accumulated precession —
 // about 0.4 degrees in 2026 and growing. Mixing the two frames without
-// converting was an actual bug in orb.js v3; in v4 the frame is part of
-// the state-vector type and this file supplies the conversion.
+// converting is one of the most common errors in astronomical software;
+// here the frame is part of the state-vector type and this file
+// supplies the conversion.
 //
 // The IAU 2006 parameterization used here (Fukushima-Williams angles
 // gamma_bar, phi_bar, psi_bar plus the mean obliquity) composes four
@@ -94,15 +97,16 @@ v4 での対策(`src/frames/precession.js`)。冒頭コメントに事故の記�
 
 ## 2.4 型付き状態ベクトルと変換グラフ
 
-v3 のバグの根本原因は、座標値が「どの座標系か」という情報を**文字列の
-キーワード**として持ち運んでいて、途中の関数がそれを握り潰せたことでした。
-v4 ではすべての位置が座標系・中心の情報と一体の「状態ベクトル」として
-流れます(`src/frames/frames.js`):
+座標の取り違えが起きる根本原因は、(x, y, z) という**裸の数値**に「どの
+座標系か・原点はどこか」という情報が付いていないことです。メタデータを
+数値と別に(引数や慣習として)持ち運ぶと、途中の関数がそれを落としたり
+勝手に仮定したりできてしまいます。orb.js ではすべての位置が座標系・中心の
+情報と一体の「状態ベクトル」として流れます(`src/frames/frames.js`):
 
 <!-- snippet:state-vector -->
 ```js
 // src/frames/frames.js
-// Every position in orb.js v4 travels as one structured value:
+// Every position travels as one structured value:
 //
 //   {
 //     t:      Instant,           // when
@@ -112,13 +116,10 @@ v4 ではすべての位置が座標系・中心の情報と一体の「状態�
 //     v:      Float64Array[3]|null // km/s, always
 //   }
 //
-// The frame and center ride WITH the numbers. v3 carried this metadata
-// as free-text keywords that intermediate functions could (and did)
-// drop, which produced real bugs — an au/km mix-up and a 24-arcminute
-// frame mismatch. Making the metadata part of the value, and funnelling
-// every conversion through the one transform() below, removes the whole
-// class of error: an undefined conversion is now an exception, not a
-// silently wrong number.
+// The frame and center ride WITH the numbers, and every conversion
+// goes through the single transform() below. Detached metadata gets
+// dropped and guessed-at; attached metadata makes an undefined
+// conversion an exception instead of a silently wrong number.
 ```
 <!-- /snippet -->
 
@@ -131,15 +132,16 @@ v4 ではすべての位置が座標系・中心の情報と一体の「状態�
 // matrix at a given Instant, plus whether crossing it enters/leaves the
 // rotating Earth-fixed frame (which adds the omega x r term for
 // velocities). transform() finds a path between any two frames by
-// breadth-first search and composes the matrices — so every route
-// between two frames gives the same answer by construction, where v3
-// had a different code path (and different bugs) per input shape.
+// breadth-first search and composes the matrices, so every route
+// between two frames gives the same answer by construction.
 ```
 <!-- /snippet -->
 
 グラフ構造の利点は「**どの経路を通っても同じ答えになる**」ことが構造的に
-保証される点です。v3 では入力の渡し方によって別のコードパスを通り、月の
-方位・仰角が経路によって約1°(視差の分)食い違っていました。
+保証される点です。変換を入力の形ごとに別々のコードパスで書くと、パスごとに
+別のバグが宿り、同じ質問に経路によって違う答えが返るようになります。
+経路独立性は「A→B→C と A→C が一致する」という恒等式としてテストできる
+ので、回転行列の符号ミスのような誤りを機械的に検出できます。
 
 ## 2.5 地球に降りる — 測地座標と地平座標
 

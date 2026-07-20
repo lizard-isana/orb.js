@@ -1,11 +1,10 @@
 // angles.js — angle units and formatting.
 //
-// Internal policy of orb.js v4: every angle inside the library is in
-// RADIANS, full stop. Degrees, hours-minutes-seconds and
-// degrees-arcminutes-arcseconds exist only at the API boundary, produced
-// by the formatters below. v3 mixed degrees, hours and radians across
-// modules and that mix was the direct cause of several bugs; a single
-// internal unit makes that class of bug impossible.
+// Internal policy: every angle inside the library is in RADIANS.
+// Degrees, hours-minutes-seconds and degrees-arcminutes-arcseconds
+// exist only at the API boundary, produced by the formatters below.
+// Mixed angle units across modules are a classic source of silent
+// errors; a single internal unit removes the whole class.
 
 export const DEG = Math.PI / 180;        // multiply degrees by this to get radians
 export const ARCSEC = DEG / 3600;        // multiply arcseconds by this to get radians

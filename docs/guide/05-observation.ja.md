@@ -38,10 +38,10 @@ orb.js はこの2つを1つの仕掛けで処理します(`src/observer/apparent
 // evaluating the geocentric position function at t - tau captures both
 // effects at once: the Sun lands 20.5" behind its geometric place, the
 // Moon only 0.7" — the textbook values — with no per-body special
-// cases. (An early v4 draft used that shortcut for planets too by
-// antedating the Earth as well; the direction comes out right to first
-// order, but the vector's LENGTH picks up a spurious v_earth*tau
-// — ~20,000 km for Mars — which the Horizons comparison caught.)
+// cases. (Antedating BOTH bodies is a well-known shortcut that also
+// gives the apparent direction of a planet to first order, but the
+// vector's LENGTH then differs from the light-path distance by
+// ~v_earth*tau — tens of thousands of km — so it is not used here.)
 //
 // Diurnal aberration (observer's rotation speed, up to 0.3") is below
 // this library's accuracy class and is ignored.
@@ -82,10 +82,11 @@ const g = apparentGeocentric(sun, t, { lightTime: false }); // 幾何学的位�
 ```
 <!-- /snippet -->
 
-v3 では視差を「角度の補正式」として後付けし、入力経路によって適用されたり
-されなかったりするバグがありました。v4 は**引き算そのもの**なので、適用漏れ
-という概念が存在しません。テストは「地心仰角 − 測心仰角 = 視差 × cos(仰角)」
-という恒等式で幾何学の正しさを確認しています。
+視差を「角度に足す補正式」として後付けする実装は、入力経路によって
+適用されたりされなかったりする余地(適用漏れ・二重適用)を残します。
+**引き算そのもの**として書けば、適用漏れという概念が存在しません。
+テストは「地心仰角 − 測心仰角 = 視差 × cos(仰角)」という恒等式で
+幾何学の正しさを確認しています。
 
 ## 5.3 大気差 — いちばん不確かな補正
 

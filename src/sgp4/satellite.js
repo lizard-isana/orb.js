@@ -4,11 +4,10 @@
 // SGP4 outputs positions in TEME ("true equator, mean equinox") — a
 // frame that exists for historical reasons and matches nothing else in
 // astronomy exactly. The state vector returned here is TAGGED with that
-// frame, and the graph in frames/frames.js knows TEME rotates to
-// Earth-fixed coordinates with MEAN sidereal time (GMST 1982). In v3
-// this pairing was implicit and wrong for years (apparent sidereal time
-// was used — a ~500 m ground-track error); with typed frames the
-// convention is written down once, next to the rotation that uses it.
+// frame, and the graph in frames/frames.js pairs TEME with its defined
+// rotation angle, mean sidereal time (GMST 1982; Vallado, "Revisiting
+// Spacetrack Report #3"). Typing the frame keeps that easily-mistaken
+// convention in exactly one place, next to the rotation that uses it.
 //#endregion
 
 import { makeState } from '../frames/frames.js';
