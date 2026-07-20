@@ -191,4 +191,5 @@ console.log(hms(ra), dms(dec));
 
 ---
 
-前章: [第2章 座標系](02-frames.ja.md)
+前章: [第2章 座標系](02-frames.ja.md) /
+次章: [第4章 ケプラー問題](04-kepler.ja.md)

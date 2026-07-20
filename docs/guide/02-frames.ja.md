@@ -206,4 +206,5 @@ transform(s, { frame: 'no-such-frame' }); // -> RangeError
 
 ---
 
-前章: [第1章 時刻系](01-time.ja.md)
+前章: [第1章 時刻系](01-time.ja.md) /
+次章: [第3章 太陽・月・惑星の位置](03-sun-moon-planets.ja.md)

@@ -141,4 +141,5 @@ tokyo.observe(moon, t, { refraction: { pressure: 1013, temperature: 25 } });
 
 ---
 
-前章: [第3章 太陽・月・惑星の位置](03-sun-moon-planets.ja.md)
+前章: [第4章 ケプラー問題](04-kepler.ja.md) /
+次章: [第6章 人工衛星](06-satellites.ja.md)
