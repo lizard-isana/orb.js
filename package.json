@@ -12,7 +12,7 @@
     "MIT-LICENSE"
   ],
   "scripts": {
-    "test": "node test/smoke.js && node test/v4/run.mjs",
+    "test": "node test/smoke.js && node test/v4/run.mjs && node test/v4/bodies.mjs",
     "build": "rollup -c rollup.config.js",
     "edu:snippets": "node tools/snippets.js",
     "edu:check": "node tools/snippets.js --check",
