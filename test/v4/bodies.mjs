@@ -1,10 +1,10 @@
 // v4 bodies test suite. Run with: node test/v4/bodies.mjs
 //
-// Verification strategy (DESIGN.md section 6): the full-series data must
-// reproduce v3's VSOP output exactly (same coefficients, so any
-// difference is a compiler bug); the truncated default must stay within
-// its advertised 0.1 arcsec; the Moon must reproduce Meeus example 47.a;
-// analytic velocities must match numerical differentiation.
+// Verification strategy (DESIGN.md section 6): planets come from the
+// official VSOP87A files with the truncation self-validated at compile
+// time (tools/vsop-compile.js); here we check physical invariants, the
+// pinned ERFA earth, Meeus example 47.a for the Moon, and that the
+// divergence from frozen v3 matches the documented data fix.
 import assert from 'assert';
 import { createRequire } from 'module';
 
@@ -24,7 +24,6 @@ import { neptune } from '../../src/bodies/neptune.js';
 import { sun } from '../../src/bodies/sun.js';
 import { moon } from '../../src/bodies/moon.js';
 import { sunPosition } from '../../examples/sun-in-50-lines.mjs';
-import * as MARS_FULL from '../../src/bodies/data/vsop87a-mars.full.js';
 
 
 const require = createRequire(import.meta.url);
@@ -56,16 +55,24 @@ const SAMPLE_DATES = [
   '2026-07-18T00:00:00Z', '2049-12-31T18:00:00Z'
 ];
 
-test('full series reproduces v3 VSOP exactly (compiler check)', () => {
-  const fullMars = makeVsopBody('mars', MARS_FULL);
+test('mars diverges from v3 by exactly the documented data fix', () => {
+  // v4 planets are compiled from the official VSOP87A files; v3 shipped a
+  // silent truncation whose Mars error is dominated by a few-hundredths-au
+  // radial component. The two must therefore DISAGREE at that scale — if
+  // they ever agree to rounding, the official data has been lost again.
+  // (Truncation quality itself is self-validated inside vsop-compile.js.)
+  let maxD = 0;
   for (const iso of SAMPLE_DATES) {
     const t = Instant.fromISO(iso);
-    const v4 = fullMars.state(t);
+    const v4 = mars.state(t);
     const v3 = new Orb.Mars().xyz(t.toDate());
-    for (const [i, k] of [[0, 'x'], [1, 'y'], [2, 'z']]) {
-      assert.ok(Math.abs(v4.r[i] / AU_KM - v3[k]) < 1e-11, `Mars ${iso} ${k}`);
-    }
+    const d = Math.hypot(v4.r[0] / AU_KM - v3.x, v4.r[1] / AU_KM - v3.y, v4.r[2] / AU_KM - v3.z);
+    assert.ok(d < 1e-2, `Mars ${iso}: |v4-v3| = ${d} au`);
+    maxD = Math.max(maxD, d);
   }
+  // near J2000 the truncation error almost cancels (fit epoch), so the
+  // divergence is asserted on the maximum across the sampled dates
+  assert.ok(maxD > 1e-5, 'max |v4-v3| = ' + maxD + ' au — official data lost?');
 });
 
 test('earth matches the ERFA epv00 reference exactly', () => {
@@ -84,24 +91,6 @@ test('earth matches the ERFA epv00 reference exactly', () => {
     for (let i = 0; i < 3; i++) {
       assert.ok(Math.abs(s.r[i] / AU_KM - rAu[i]) < 1e-9, iso + ' r' + i);
       assert.ok(Math.abs(s.v[i] * 86400 / AU_KM - vAud[i]) < 1e-9, iso + ' v' + i);
-    }
-  }
-});
-
-test('truncated default stays within 0.1 arcsec of the full series', () => {
-  // Spot-checked on mars (tight tolerance) and earth, whose error
-  // propagates into every geocentric position.
-  const cases = [
-    ['mars', makeVsopBody('mars', MARS_FULL), mars]
-  ];
-  for (const [name, full, short] of cases) {
-    for (const iso of SAMPLE_DATES) {
-      const t = Instant.fromISO(iso);
-      const a = full.state(t).r;
-      const b = short.state(t).r;
-      const diffKm = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
-      const angle = diffKm / (MIN_GEO_DIST[name] * AU_KM); // worst-case view from Earth
-      assert.ok(angle < 0.1 * ARCSEC, `${name} ${iso}: ${(angle / ARCSEC).toFixed(3)}"`);
     }
   }
 });

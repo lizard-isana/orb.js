@@ -3,61 +3,89 @@
 // Float64Array modules under src/bodies/data/.
 //
 // Sources:
-//  - VSOP87A (Bretagnon & Francou 1988): read from the v3 source file
-//    src/orb-vsop87a.js, so no coefficient is ever re-typed by hand.
-//    Each row is [component(0=x,1=y,2=z), power_of_t, A, B, C] meaning
-//    the term  t^power * A * cos(B + C*t)  with t in thousands of Julian
-//    years from J2000 and A in au.
-//  - The Meeus ch. 47 lunar tables: extracted from src/orb-luna.js.
+//  - VSOP87A (Bretagnon & Francou 1988), the ORIGINAL distribution files
+//    from CDS catalogue VI/81, stored gzipped under tools/data/vsop87/.
+//    (v4 initially reused the coefficient file inherited from v3; a JPL
+//    Horizons comparison exposed it as a silent ~1500-term truncation,
+//    which is why the official files are now vendored in the repo.)
+//  - The Meeus ch. 47 lunar tables: extracted from the v3 source
+//    (orb-luna.js), which reproduces Meeus example 47.a exactly.
 //
-// For every planet two variants are produced:
-//  - vsop87a-<planet>.js       truncated series (default import): terms
-//    are dropped smallest-first while the accumulated angular error seen
-//    from Earth stays below TARGET_ARCSEC.
-//  - vsop87a-<planet>.full.js  the complete series.
+// For each planet the emitted module is a TRUNCATED series: terms are
+// dropped smallest-first while the accumulated angular error seen from
+// Earth stays below TARGET_ARCSEC. The truncation is SELF-VALIDATED at
+// compile time by evaluating truncated vs full coordinates across
+// 1500-2500 AD — the compiler refuses to write data that violates its
+// own tolerance. Run with --full to also emit vsop87a-<planet>.full.js
+// (not committed; for consumers who want the complete series).
 //
-// Usage: node tools/vsop-compile.js
+// The Earth is deliberately absent: bodies/earth.js uses the ERFA epv00
+// series (DE405 fit, milliarcsecond class).
+//
+// Usage: node tools/vsop-compile.js [--full]
 
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
 
 const ROOT = path.join(__dirname, '..');
+const SRC_DIR = path.join(__dirname, 'data', 'vsop87');
 const OUT_DIR = path.join(ROOT, 'src', 'bodies', 'data');
 
 const TARGET_ARCSEC = 0.1;
 const ARCSEC_RAD = Math.PI / 180 / 3600;
 
+const PLANETS = {
+  mercury: 'mer', venus: 'ven', mars: 'mar', jupiter: 'jup',
+  saturn: 'sat', uranus: 'ura', neptune: 'nep'
+};
+
 // Minimum geocentric distance (au): converts an in-space displacement
 // into the worst-case angle an Earth observer could see.
-// (earth is not compiled here: bodies/earth.js uses the ERFA epv00 series)
 const MIN_GEO_DIST = {
   mercury: 0.52, venus: 0.26, mars: 0.37,
   jupiter: 3.9, saturn: 8.0, uranus: 17.3, neptune: 28.8
 };
 
-// t-span used to weight powered terms: |t| <= 0.5 covers 1500-2500 AD.
+// t-span used for truncation weighting and validation:
+// |t| <= 0.5 thousand Julian years covers 1500-2500 AD.
 const T_MAX = 0.5;
 
-const loadV3Coefficients = async () => {
-  const mod = await import('file://' + path.join(ROOT, 'src', 'orb-vsop87a.js'));
-  return {
-    mercury: mod.MERCURY_COEF, venus: mod.VENUS_COEF,
-    mars: mod.MARS_COEF, jupiter: mod.JUPITER_COEF, saturn: mod.SATURN_COEF,
-    uranus: mod.URANUS_COEF, neptune: mod.NEPTUNE_COEF
-  };
-};
-
-// rows -> { x: [terms by power], y: ..., z: ... }, terms sorted by
-// descending amplitude inside each power block.
-const organize = (rows) => {
+// Parse an original VSOP87A distribution file into
+// comp[variable 0..2][power 0..5] = [[A, B, C], ...].
+const parseVsop87 = (gzPath) => {
+  const text = zlib.gunzipSync(fs.readFileSync(gzPath)).toString('latin1');
   const comp = [[], [], []];
-  for (const row of rows) {
-    const [n, p, a, b, c] = row.map(Number);
-    (comp[n][p] = comp[n][p] || []).push([a, b, c]);
+  let block = null;
+  for (const line of text.split('\n')) {
+    const header = line.match(/VSOP87 VERSION A\d+\s+\S+\s+VARIABLE (\d) \(XYZ\)\s+\*T\*\*(\d)\s+(\d+) TERMS/);
+    if (header) {
+      const variable = Number(header[1]) - 1;
+      const power = Number(header[2]);
+      block = [];
+      comp[variable][power] = block;
+      continue;
+    }
+    if (!block || line.trim() === '') continue;
+    // record: integer arguments followed by S, K, A, B, C — take the
+    // last three floats (amplitude au, phase rad, frequency rad/millennium)
+    const tokens = line.trim().split(/\s+/);
+    if (tokens.length < 5) continue;
+    const a = Number(tokens[tokens.length - 3]);
+    const b = Number(tokens[tokens.length - 2]);
+    const c = Number(tokens[tokens.length - 1]);
+    if (!Number.isFinite(a) || !Number.isFinite(b) || !Number.isFinite(c)) {
+      throw new Error('unparsable record in ' + gzPath + ': ' + line);
+    }
+    block.push([a, b, c]);
+  }
+  // sanity: X and Y must exist with a T^0 block of hundreds of terms
+  if (!comp[0][0] || !comp[1][0] || comp[0][0].length < 100) {
+    throw new Error('parse failure for ' + gzPath);
   }
   for (const axis of comp) {
-    for (const block of axis) {
-      if (block) block.sort((u, v) => Math.abs(v[0]) - Math.abs(u[0]));
+    for (const blk of axis) {
+      if (blk) blk.sort((u, v) => Math.abs(v[0]) - Math.abs(u[0]));
     }
   }
   return comp;
@@ -88,10 +116,39 @@ const truncate = (comp, tolAu) => {
 const countTerms = (comp) =>
   comp.reduce((s, axis) => s + axis.reduce((t, b) => t + (b ? b.length : 0), 0), 0);
 
+const evalComp = (comp, t) => comp.map((axis) => {
+  let pos = 0;
+  axis.forEach((block, p) => {
+    if (!block) return;
+    let sum = 0;
+    for (const [a, b, c] of block) sum += a * Math.cos(b + c * t);
+    pos += Math.pow(t, p) * sum;
+  });
+  return pos;
+});
+
+// Compile-time self-check: the truncated series must stay within the
+// advertised tolerance of the full one across the validity span.
+const validateTruncation = (name, full, short, tolAu) => {
+  let worst = 0;
+  for (let i = 0; i <= 40; i++) {
+    const t = -T_MAX + (2 * T_MAX * i) / 40;
+    const a = evalComp(full, t);
+    const b = evalComp(short, t);
+    const d = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+    if (d > worst) worst = d;
+  }
+  if (worst > tolAu) {
+    throw new Error(`${name}: truncation validation failed: ` +
+      `${(worst / ARCSEC_RAD / MIN_GEO_DIST[name]).toFixed(3)}" > ${TARGET_ARCSEC}"`);
+  }
+  return worst;
+};
+
 const renderModule = (name, comp, note) => {
   const axes = ['X', 'Y', 'Z'];
   let out = `// vsop87a data for ${name} — GENERATED by tools/vsop-compile.js; do not edit.\n` +
-    `// Source: VSOP87A, Bretagnon & Francou (1988), via the v3 coefficient file.\n` +
+    `// Source: VSOP87A, Bretagnon & Francou (1988), CDS VI/81 original files.\n` +
     `// ${note}\n` +
     `// Layout per axis: array indexed by power of t, each entry a flat\n` +
     `// Float64Array of [A, B, C] triples for  t^power * A*cos(B + C*t),\n` +
@@ -117,21 +174,25 @@ const extractLunaTables = () => {
   return { LR: grab('LR'), B: grab('B') };
 };
 
-const main = async () => {
+const main = () => {
+  const emitFull = process.argv.includes('--full');
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  const planets = await loadV3Coefficients();
   const report = [];
-  for (const [name, rows] of Object.entries(planets)) {
-    const full = organize(rows);
+  for (const [name, code] of Object.entries(PLANETS)) {
+    const full = parseVsop87(path.join(SRC_DIR, `VSOP87A.${code}.gz`));
     const tolAu = TARGET_ARCSEC * ARCSEC_RAD * MIN_GEO_DIST[name];
     const short = truncate(full, tolAu);
-    fs.writeFileSync(path.join(OUT_DIR, `vsop87a-${name}.full.js`),
-      renderModule(name, full, `Full series: ${countTerms(full)} terms.`));
+    const worst = validateTruncation(name, full, short, tolAu);
     fs.writeFileSync(path.join(OUT_DIR, `vsop87a-${name}.js`),
       renderModule(name, short,
-        `Truncated: ${countTerms(short)}/${countTerms(full)} terms; accumulated ` +
+        `Truncated: ${countTerms(short)}/${countTerms(full)} terms; validated ` +
         `truncation error < ${TARGET_ARCSEC}" seen from Earth (1500-2500 AD).`));
-    report.push(`${name}: ${countTerms(short)}/${countTerms(full)} terms`);
+    if (emitFull) {
+      fs.writeFileSync(path.join(OUT_DIR, `vsop87a-${name}.full.js`),
+        renderModule(name, full, `Full series: ${countTerms(full)} terms.`));
+    }
+    report.push(`${name}: ${countTerms(short)}/${countTerms(full)} terms, ` +
+      `worst truncation ${(worst / ARCSEC_RAD / MIN_GEO_DIST[name]).toFixed(4)}"`);
   }
 
   const luna = extractLunaTables();
@@ -149,4 +210,9 @@ const main = async () => {
   console.log(report.join('\n'));
 };
 
-main().catch((e) => { console.error(e); process.exit(1); });
+try {
+  main();
+} catch (e) {
+  console.error(e.message);
+  process.exit(1);
+}

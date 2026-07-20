@@ -14,11 +14,10 @@
 //         range -30 km — consistent with the series class.
 //   sun:  ERFA epv00 earth (DE405 fit, mas class). Measured: 0.25",
 //         ~57 km — the pipeline itself at its accuracy floor.
-//   mars: v3-inherited truncated VSOP87A. Angles ~2.5"; the range
-//         carries a ~50,000 km RADIAL truncation error that angles
-//         cannot see (documented; a full VSOP87 recompile will fix it).
-//         This very comparison exposed the truncation — see
-//         bodies/earth.js for the story.
+//   mars: official VSOP87A (CDS VI/81), truncated 0.1". Measured:
+//         0.4", ~37 km. (The first capture, against the v3-inherited
+//         coefficient file, showed a 50,000 km radial error and exposed
+//         that file as a silent truncation — see bodies/earth.js.)
 import assert from 'assert';
 
 import { Instant } from '../../src/time/instant.js';
@@ -69,7 +68,7 @@ const CASES = [
   },
   {
     body: mars, name: 'mars',
-    skyTolArcsec: 5, rangeTolKm: 60000,
+    skyTolArcsec: 1, rangeTolKm: 100,
     rows: [
       ['2026-07-18T00:00:00Z', 72.111167919, 22.327767718, 193.633574721, 76.335163832, 2.05097394413151],
       ['2026-07-18T06:00:00Z', 72.295382047, 22.351608289, 290.330204278, 10.115729503, 2.05011571768764],
