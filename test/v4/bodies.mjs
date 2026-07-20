@@ -25,7 +25,7 @@ import { sun } from '../../src/bodies/sun.js';
 import { moon } from '../../src/bodies/moon.js';
 import { sunPosition } from '../../examples/sun-in-50-lines.mjs';
 import * as MARS_FULL from '../../src/bodies/data/vsop87a-mars.full.js';
-import * as EARTH_FULL from '../../src/bodies/data/vsop87a-earth.full.js';
+
 
 const require = createRequire(import.meta.url);
 const Orb = require('../../dist/orb.js'); // frozen v3 build
@@ -58,16 +58,32 @@ const SAMPLE_DATES = [
 
 test('full series reproduces v3 VSOP exactly (compiler check)', () => {
   const fullMars = makeVsopBody('mars', MARS_FULL);
-  const fullEarth = makeVsopBody('earth', EARTH_FULL);
   for (const iso of SAMPLE_DATES) {
     const t = Instant.fromISO(iso);
-    const date = t.toDate();
-    for (const [body, v3name] of [[fullMars, 'Mars'], [fullEarth, 'Earth']]) {
-      const v4 = body.state(t);
-      const v3 = v3name === 'Earth' ? new Orb.Earth().xyz(date) : new Orb.Mars().xyz(date);
-      for (const [i, k] of [[0, 'x'], [1, 'y'], [2, 'z']]) {
-        assert.ok(Math.abs(v4.r[i] / AU_KM - v3[k]) < 1e-11, `${v3name} ${iso} ${k}`);
-      }
+    const v4 = fullMars.state(t);
+    const v3 = new Orb.Mars().xyz(t.toDate());
+    for (const [i, k] of [[0, 'x'], [1, 'y'], [2, 'z']]) {
+      assert.ok(Math.abs(v4.r[i] / AU_KM - v3[k]) < 1e-11, `Mars ${iso} ${k}`);
+    }
+  }
+});
+
+test('earth matches the ERFA epv00 reference exactly', () => {
+  // Values pinned from pyerfa 2.0.1.5 (compiled liberfa) — same model,
+  // so agreement is at rounding level. This replaced the v3-inherited
+  // VSOP earth after a Horizons comparison exposed that file as a
+  // silent truncation with an ~8000 km error.
+  const cases = [
+    ['2026-07-18T00:00:00Z',
+      [0.4303010348, -0.8447527032, -0.3661869687],
+      [0.0153099208, 0.0066301118, 0.0028746475]]
+  ];
+  for (const [iso, rAu, vAud] of cases) {
+    const s = earth.state(Instant.fromISO(iso));
+    assert.strictEqual(s.frame, 'equatorial-j2000');
+    for (let i = 0; i < 3; i++) {
+      assert.ok(Math.abs(s.r[i] / AU_KM - rAu[i]) < 1e-9, iso + ' r' + i);
+      assert.ok(Math.abs(s.v[i] * 86400 / AU_KM - vAud[i]) < 1e-9, iso + ' v' + i);
     }
   }
 });
@@ -76,8 +92,7 @@ test('truncated default stays within 0.1 arcsec of the full series', () => {
   // Spot-checked on mars (tight tolerance) and earth, whose error
   // propagates into every geocentric position.
   const cases = [
-    ['mars', makeVsopBody('mars', MARS_FULL), mars],
-    ['earth', makeVsopBody('earth', EARTH_FULL), earth]
+    ['mars', makeVsopBody('mars', MARS_FULL), mars]
   ];
   for (const [name, full, short] of cases) {
     for (const iso of SAMPLE_DATES) {
@@ -103,7 +118,7 @@ test('all planets return finite heliocentric states at plausible distances', () 
     const dist = Math.hypot(s.r[0], s.r[1], s.r[2]) / AU_KM;
     const [lo, hi] = RANGE_AU[name];
     assert.ok(dist > lo && dist < hi, `${name}: ${dist} au`);
-    assert.strictEqual(s.frame, 'ecliptic-j2000');
+    assert.strictEqual(s.frame, name === 'earth' ? 'equatorial-j2000' : 'ecliptic-j2000');
     assert.strictEqual(s.center, 'sun');
   }
 });

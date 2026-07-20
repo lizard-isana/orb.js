@@ -29,8 +29,9 @@ const ARCSEC_RAD = Math.PI / 180 / 3600;
 
 // Minimum geocentric distance (au): converts an in-space displacement
 // into the worst-case angle an Earth observer could see.
+// (earth is not compiled here: bodies/earth.js uses the ERFA epv00 series)
 const MIN_GEO_DIST = {
-  mercury: 0.52, venus: 0.26, earth: 1.0, mars: 0.37,
+  mercury: 0.52, venus: 0.26, mars: 0.37,
   jupiter: 3.9, saturn: 8.0, uranus: 17.3, neptune: 28.8
 };
 
@@ -40,7 +41,7 @@ const T_MAX = 0.5;
 const loadV3Coefficients = async () => {
   const mod = await import('file://' + path.join(ROOT, 'src', 'orb-vsop87a.js'));
   return {
-    mercury: mod.MERCURY_COEF, venus: mod.VENUS_COEF, earth: mod.EARTH_COEF,
+    mercury: mod.MERCURY_COEF, venus: mod.VENUS_COEF,
     mars: mod.MARS_COEF, jupiter: mod.JUPITER_COEF, saturn: mod.SATURN_COEF,
     uranus: mod.URANUS_COEF, neptune: mod.NEPTUNE_COEF
   };

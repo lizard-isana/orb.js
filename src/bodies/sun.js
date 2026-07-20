@@ -21,7 +21,7 @@ export const sun = {
     const e = earth.state(instant);
     return makeState({
       t: instant,
-      frame: 'ecliptic-j2000',
+      frame: e.frame,
       center: 'earth',
       r: [-e.r[0], -e.r[1], -e.r[2]],
       v: [-e.v[0], -e.v[1], -e.v[2]]

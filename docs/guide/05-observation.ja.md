@@ -25,19 +25,23 @@ orb.js はこの2つを1つの仕掛けで処理します(`src/observer/apparent
 // 2. ABERRATION: the observer moves (Earth's orbit: ~30 km/s), which
 //    tilts incoming light like rain on a car window — up to 20.5".
 //
-// The classical trick implemented here handles both at once: evaluate
-// the GEOCENTRIC position function at the retarded time t - tau,
+// For heliocentric bodies the two are applied separately and exactly:
 //
-//     G(t - tau),   tau = |G| / c,   iterated a few times.
+//   astrometric:  rho = r_target(t - tau) - r_earth(t),  tau = |rho|/c
+//                 (iterated: the target is antedated, the observer is not)
+//   apparent:     tilt the DIRECTION of rho by v_earth/c, keeping |rho| —
+//                 so the reported distance stays the true light-path length
+//                 (what JPL Horizons calls "delta").
 //
-// Why this equals light-time + annual aberration to first order in v/c:
-// for a planet, G(t') = r_planet(t') - r_earth(t'), and antedating the
-// Earth by tau shifts the vector by v_earth * tau — exactly the
-// aberration tilt for a target at distance c*tau. For the Moon and Sun
-// the geocentric frame is (to first order) the observer's rest frame,
-// and the retarded evaluation directly captures their apparent motion:
-// the Sun lands 20.5" behind its geometric place, the Moon only 0.7" —
-// the textbook values — with no special cases per body.
+// For bodies expressed directly in the geocentric frame (Moon, Sun as
+// minus-Earth, satellites) the frame itself rides with the observer, so
+// evaluating the geocentric position function at t - tau captures both
+// effects at once: the Sun lands 20.5" behind its geometric place, the
+// Moon only 0.7" — the textbook values — with no per-body special
+// cases. (An early v4 draft used that shortcut for planets too by
+// antedating the Earth as well; the direction comes out right to first
+// order, but the vector's LENGTH picks up a spurious v_earth*tau
+// — ~20,000 km for Mars — which the Horizons comparison caught.)
 //
 // Diurnal aberration (observer's rotation speed, up to 0.3") is below
 // this library's accuracy class and is ignored.

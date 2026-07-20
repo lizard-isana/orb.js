@@ -57,7 +57,41 @@ orb.js の係数データは手で書き写したものではなく、`tools/vso
 数値微分ではなく**項ごとの解析微分**で速度も出せることに注目してください。
 速度は第5章の光行差補正で必要になります。
 
-## 3.3 太陽 — 理論を持たない天体
+## 3.3 地球 — いちばん良いデータを使う天体
+
+地球だけは特別扱いです。すべての天体の地心位置は「− 地球」を含むので、
+地球の誤差は全天に伝染します。実際に v4 の開発中、JPL Horizons との照合で
+「v3 から継承した VSOP 係数ファイルが実は無言の打ち切り版で、地球に約
+8000 km(11″)の誤差があった」ことが発覚しました(`src/bodies/earth.js`):
+
+<!-- snippet:earth-epv00 -->
+```js
+// src/bodies/earth.js
+// The Earth deserves better data than the other planets: every
+// geocentric position of every body contains "minus the Earth", so an
+// Earth error contaminates the whole sky — and for the Sun (computed as
+// exactly minus the Earth) it shows up 1:1. This lesson was learned the
+// hard way: v4 originally reused the VSOP87A coefficient file inherited
+// from v3, and comparison against JPL Horizons revealed that file to be
+// a silent ~1500-term-per-planet truncation with an ~8000 km
+// (~11 arcsec) Earth error that had been masquerading as "theory
+// difference" for years.
+//
+// This module therefore uses the Earth ephemeris of ERFA's epv00
+// (SOFA-derived, BSD): a Simon et al. harmonic series fitted to JPL
+// DE405, good to milliarcseconds over 1900-2100 — three orders of
+// magnitude better than the truncated file, at ~1300 terms. The series
+// shape is the familiar one (amplitude, phase, frequency triples), with
+// an empirical rotation matrix aligning the model to the DE405/ICRS
+// equatorial frame, which is why this body natively reports the frame
+// 'equatorial-j2000' rather than the ecliptic.
+```
+<!-- /snippet -->
+
+外部の独立したリファレンスと突き合わせて初めて見つかる誤差がある —
+これが第3.5節の検証方針が「複数の独立実装との照合」を要求する理由です。
+
+## 3.4 太陽 — 理論を持たない天体
 
 太陽の理論はありません。地球の位置の符号を反転するだけです
 (`src/bodies/sun.js`):
@@ -81,7 +115,7 @@ v3 には独立の簡易太陽理論があり、VSOP 系の座標と約17″食�
 「真実の源をひとつにする」はソフトウェア設計の原則ですが、天文計算でも
 そのまま通用します。
 
-## 3.4 月 — いちばん難しい天体
+## 3.5 月 — いちばん難しい天体
 
 月は太陽の摂動が強く、ケプラー楕円では歯が立ちません。orb.js は Meeus の
 60項×2系列の級数を使います(`src/bodies/moon.js`):
@@ -115,7 +149,7 @@ v3 には独立の簡易太陽理論があり、VSOP 系の座標と約17″食�
 **「基本角 → 整数結合 → 振幅×sin/cos の和」というパターンさえ読めれば、
 この分野の実装はぜんぶ同じ形**をしています。
 
-## 3.5 検証という設計
+## 3.6 検証という設計
 
 `test/v4/bodies.mjs` の検証は3層構造です:
 
@@ -129,7 +163,7 @@ v3 には独立の簡易太陽理論があり、VSOP 系の座標と約17″食�
 「答えが合う」だけでなく「**差が説明できる**」ことを合格条件にするのが、
 このライブラリの検証方針です。
 
-## 3.6 使ってみる
+## 3.7 使ってみる
 
 ```js
 import { Instant } from 'orb/time/instant.js';
