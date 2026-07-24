@@ -44,6 +44,30 @@ export const C_KMPS = 299792.458; // speed of light
 export const apparentGeocentric = (body, instant, { lightTime = true } = {}) => {
   const s0 = body.state(instant);
 
+  if (s0.center === 'star') {
+    // Fixed source: no light time, no parallax. The catalogue direction
+    // (already carried to date by proper motion) only needs annual
+    // aberration, then precession/nutation via the frame graph. The
+    // lightTime flag here toggles the aberration, so {lightTime:false}
+    // gives the mean (astrometric) place — the same teaching switch as
+    // for the other bodies.
+    let dir = s0.r;
+    if (lightTime) {
+      const e = transform(earth.state(instant), { frame: s0.frame }); // has velocity
+      const dist = Math.hypot(dir[0], dir[1], dir[2]);
+      const beta = 1 / C_KMPS;
+      const tilted = Float64Array.of(
+        dir[0] + dist * e.v[0] * beta,
+        dir[1] + dist * e.v[1] * beta,
+        dir[2] + dist * e.v[2] * beta
+      );
+      const scale = dist / Math.hypot(tilted[0], tilted[1], tilted[2]);
+      dir = Float64Array.of(tilted[0] * scale, tilted[1] * scale, tilted[2] * scale);
+    }
+    const g = makeState({ t: instant, frame: s0.frame, center: 'earth', r: dir });
+    return transform(g, { frame: 'equatorial-of-date' });
+  }
+
   if (s0.center === 'earth') {
     // Geocentric theories: retarded evaluation (see header).
     let g = s0;
