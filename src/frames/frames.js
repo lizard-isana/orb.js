@@ -104,6 +104,13 @@ const EDGES = [
 // nutation-in-RA rotation plus GMST), keeping the graph loop-free and
 // every path consistent.
 
+// The frames that appear as nodes of the graph. Exported so the shared
+// vocabulary (vocab.js) can be checked against what the graph actually
+// uses — the two must never drift apart.
+export const GRAPH_FRAMES = Object.freeze(
+  [...new Set(EDGES.flatMap((e) => [e.from, e.to]))].sort()
+);
+
 const neighbors = {};
 for (const e of EDGES) {
   (neighbors[e.from] = neighbors[e.from] || []).push({ edge: e, forward: true, next: e.to });

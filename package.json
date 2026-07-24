@@ -12,7 +12,7 @@
     "MIT-LICENSE"
   ],
   "scripts": {
-    "test": "node test/smoke.js && node test/v4/run.mjs && node test/v4/kepler.mjs && node test/v4/bodies.mjs && node test/v4/observer.mjs && node test/v4/horizons-ref.mjs && node test/v4/satellite-events.mjs && node test/v4/compat.mjs && node test/v4/sky.mjs",
+    "test": "node test/smoke.js && node test/v4/vocab.mjs && node test/v4/run.mjs && node test/v4/kepler.mjs && node test/v4/bodies.mjs && node test/v4/observer.mjs && node test/v4/horizons-ref.mjs && node test/v4/satellite-events.mjs && node test/v4/compat.mjs && node test/v4/sky.mjs",
     "bench": "node tools/bench.mjs",
     "catalog:compile": "node tools/catalog-compile.js",
     "build": "rollup -c rollup.config.js",
