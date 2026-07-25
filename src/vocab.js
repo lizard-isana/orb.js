@@ -33,7 +33,7 @@ export const QUANTITIES = list(
   // angles on the sky / in a coordinate system
   'azimuth', 'elevation', 'right-ascension', 'declination', 'hour-angle',
   'ecliptic-longitude', 'ecliptic-latitude', 'elongation', 'phase-angle',
-  'obliquity',
+  'obliquity', 'refraction',
   // orbital elements
   'inclination', 'longitude-of-ascending-node', 'argument-of-periapsis',
   'true-anomaly', 'mean-anomaly', 'eccentricity', 'semi-major-axis',

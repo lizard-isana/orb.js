@@ -51,10 +51,10 @@ export const visibleSky = (site, t, options = {}) => {
   const minEl = options.minElevation !== undefined ? options.minElevation : 10;
   const maxMag = options.maxMagnitude !== undefined ? options.maxMagnitude : 4;
 
-  const s = site.observe(sun, t);
+  const s = site.observe(sun, t, { meta: false });
 
   // Moon: always reported, with its phase from the Sun-Moon elongation.
-  const mo = site.observe(moon, t);
+  const mo = site.observe(moon, t, { meta: false });
   const el0 = elongation(t);              // 0 = new, pi = full
   const illum = (1 - Math.cos(el0)) / 2;  // illuminated fraction
   const waxing = el0 < Math.PI;
@@ -71,7 +71,7 @@ export const visibleSky = (site, t, options = {}) => {
 
   const planets = [];
   for (const [name, body] of PLANETS) {
-    const o = site.observe(body, t);
+    const o = site.observe(body, t, { meta: false });
     if (o.elevation >= minEl) {
       planets.push({
         name,
@@ -85,7 +85,7 @@ export const visibleSky = (site, t, options = {}) => {
 
   const stars = [];
   for (const row of brightStars(maxMag)) {
-    const o = site.observe(starBody(row), t);
+    const o = site.observe(starBody(row), t, { meta: false });
     if (o.elevation >= minEl) {
       stars.push({
         name: starLabel(row),

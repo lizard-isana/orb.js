@@ -36,6 +36,14 @@ import { earth } from '../bodies/earth.js';
 
 export const C_KMPS = 299792.458; // speed of light
 
+// Tag an apparent-place state with the physical corrections applied to
+// reach it (vocabulary tokens from vocab.js), so the observer boundary
+// can report them in its result metadata without re-deriving them.
+const withCorrections = (state, corrections) => {
+  state.corrections = corrections;
+  return state;
+};
+
 // Apparent geocentric state: light time and annual aberration applied,
 // expressed on the true equator & equinox of date. {lightTime: false}
 // gives the geometric place instead — the difference between the two IS
@@ -65,7 +73,8 @@ export const apparentGeocentric = (body, instant, { lightTime = true } = {}) => 
       dir = Float64Array.of(tilted[0] * scale, tilted[1] * scale, tilted[2] * scale);
     }
     const g = makeState({ t: instant, frame: s0.frame, center: 'earth', r: dir });
-    return transform(g, { frame: 'equatorial-of-date' });
+    return withCorrections(transform(g, { frame: 'equatorial-of-date' }),
+      lightTime ? ['proper-motion', 'aberration-annual'] : ['proper-motion']);
   }
 
   if (s0.center === 'earth') {
@@ -78,7 +87,8 @@ export const apparentGeocentric = (body, instant, { lightTime = true } = {}) => 
       }
       g = makeState({ t: instant, frame: g.frame, center: 'earth', r: g.r, v: g.v });
     }
-    return transform(g, { frame: 'equatorial-of-date' });
+    return withCorrections(transform(g, { frame: 'equatorial-of-date' }),
+      lightTime ? ['light-time', 'aberration-annual'] : []);
   }
 
   if (s0.center !== 'sun') {
@@ -114,5 +124,6 @@ export const apparentGeocentric = (body, instant, { lightTime = true } = {}) => 
       ? [target.v[0] - e.v[0], target.v[1] - e.v[1], target.v[2] - e.v[2]]
       : null
   });
-  return transform(g, { frame: 'equatorial-of-date' });
+  return withCorrections(transform(g, { frame: 'equatorial-of-date' }),
+    lightTime ? ['light-time', 'aberration-annual'] : []);
 };
