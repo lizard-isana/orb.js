@@ -15,10 +15,14 @@ export { STARS };
 // rows carry no designation but always have an HR number and a position.
 export const starLabel = (row) => row.name || row.bf || ('HR ' + row.hr);
 
-// A catalogue row -> a body on the frame graph (proper motion carried).
-export const starBody = (row) => star({
-  ra: row.ra, dec: row.dec, pmRA: row.pmRA, pmDE: row.pmDE,
-  name: starLabel(row)
+// A catalogue row -> a body on the frame graph (proper motion carried),
+// tagged with its catalogue provenance.
+export const starBody = (row) => ({
+  ...star({ ra: row.ra, dec: row.dec, pmRA: row.pmRA, pmDE: row.pmDE, name: starLabel(row) }),
+  provenance: {
+    source: ['bright-star-catalogue'],
+    accuracy: { value: 1, unit: 'arcsecond', basis: 'bright-star-catalogue' }
+  }
 });
 
 // Rows no fainter than maxMag (visual magnitude), brightest first.

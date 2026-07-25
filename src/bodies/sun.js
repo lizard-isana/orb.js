@@ -26,5 +26,10 @@ export const sun = {
       r: [-e.r[0], -e.r[1], -e.r[2]],
       v: [-e.v[0], -e.v[1], -e.v[2]]
     });
+  },
+
+  provenance: {
+    source: ['erfa-epv00'],
+    accuracy: { value: 1, unit: 'arcsecond', basis: 'erfa-epv00' }
   }
 };

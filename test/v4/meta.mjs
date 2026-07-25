@@ -12,6 +12,7 @@ import { observer } from '../../src/observer/observer.js';
 import { moon } from '../../src/bodies/moon.js';
 import { mars } from '../../src/bodies/mars.js';
 import { star } from '../../src/bodies/star.js';
+import { starBody, findStar } from '../../src/catalog/stars.js';
 import * as V from '../../src/vocab.js';
 
 let failures = 0;
@@ -43,8 +44,50 @@ test('every token emitted in meta is registered in the vocabulary', () => {
         }
       }
       for (const e of meta.ignored) assert.ok(V.isEffect(e), `ignored '${e}'`);
+      for (const s of meta.source) assert.ok(V.isSource(s), `source '${s}'`);
+      if (meta.accuracy) {
+        assert.ok(V.isUnit(meta.accuracy.unit), `accuracy.unit '${meta.accuracy.unit}'`);
+        if (meta.accuracy.basis) assert.ok(V.isSource(meta.accuracy.basis), `accuracy.basis`);
+      }
     }
   }
+});
+
+test('provenance: pipeline + body sources are folded in, with an accuracy', () => {
+  const m = SITE.observe(moon, T).meta;
+  // the frame/model sources the pipeline always uses
+  for (const s of ['iau2006-precession', 'iau2000b-nutation', 'iau1982-gmst', 'wgs84']) {
+    assert.ok(m.source.includes(s), 'pipeline source ' + s);
+  }
+  // the body's own theory, and its accuracy as the leading term
+  assert.ok(m.source.includes('meeus-moon'), 'body source');
+  assert.deepStrictEqual(m.accuracy, { value: 15, unit: 'arcsecond', basis: 'meeus-moon' });
+  // mars carries vsop87a
+  assert.ok(SITE.observe(mars, T).meta.source.includes('vsop87a'));
+  // a catalogue star carries the catalogue as its source + accuracy
+  const cat = SITE.observe(starBody(findStar('Vega')), T).meta;
+  assert.ok(cat.source.includes('bright-star-catalogue'), 'catalogue source');
+  assert.strictEqual(cat.accuracy.basis, 'bright-star-catalogue');
+  // a bare star() has no provenance -> pipeline-only source, no accuracy
+  const bare = SITE.observe(vega, T).meta;
+  assert.ok(!bare.source.includes('bright-star-catalogue') && bare.accuracy === undefined);
+});
+
+test('refraction adds its model to the source list only when applied', () => {
+  assert.ok(!SITE.observe(moon, T).meta.source.includes('saemundsson-refraction'));
+  const refr = SITE.observe(moon, T, { refraction: {} }).meta;
+  assert.ok(refr.source.includes('saemundsson-refraction'));
+});
+
+test('fixed sources report no distance, but keep a valid direction', () => {
+  const r = SITE.observe(vega, T);
+  assert.strictEqual(r.range, null, 'range null');
+  assert.strictEqual(r.distance, null, 'distance null');
+  assert.ok(Number.isFinite(r.azimuth) && Number.isFinite(r.elevation), 'direction valid');
+  assert.strictEqual(r.meta.quantities.distance.applicable, false);
+  assert.strictEqual(r.meta.quantities.range.applicable, false);
+  // a non-fixed body keeps its distance
+  assert.ok(Number.isFinite(SITE.observe(moon, T).distance));
 });
 
 test('meta describes exactly the numeric fields returned', () => {

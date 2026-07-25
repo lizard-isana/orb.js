@@ -38,6 +38,10 @@ export const satellite = (tle) => {
     orbitalPeriod: (2 * Math.PI) / satrec.no_unkozai, // minutes
     apogee: satrec.alta * wgs72.radiusearthkm,        // km above surface
     perigee: satrec.altp * wgs72.radiusearthkm,
+    provenance: {
+      source: ['sgp4'],
+      accuracy: { value: 1, unit: 'kilometer', basis: 'sgp4' }
+    },
 
     state: (instant) => {
       const tsince = (instant.utcMs - elements.epoch.utcMs) / 60000; // minutes

@@ -98,5 +98,12 @@ export const moon = {
       latitude: Math.asin(s.r[2] / Math.hypot(s.r[0], s.r[1], s.r[2])),
       distance: Math.hypot(s.r[0], s.r[1], s.r[2])
     };
+  },
+
+  // Where this body's numbers come from, and how good they are — folded
+  // into a result's meta so an apparent place carries its own provenance.
+  provenance: {
+    source: ['meeus-moon'],
+    accuracy: { value: 15, unit: 'arcsecond', basis: 'meeus-moon' }
   }
 };

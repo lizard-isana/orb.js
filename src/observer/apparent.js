@@ -73,8 +73,10 @@ export const apparentGeocentric = (body, instant, { lightTime = true } = {}) => 
       dir = Float64Array.of(tilted[0] * scale, tilted[1] * scale, tilted[2] * scale);
     }
     const g = makeState({ t: instant, frame: s0.frame, center: 'earth', r: dir });
-    return withCorrections(transform(g, { frame: 'equatorial-of-date' }),
+    const out = withCorrections(transform(g, { frame: 'equatorial-of-date' }),
       lightTime ? ['proper-motion', 'aberration-annual'] : ['proper-motion']);
+    out.fixed = true; // a fixed source has no meaningful distance/range
+    return out;
   }
 
   if (s0.center === 'earth') {

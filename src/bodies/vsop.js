@@ -68,5 +68,9 @@ export const makeVsopBody = (name, series) => ({
       r: [x * AU_KM, y * AU_KM, z * AU_KM],
       v: [vx * kmps, vy * kmps, vz * kmps]
     });
+  },
+  provenance: {
+    source: ['vsop87a'],
+    accuracy: { value: 1, unit: 'arcsecond', basis: 'vsop87a' }
   }
 });

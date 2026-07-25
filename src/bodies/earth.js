@@ -81,5 +81,10 @@ export const earth = {
         (AM32 * v[1] + AM33 * v[2]) * kmps
       ]
     });
+  },
+
+  provenance: {
+    source: ['erfa-epv00'],
+    accuracy: { value: 1, unit: 'arcsecond', basis: 'erfa-epv00' }
   }
 };

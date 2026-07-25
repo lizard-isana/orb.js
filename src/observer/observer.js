@@ -23,6 +23,13 @@ import { apparentGeocentric } from './apparent.js';
 import { refraction as refractionAngle } from './refraction.js';
 import { requireToken } from '../vocab.js';
 
+// The reference frames and models the observation pipeline itself always
+// goes through to reach a topocentric place — independent of which body
+// is observed. Folded into meta.source together with the body's own
+// provenance. Validated once, here.
+const PIPELINE_SOURCES = ['iau2006-precession', 'iau2000b-nutation', 'iau1982-gmst', 'wgs84'];
+for (const s of PIPELINE_SOURCES) requireToken('source', s);
+
 // The self-description of observe()'s output. The static part — which
 // quantity each field is, its unit, and the frame/center it lives in —
 // never changes and is validated against the shared vocabulary once, at
@@ -49,13 +56,17 @@ for (const f of Object.values(FIELD_META)) {
 // corrections apparentGeocentric reports (light time, aberration, proper
 // motion); the topocentric fields add diurnal parallax from the site
 // subtraction, and elevation adds refraction when it was applied.
-const buildMeta = (t, applied, refracted) => {
+// `provenance` is the body's own {source, accuracy}; `fixed` marks a
+// source with no meaningful distance (a star).
+const buildMeta = (t, applied, refracted, provenance, fixed) => {
   const quantities = {};
   for (const [field, spec] of Object.entries(FIELD_META)) {
     const q = { quantity: spec.quantity, unit: spec.unit };
     if (spec.frame) q.frame = spec.frame;
     if (spec.center) q.center = spec.center;
-    if (field === 'refraction') {
+    if (fixed && (field === 'distance' || field === 'range')) {
+      q.applicable = false; // a fixed source carries no distance
+    } else if (field === 'refraction') {
       // the refraction field is the correction magnitude itself
     } else if (field === 'distance') {
       q.corrections = applied.slice(); // geocentric distance: apparent-place only
@@ -65,13 +76,29 @@ const buildMeta = (t, applied, refracted) => {
     }
     quantities[field] = q;
   }
+
+  // Provenance: the pipeline's own frame/model sources plus the body's,
+  // and the body's accuracy as the leading error term.
+  const sources = new Set(PIPELINE_SOURCES);
+  if (refracted) sources.add('saemundsson-refraction');
+  const meta = {
+    t: { utc: t.toDate().toISOString(), jd_tt: t.jd('tt') },
+    quantities
+  };
+  if (provenance && provenance.source) {
+    for (const s of provenance.source) sources.add(requireToken('source', s));
+  }
+  meta.source = [...sources];
+  if (provenance && provenance.accuracy) {
+    requireToken('unit', provenance.accuracy.unit);
+    if (provenance.accuracy.basis) requireToken('source', provenance.accuracy.basis);
+    meta.accuracy = provenance.accuracy;
+  }
+
   const ignored = ['aberration-diurnal', 'deflection', 'polar-motion'];
   if (!refracted) ignored.push('refraction');
-  return {
-    t: { utc: t.toDate().toISOString(), jd_tt: t.jd('tt') },
-    quantities,
-    ignored
-  };
+  meta.ignored = ignored;
+  return meta;
 };
 
 // observer({ latitude, longitude, height }) — degrees, degrees, METERS.
@@ -132,12 +159,13 @@ export const observer = ({ latitude, longitude, height = 0 }) => {
         elevation: elevation / DEG,
         ra: ra / DEG,
         dec: dec / DEG,
-        range: azel.range,
-        distance: gDistance,
+        range: g.fixed ? null : azel.range,
+        distance: g.fixed ? null : gDistance,
         refraction: refr / DEG
       };
       if (options.meta === false) return result;
-      result.meta = buildMeta(t, g.corrections || [], options.refraction ? true : false);
+      result.meta = buildMeta(t, g.corrections || [], options.refraction ? true : false,
+        body.provenance, g.fixed || false);
       return result;
     }
   };
