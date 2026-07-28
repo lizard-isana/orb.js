@@ -28,8 +28,7 @@
 // fit of Delta T = TT - UT1.
 //
 // Skipping this correction shifts every computed position by the motion
-// of the body over ~69 s: about 38 arcseconds for the Moon. (v3 shipped
-// for years with the correction commented out — hence this long comment.)
+// of the body over ~69 s: about 38 arcseconds for the Moon.
 //#endregion
 
 // TAI-UTC offset (leap seconds) since 1972: [effective UTC ms, seconds]

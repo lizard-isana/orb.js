@@ -1,7 +1,7 @@
 // frames.js — the state-vector type and the frame-transformation graph.
 //
 //#region edu:state-vector
-// Every position in orb.js v4 travels as one structured value:
+// Every position travels as one structured value:
 //
 //   {
 //     t:      Instant,           // when
@@ -11,13 +11,10 @@
 //     v:      Float64Array[3]|null // km/s, always
 //   }
 //
-// The frame and center ride WITH the numbers. v3 carried this metadata
-// as free-text keywords that intermediate functions could (and did)
-// drop, which produced real bugs — an au/km mix-up and a 24-arcminute
-// frame mismatch. Making the metadata part of the value, and funnelling
-// every conversion through the one transform() below, removes the whole
-// class of error: an undefined conversion is now an exception, not a
-// silently wrong number.
+// The frame and center ride WITH the numbers, and every conversion
+// goes through the single transform() below. Detached metadata gets
+// dropped and guessed-at; attached metadata makes an undefined
+// conversion an exception instead of a silently wrong number.
 //#endregion
 //
 // Frames implemented here (all right-handed, axes in km):
@@ -63,9 +60,8 @@ export const makeState = ({ t, frame, center, r, v = null }) => {
 // matrix at a given Instant, plus whether crossing it enters/leaves the
 // rotating Earth-fixed frame (which adds the omega x r term for
 // velocities). transform() finds a path between any two frames by
-// breadth-first search and composes the matrices — so every route
-// between two frames gives the same answer by construction, where v3
-// had a different code path (and different bugs) per input shape.
+// breadth-first search and composes the matrices, so every route
+// between two frames gives the same answer by construction.
 //#endregion
 const EDGES = [
   {
@@ -95,9 +91,9 @@ const EDGES = [
     matrix: (t) => matRotZ(nutation(t).dpsi * Math.cos(meanObliquity(t)))
   },
   {
-    // Earth rotation: TEME pairs with MEAN sidereal time (GMST 1982) by
-    // definition of the frame — using apparent sidereal time here was a
-    // ~500 m ground-track error in v3.
+    // Earth rotation: TEME pairs with MEAN sidereal time (GMST 1982)
+    // by definition of the frame; apparent sidereal time here would
+    // shift ground tracks by ~500 m.
     from: 'teme', to: 'ecef',
     matrix: (t) => matRotZ(gmst82(t)),
     rotating: true
@@ -107,6 +103,13 @@ const EDGES = [
 // equatorial-of-date -> teme -> ecef applies GAST in total (the
 // nutation-in-RA rotation plus GMST), keeping the graph loop-free and
 // every path consistent.
+
+// The frames that appear as nodes of the graph. Exported so the shared
+// vocabulary (vocab.js) can be checked against what the graph actually
+// uses — the two must never drift apart.
+export const GRAPH_FRAMES = Object.freeze(
+  [...new Set(EDGES.flatMap((e) => [e.from, e.to]))].sort()
+);
 
 const neighbors = {};
 for (const e of EDGES) {

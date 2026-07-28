@@ -1,11 +1,11 @@
-// instant.js — the single time type used throughout orb.js v4.
+// instant.js — the single time type used throughout the library.
 //
-// Every public function in the library takes an Instant. Raw Date objects
-// and bare Julian-date numbers are converted once, at the boundary, and
-// never passed around internally. Two v3 bugs motivated this rule:
-// Date.UTC() silently truncates fractional seconds, and a Julian date in
-// one double loses sub-millisecond precision — both produced real
-// position errors before they were found.
+// Every public function takes an Instant. Raw Date objects and bare
+// Julian-date numbers are converted once, at the boundary, and never
+// passed around internally: Date.UTC() silently truncates fractional
+// seconds, and a Julian date held in a single double resolves only
+// ~20 microseconds, so converting early into a two-part representation
+// avoids both traps.
 //
 //#region edu:two-part-jd
 // Internal representation: a Julian date in TT, split into two doubles

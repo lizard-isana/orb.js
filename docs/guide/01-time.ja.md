@@ -57,8 +57,7 @@ orb.js が内部で使っている時刻の考え方を、実際のソースコ�
 // fit of Delta T = TT - UT1.
 //
 // Skipping this correction shifts every computed position by the motion
-// of the body over ~69 s: about 38 arcseconds for the Moon. (v3 shipped
-// for years with the correction commented out — hence this long comment.)
+// of the body over ~69 s: about 38 arcseconds for the Moon.
 ```
 <!-- /snippet -->
 
@@ -66,8 +65,9 @@ orb.js が内部で使っている時刻の考え方を、実際のソースコ�
 
 現在 TT−UTC ≈ 69秒。この69秒の間に月は約38″(視直径の約2%)動きます。
 つまり UTC のまま月の理論式に代入すると、**月の位置が常に38″ずれます**。
-orb.js v3 には長い間この補正が(コメントアウトされたまま)抜けており、
-v4 では `Instant` 型が入口で必ず変換する設計にしました。
+このずれは「だいたい合っている」ように見えるため、天文プログラムでは
+気づかれないまま残りやすい定番のバグです。orb.js では `Instant` 型が
+入口で必ず変換するので、以後のコードは時刻系を意識せずに済みます。
 
 逆方向の間違いもあります。恒星時(地球の自転角)は UT1 の関数なので、
 こちらに TT を入れると方位角が約17″ずれます。「**天体暦には TT、自転には
@@ -81,8 +81,9 @@ UT**」— この使い分けが時刻系のすべてです。
 
 ここに JavaScript 特有の罠があります。JD は 246万日のオーダーなので、
 64bit 浮動小数の1つの数値で持つと分解能が約20マイクロ秒になります。さらに
-`Date.UTC()` は**秒引数の小数部を黙って捨てます**(v3 ではこれが原因で
-ISS の位置が1.4 km ずれていました)。orb.js v4 の `Instant` は JD を
+`Date.UTC()` は**秒引数の小数部を黙って捨てます**。低軌道衛星は毎秒約
+7.7 km 進むので、秒未満を落とすだけで位置はキロメートル単位でずれます。
+orb.js の `Instant` は JD を
 「大きい部分+小さい部分」の2つの double に分けて持つことで、この問題を
 構造的に回避しています(`src/time/instant.js`):
 
@@ -147,4 +148,4 @@ gmst82(t);             // 地球の自転角(ラジアン)
 
 ---
 
-次章: [第2章 座標系 — 24分角ずれた実話](02-frames.ja.md)
+次章: [第2章 座標系 — 「いつの春分点か」で24分角変わる](02-frames.ja.md)

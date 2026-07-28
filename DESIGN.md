@@ -30,6 +30,27 @@ v4 は v3 の機能とポリシーを引き継いだ再設計である。
 
 - **初学者向け学習コンテンツとしての価値**(§7)。v3 が「コードを読んで天文計算を
   学ぶ教材」として使われている実態を、偶然ではなく設計目標に格上げする。
+- **出力の自己記述**(§4.8)。戻り値が単位・座標系・補正・出典・精度を携え、
+  関数から切り離しても意味が保たれる。v2/v3 の `unit_keywords` の思想の構造化。
+
+### 1.1 AI から使われること、とその線引き
+
+生成 AI は「今夜 東京から木星は見える?」のような **問いは単純だが答えに至る計算が
+多段**の問いを苦手とする(時刻変換・座標変換・各種補正)。決定論的にそれを計算し、
+**自己記述的に**(§4.8)返すこのライブラリは、AI が推測する代わりに委譲できる
+「信頼できる計算」になり得る。ただし価値の源泉が *計算の信頼性* である以上、
+自然言語や対話に踏み込むと逆にそれを薄める。そこで線を引く:
+
+> **AI 以外の利用者(星図描画・プラネタリウム・研究)も欲しがるか?**
+> Yes → ライブラリ。AI に奉仕するためだけ → アダプタ(別リポ/例)。
+
+| 層 | 内容 | 置き場所 |
+|---|---|---|
+| 計算コア | 時刻・座標変換・天体/カタログの位置・イベント | orb.js |
+| 自己記述 | 値が単位・座標系・補正・出典・精度を携える / 機械可読な能力記述 | orb.js(§4.8) |
+| アダプタ | MCP、ツール定義、自然言語の解釈と生成、地名→緯度経度、TZ、プロンプト設計 | **外** |
+
+判定基準は §4.8 の原則そのもの:**識別する(IN)、論評しない(OUT)**。
 
 ## 2. v3 から得た教訓(設計の根拠)
 
@@ -151,6 +172,66 @@ riseSet(sun, tokyo, date)
 
 ブラウザ用途の本命機能であり、コア API の実地テストにもなる。
 
+### 4.8 出力の自己記述(meta)・共有語彙・provenance
+
+v2/v3 は戻り値に `unit_keywords` / `coordinate_keywords` を添えていた。狙いは
+「関数を並べて戻り値を順に渡すだけで欲しい数値が得られる」— **出力を関数から
+切り離しても、それが何の数値か分かる**状態にすることだった。良い方針だったが、
+v4 は型付き状態ベクトルでこれを *ベクトル* には保った一方、スカラーを返す境界
+(`observe()` 等)で素の数値に退化していた。§4.8 はこれを構造化して取り戻す。
+
+**設計原則:出力は自己識別する(identify, not narrate)**
+
+> すべての出力は自己識別的である。何の量で、単位・基準系・原点は何で、どんな
+> 条件(適用した補正・出典・精度)の下で有効かが、値自身から読める。
+
+この原則が「計算ライブラリに徹する」線引きと一致する点が重要:**meta は値を
+*識別* する(IN)が、値を *論評* しない(OUT)**。「Vega が見頃」のような散文・
+自然言語・推薦は識別を超えた *消費者向けの語り* であり、アダプタ層(§1)に出す。
+
+**共有語彙 `src/vocab.js`(単一の真実)**
+
+meta が使う語は全てここに一度だけ定義する。7つの閉じたリスト —
+`QUANTITIES` / `UNITS`(+`UNIT_DIMENSION`)/ `FRAMES` / `CENTERS` /
+`CORRECTIONS` / `EFFECTS` / `SOURCES`。規約:
+
+- 全トークン **kebab-case**(グラフの frame 名と一致)、**単位はフル綴り**
+  (`kilometer`, 曖昧さ排除)
+- **歳差・章動は correction ではなく frame が表す**(mean/true of date か J2000 か)
+- `requireToken()` で、**未登録の語は meta から出せない**
+- 既存コードは読みやすいリテラルのまま。vocab を権威にし、**ドリフトはテストで封じる**
+  (`GRAPH_FRAMES ⊆ FRAMES` 等)— 生成データの自己検証と同じ流儀
+
+**meta ブロックの構成**
+
+```js
+observe(body, t) // -> { azimuth, elevation, ra, dec, range, distance, refraction,
+//   meta: {
+//     t: { utc, jd_tt },
+//     quantities: { <field>: { quantity, unit, frame?, center?, corrections?[] } },
+//     source: [ ...vocab SOURCES ],        // 天体の理論 + パイプラインの座標モデル
+//     accuracy: { value, unit, basis },    // 主誤差項
+//     ignored: [ ...未モデル化の effect ]   // 誠実さフィールド
+//   } }
+```
+
+- `corrections` は推測しない。`apparentGeocentric` が **実際に効かせた補正**を報告
+  (惑星・月=光行時間+光行差、恒星=固有運動+光行差で光行時間なし、`lightTime:false`
+  で空)。測心の場は日周視差を、elevation は屈折(適用時のみ)を足す。
+- `range`(測心)と `distance`(地心)は別 center として区別。
+- **固定源(恒星)は距離を持たない** → `range`/`distance` は `null`、meta 側は
+  `applicable:false`。方角は有効。
+- 既定 on。ホットループ(全天スイープ等)は `{ meta: false }` で省略。
+
+**provenance(天体が出典を名乗る)**
+
+各 body は `provenance: { source:[…], accuracy:{value,unit,basis} }` を宣言する
+(moon→`meeus-moon` 15″、惑星→`vsop87a`、太陽/地球→`erfa-epv00`、衛星→`sgp4`、
+恒星→`bright-star-catalogue`)。`observe()` は **天体の source とパイプライン自身の
+座標モデル**(iau2006 歳差・iau2000b 章動・iau1982 恒星時・wgs84・屈折時 saemundsson)
+を **union** して `meta.source` に、天体の精度を主誤差項として `meta.accuracy` に畳む。
+これで「差が説明できる」という §6 の検証哲学が、実行時の出力にも現れる。
+
 ## 5. 言語・配布
 
 - **ソースは JavaScript + JSDoc 型注釈**。「JavaScript のみ」というプロジェクトの
@@ -196,9 +277,18 @@ minifier はコメントを除去するので、**豊富なコメントは配布
 2. **式番号コメント**: 実装行を教科書の式に対応付ける
    (例: `// Meeus (47.1): 平均黄経 L'`, `// Vallado eq. 3-45`)
 3. **「なぜ」コメント**: 数値上の工夫(桁落ち回避、収束判定、特異点処理)は
-   理由を書く。v3 レビューで発見した落とし穴(`Date.UTC` の小数秒切り捨て、
-   TEME と GMST82 の対応など)は、再発防止としてコード中に残す
-4. コメント言語は**英語**(国際的なコントリビュータと教材翻訳の起点)。
+   理由を書く
+4. **普遍性**: コメントは「そこで何が行われているか」を、その場で完結する
+   **普遍的な記述**として書く。扱っているアルゴリズムは普遍的なものであり、
+   説明は手法とプロセスの中だけで完結できる — このプロジェクトの経緯
+   (「v3 では」「以前は」)に依存した書き方をしない。落とし穴は
+   「このコードで過去に起きたこと」ではなく「この手法で誰にでも起きること」
+   として記述する(例: 「`Date.UTC` は小数秒を黙って捨てる」は書く、
+   「v3 ではこれが原因で 1.4 km ずれていた」は書かない)。
+   開発の経緯・発見の記録は本書(DESIGN.md)とコミットログに置く。
+   ガイド(§7.2)にも同じ規約を適用し、コードもドキュメントも
+   単体で成立させる(オーナー決定、2026-07)
+5. コメント言語は**英語**(国際的なコントリビュータと教材翻訳の起点)。
    日本語の解説は §7.2 のガイドが担う
 
 この規約が守られるよう、モジュールは「1ファイル=1概念」の粒度に保つ
@@ -209,7 +299,7 @@ minifier はコメントを除去するので、**豊富なコメントは配布
 `docs/guide/` に章立ての解説を置く。章 = 学習単位:
 
 1. 時刻系(UTC/TT/ΔT/恒星時)— なぜ69秒ずらすのか
-2. 座標系(黄道/赤道/分点/歳差章動)— 24′ずれた実話から始める
+2. 座標系(黄道/赤道/分点/歳差章動)— 「いつの春分点か」の24′から始める
 3. 太陽と月の位置(級数展開の考え方)
 4. ケプラー問題(ユニバーサル変数法)
 5. 観測(光行時間差・光行差・視差・大気差)
@@ -254,20 +344,24 @@ npm 配布のデフォルトを「コメント保持の未 minify ESM」にす�
 
 ```
 src/
+  vocab.js    共有語彙(単一の真実、§4.8)
   time/       instant.js, scales.js, sidereal.js
   math/       vec3.js, angles.js, kepler.js
   frames/     frames.js, precession.js, nutation.js, geodetic.js
-  bodies/     sun.js, moon.js, mercury.js ... neptune.js, data/(生成物)
-  sgp4/       propagation.js(v3 から搬入), tle.js, omm.js
-  observer/   observer.js, lighttime.js, aberration.js, refraction.js
-  events/     riseset.js, phases.js, passes.js
+  bodies/     sun.js, moon.js, earth.js, mercury.js ... neptune.js,
+              star.js(固定天体), vsop.js, data/(生成物)
+  catalog/    stars.js(恒星表 API), data/(生成: bright-stars, constellations)
+  sgp4/       propagation.js(v3 から搬入), tle.js, satellite.js
+  observer/   observer.js, apparent.js(光行時間差+光行差), refraction.js
+  events/     riseset.js, phases.js, passes.js, search.js
+  sky/        visible.js(可視天体スイープ = 意味づけラッパー)
   compat/     v3.js(旧 API シム)
 docs/
   guide/      教材章(ja/en)、snippet 参照で本体ソースを引用
-examples/     段階的縮小実装+ブラウザデモ
-tools/        vsop-compile.js, annotate.js(注釈付きソース生成),
-              snippets.js(抜粋差し込み+CI 検査), reference-gen/
-test/         参照値テスト・プロパティテスト・v3 等価性テスト
+examples/     段階的縮小実装+ブラウザデモ(sun-in-50-lines, iss-passes, tonight-sky)
+tools/        vsop-compile.js, catalog-compile.js, snippets.js(抜粋差し込み+CI 検査),
+              bench.mjs, annotate.js(注釈付きソース生成), data/(vendored 生データ)
+test/         参照値テスト・プロパティテスト・v3 等価性テスト・vocab/meta テスト
 ```
 
 ## 9. マイルストーン
@@ -288,6 +382,16 @@ test/         参照値テスト・プロパティテスト・v3 等価性テス
 
 - 基本方針は §1〜§6 のとおり(オーナー承認済み: 2026-07-19)
 - Educational 版は「別コピー」ではなく「source as textbook」方式(§7)
+- **コメント/ドキュメントは普遍的・自己完結で書く**(§7.1)。プロジェクトの経緯や
+  v3 への逆依存を書かず、履歴は本書とコミットログに置く(オーナー決定: 2026-07)
+- **出力は自己識別する。identify, not narrate**(§4.8, §1.1)。値は単位・座標系・
+  補正・出典・精度を携える(IN)が論評はしない(OUT)。自然言語・MCP・地名/TZ 解決
+  等はアダプタ層(ライブラリ外)。判定基準は「AI 以外の利用者も欲しがるか」
+  (オーナー決定: 2026-07)
+- **共有語彙は `src/vocab.js` に一元化**(§4.8)。単位はフル綴り、歳差章動は
+  correction でなく frame、ドリフトはテストで封じる(オーナー決定: 2026-07)
+- **恒星表・星座表を v4 に収録**(`tools/data/catalog/`、`catalog-compile.js` で生成)。
+  固定天体プリミティブ `bodies/star.js` はコアの汎用追加(星図用途も想定)
 
 **推奨として提示済み・実装開始までに確定したいもの**
 

@@ -1,7 +1,7 @@
 // vec3.js — minimal 3-vector operations on plain arrays / Float64Array.
 //
-// orb.js v4 stores every position in km and every velocity in km/s as a
-// 3-element Float64Array. These helpers are deliberately tiny and
+// The library stores every position in km and every velocity in km/s
+// as a 3-element Float64Array. These helpers are deliberately tiny and
 // allocation-conscious: astronomy code calls them in tight loops (series
 // evaluation, root finding for rise/set), and a dedicated vector class
 // would add nothing but indirection.

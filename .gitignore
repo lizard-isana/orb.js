@@ -4,4 +4,5 @@ log/
 .DS_Store
 Thumbs.db
 docs/annotated/
+src/bodies/data/vsop87a-*.full.js
 ref/
