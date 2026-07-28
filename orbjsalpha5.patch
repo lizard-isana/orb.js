@@ -1,0 +1,133 @@
+From 8c1c3195a489e5be5a058626189986c7582d40dc Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 28 Jul 2026 08:22:56 +0000
+Subject: [PATCH] fix: decode Alpha-5 catalog numbers in TLE parsing
+
+Catalog numbers passed 99999, so TLE columns 3-7 can hold the Alpha-5
+spelling: the leading digit becomes a capital letter, skipping I and O so
+they are not confused with 1 and 0 (A=10 ... Z=33, covering up to 339999).
+Number('E7527') is NaN, so NORAD_CAT_ID, catalog_no_1, and catalog_no_2
+all came out NaN for those objects. The value is not used in the SGP4
+math, so propagation was unaffected, but consumers that display or key on
+the catalog number got NaN.
+
+Add ParseCatalogNumber(), which decodes the Alpha-5 form and otherwise
+falls back to Number(), and use it at the three parse sites. It is
+exported through the existing export * surface so callers can reuse it.
+
+Verified: E7527 -> 147527 and A0000 -> 100000 across NORAD_CAT_ID,
+orbital_elements.catalog_number, and DecodeTLE's catalog_no_1/2, with
+classic ids such as 25544 unchanged. Added a smoke test covering the
+range boundaries, the excluded I/O letters, and classic numeric ids.
+
+Note: 'VSOP pipeline agrees with the Sun theory' already fails on v3
+before this change (same RA diff), so it is untouched by this work.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01DhtJjbCALMcijG5iE8Rtiq
+---
+ src/orb-sgp4.js | 29 ++++++++++++++++++++++++++---
+ test/smoke.js   | 26 ++++++++++++++++++++++++++
+ 2 files changed, 52 insertions(+), 3 deletions(-)
+
+diff --git a/src/orb-sgp4.js b/src/orb-sgp4.js
+index 0c6ddf3..ab5312f 100644
+--- a/src/orb-sgp4.js
++++ b/src/orb-sgp4.js
+@@ -5,6 +5,29 @@ import {Constant,ZeroFill} from './orb-core.js'
+ import {Time} from './orb-time.js'
+ import {sgp4init, sgp4, wgs72} from './orb-sgp4-propagation.js'
+ 
++// Catalog numbers passed 99999, so TLE columns 3-7 may hold the Alpha-5
++// spelling instead of five digits: the leading digit becomes a capital
++// letter, skipping I and O so they are not confused with 1 and 0. A is 10,
++// B is 11, ... Z is 33, which covers catalog numbers up to 339999.
++// Space-Track keeps reporting NORAD_CAT_ID numerically in the GP class, so
++// decode Alpha-5 back to a number instead of leaving Number() to yield NaN.
++const ALPHA5_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
++
++export function ParseCatalogNumber(value){
++  var text = String(value === null || value === undefined ? "" : value).trim();
++  if(text.length === 0){
++    return NaN;
++  }
++  var alpha5 = text.toUpperCase();
++  if(/^[A-HJ-NP-Z][0-9]{4}$/.test(alpha5)){
++    var letter_index = ALPHA5_LETTERS.indexOf(alpha5.charAt(0));
++    if(letter_index >= 0){
++      return ((letter_index + 10) * 10000) + Number(alpha5.slice(1));
++    }
++  }
++  return Number(text);
++}
++
+ export class SGP4{
+   constructor (elements) {
+     this.elements = elements;
+@@ -90,7 +113,7 @@ export class SGP4{
+       "MEAN_ANOMALY": Number(line2.substring(43, 51)),
+       "EPHEMERIS_TYPE": Number(line1.substring(62, 63)),
+       "CLASSIFICATION_TYPE": line1.slice(7, 8),
+-      "NORAD_CAT_ID": Number(line1.slice(2, 7)),
++      "NORAD_CAT_ID": ParseCatalogNumber(line1.slice(2, 7)),
+       "ELEMENT_SET_NO": Number(line1.substring(64, 68)),
+       "REV_AT_EPOCH": Number(line2.substring(64, 68)),
+       "BSTAR": bstar,
+@@ -121,7 +144,7 @@ export class SGP4{
+     var orbital_elements = {
+       name: name,
+       line_number_1: Number(line1.slice(0, 1)),
+-      catalog_no_1: Number(line1.slice(2, 7)),
++      catalog_no_1: ParseCatalogNumber(line1.slice(2, 7)),
+       security_classification: line1.slice(7, 8),
+       international_identification: Number(line1.slice(9, 17)),
+       epoch_year: epoch_year,
+@@ -135,7 +158,7 @@ export class SGP4{
+       element_number: Number(line1.substring(64, 68)),
+       check_sum_1: Number(line1.substring(68, 69)),
+       line_number_2: Number(line2.slice(0, 1)),
+-      catalog_no_2: Number(line2.slice(2, 7)),
++      catalog_no_2: ParseCatalogNumber(line2.slice(2, 7)),
+       inclination: Number(line2.substring(8, 16)),
+       right_ascension: Number(line2.substring(17, 25)),
+       eccentricity: Number(line2.substring(26, 33)) * 1e-7,
+diff --git a/test/smoke.js b/test/smoke.js
+index c248658..ce02f38 100644
+--- a/test/smoke.js
++++ b/test/smoke.js
+@@ -185,6 +185,32 @@ test('SGP4 parses TLE fields', () => {
+   assert.ok(Math.abs(sat2.omm.MEAN_MOTION_DDOT - (-0.12345e-4)) < 1e-12);
+ });
+ 
++test('SGP4 decodes Alpha-5 catalog numbers', () => {
++  // Catalog numbers above 99999 use Alpha-5 in TLE columns 3-7: the leading
++  // digit becomes a capital letter, skipping I and O. A=10 ... Z=33.
++  const alpha5_tle = {
++    name: 'ALPHA5 SAT',
++    first_line: '1 E7527U 26100A   20014.52632156  .00016717  00000-0  10270-3 0  9015',
++    second_line: '2 E7527  51.6461 339.7757 0004871 129.9343 313.3229 15.49208144 10428'
++  };
++  const sat = new Orb.SGP4(alpha5_tle);
++  assert.strictEqual(sat.omm.NORAD_CAT_ID, 147527);
++  assert.strictEqual(sat.orbital_elements.catalog_number, 147527);
++  const decoded = sat.DecodeTLE();
++  assert.strictEqual(decoded.catalog_no_1, 147527);
++  assert.strictEqual(decoded.catalog_no_2, 147527);
++
++  // Boundaries of the Alpha-5 range.
++  assert.strictEqual(Orb.ParseCatalogNumber('A0000'), 100000);
++  assert.strictEqual(Orb.ParseCatalogNumber('Z9999'), 339999);
++  // I and O are never used, so they must not decode as letters.
++  assert.ok(Number.isNaN(Orb.ParseCatalogNumber('I0000')));
++  assert.ok(Number.isNaN(Orb.ParseCatalogNumber('O0000')));
++  // Classic numeric ids are unchanged.
++  assert.strictEqual(Orb.ParseCatalogNumber('25544'), 25544);
++  assert.strictEqual(Orb.ParseCatalogNumber('00005'), 5);
++});
++
+ test('SDP4 deep space matches python-sgp4 reference vectors', () => {
+   // Reference states generated with python-sgp4 2.27 (Vallado reference
+   // implementation) at tsince = 360 and 4320 minutes from epoch.
+-- 
+2.43.0
+
