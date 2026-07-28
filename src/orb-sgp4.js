@@ -5,6 +5,29 @@ import {Constant,ZeroFill} from './orb-core.js'
 import {Time} from './orb-time.js'
 import {sgp4init, sgp4, wgs72} from './orb-sgp4-propagation.js'
 
+// Catalog numbers passed 99999, so TLE columns 3-7 may hold the Alpha-5
+// spelling instead of five digits: the leading digit becomes a capital
+// letter, skipping I and O so they are not confused with 1 and 0. A is 10,
+// B is 11, ... Z is 33, which covers catalog numbers up to 339999.
+// Space-Track keeps reporting NORAD_CAT_ID numerically in the GP class, so
+// decode Alpha-5 back to a number instead of leaving Number() to yield NaN.
+const ALPHA5_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+
+export function ParseCatalogNumber(value){
+  var text = String(value === null || value === undefined ? "" : value).trim();
+  if(text.length === 0){
+    return NaN;
+  }
+  var alpha5 = text.toUpperCase();
+  if(/^[A-HJ-NP-Z][0-9]{4}$/.test(alpha5)){
+    var letter_index = ALPHA5_LETTERS.indexOf(alpha5.charAt(0));
+    if(letter_index >= 0){
+      return ((letter_index + 10) * 10000) + Number(alpha5.slice(1));
+    }
+  }
+  return Number(text);
+}
+
 export class SGP4{
   constructor (elements) {
     this.elements = elements;
@@ -90,7 +113,7 @@ export class SGP4{
       "MEAN_ANOMALY": Number(line2.substring(43, 51)),
       "EPHEMERIS_TYPE": Number(line1.substring(62, 63)),
       "CLASSIFICATION_TYPE": line1.slice(7, 8),
-      "NORAD_CAT_ID": Number(line1.slice(2, 7)),
+      "NORAD_CAT_ID": ParseCatalogNumber(line1.slice(2, 7)),
       "ELEMENT_SET_NO": Number(line1.substring(64, 68)),
       "REV_AT_EPOCH": Number(line2.substring(64, 68)),
       "BSTAR": bstar,
@@ -121,7 +144,7 @@ export class SGP4{
     var orbital_elements = {
       name: name,
       line_number_1: Number(line1.slice(0, 1)),
-      catalog_no_1: Number(line1.slice(2, 7)),
+      catalog_no_1: ParseCatalogNumber(line1.slice(2, 7)),
       security_classification: line1.slice(7, 8),
       international_identification: Number(line1.slice(9, 17)),
       epoch_year: epoch_year,
@@ -135,7 +158,7 @@ export class SGP4{
       element_number: Number(line1.substring(64, 68)),
       check_sum_1: Number(line1.substring(68, 69)),
       line_number_2: Number(line2.slice(0, 1)),
-      catalog_no_2: Number(line2.slice(2, 7)),
+      catalog_no_2: ParseCatalogNumber(line2.slice(2, 7)),
       inclination: Number(line2.substring(8, 16)),
       right_ascension: Number(line2.substring(17, 25)),
       eccentricity: Number(line2.substring(26, 33)) * 1e-7,

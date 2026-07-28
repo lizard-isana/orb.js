@@ -185,6 +185,32 @@ test('SGP4 parses TLE fields', () => {
   assert.ok(Math.abs(sat2.omm.MEAN_MOTION_DDOT - (-0.12345e-4)) < 1e-12);
 });
 
+test('SGP4 decodes Alpha-5 catalog numbers', () => {
+  // Catalog numbers above 99999 use Alpha-5 in TLE columns 3-7: the leading
+  // digit becomes a capital letter, skipping I and O. A=10 ... Z=33.
+  const alpha5_tle = {
+    name: 'ALPHA5 SAT',
+    first_line: '1 E7527U 26100A   20014.52632156  .00016717  00000-0  10270-3 0  9015',
+    second_line: '2 E7527  51.6461 339.7757 0004871 129.9343 313.3229 15.49208144 10428'
+  };
+  const sat = new Orb.SGP4(alpha5_tle);
+  assert.strictEqual(sat.omm.NORAD_CAT_ID, 147527);
+  assert.strictEqual(sat.orbital_elements.catalog_number, 147527);
+  const decoded = sat.DecodeTLE();
+  assert.strictEqual(decoded.catalog_no_1, 147527);
+  assert.strictEqual(decoded.catalog_no_2, 147527);
+
+  // Boundaries of the Alpha-5 range.
+  assert.strictEqual(Orb.ParseCatalogNumber('A0000'), 100000);
+  assert.strictEqual(Orb.ParseCatalogNumber('Z9999'), 339999);
+  // I and O are never used, so they must not decode as letters.
+  assert.ok(Number.isNaN(Orb.ParseCatalogNumber('I0000')));
+  assert.ok(Number.isNaN(Orb.ParseCatalogNumber('O0000')));
+  // Classic numeric ids are unchanged.
+  assert.strictEqual(Orb.ParseCatalogNumber('25544'), 25544);
+  assert.strictEqual(Orb.ParseCatalogNumber('00005'), 5);
+});
+
 test('SDP4 deep space matches python-sgp4 reference vectors', () => {
   // Reference states generated with python-sgp4 2.27 (Vallado reference
   // implementation) at tsince = 360 and 4320 minutes from epoch.
