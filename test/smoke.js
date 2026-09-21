@@ -100,6 +100,13 @@ test('VSOP pipeline agrees with the Sun theory (equinox of date)', () => {
   // tolerance is the stated accuracy of the low-precision solar theory (~0.01 deg)
   assert.ok(dra < 0.01, 'RA diff deg=' + dra);
   assert.ok(ddec < 0.01, 'Dec diff deg=' + ddec);
+  // JPL Horizons geocentric airless apparent coordinates at this instant:
+  // RA 117.38134 deg, Dec +21.05451 deg. orb.js omits light-time,
+  // gravitational deflection and aberration, so use the documented 0.01 deg
+  // low-precision tolerance.
+  assert.ok(Math.abs(s2.ra * 15 - 117.38134) < 0.01, 'RA=' + s2.ra * 15);
+  assert.ok(Math.abs(s2.dec - 21.05451) < 0.01, 'Dec=' + s2.dec);
+  assert.strictEqual(typeof Orb.EclipticJ2000ToDate, 'function');
 });
 
 test('VSOP planets return finite positions', () => {
@@ -110,6 +117,28 @@ test('VSOP planets return finite positions', () => {
   }
   const e = new Orb.Earth().xyz(date);
   assert.ok(Math.abs(Math.hypot(e.x, e.y, e.z) - 1.016) < 0.005, 'earth distance');
+});
+
+test('VSOP evaluates series in TT and labels J2000 coordinates', () => {
+  const date = new Date(Date.UTC(2026, 6, 18));
+  Orb.registerVSOP87A('Mars', [[0, 1, [1, 0, 0]]]);
+  try {
+    const p = new Orb.Mars({ vsop87a: 'full' }).xyz(date);
+    const expected = (new Orb.Time(date).jd_tt() - 2451545.0) / 365250;
+    assert.ok(Math.abs(p.x - expected) < 1e-15, 'x=' + p.x + ' expected=' + expected);
+    assert.ok(p.coordinate_keywords.match(/j2000/));
+  } finally {
+    Orb.unregisterVSOP87A('Mars');
+  }
+});
+
+test('planet radec uses the explicit of-date pipeline', () => {
+  const date = new Date(Date.UTC(2026, 6, 18));
+  const mars = new Orb.Mars();
+  const automatic = mars.radec(date);
+  const explicit = mars.radecOfDate(date);
+  assert.ok(Math.abs(automatic.ra - explicit.ra) < 1e-12, 'RA mismatch');
+  assert.ok(Math.abs(automatic.dec - explicit.dec) < 1e-12, 'Dec mismatch');
 });
 
 test('Kepler elliptical orbit accepts mean_anomaly of 0', () => {
@@ -148,6 +177,19 @@ test('Kepler hyperbolic orbit (e>1) works', () => {
   });
   const p = k.xyz(new Date(Date.UTC(2026, 6, 18)));
   assert.ok([p.x, p.y, p.z].every(Number.isFinite));
+});
+
+test('Kepler radec converts J2000 elements to the equinox of date', () => {
+  const date = new Date(Date.UTC(2026, 6, 18));
+  const k = new Orb.Kepler({
+    eccentricity: 0.1, semi_major_axis: 1.5, inclination: 5,
+    argument_of_periapsis: 10, longitude_of_ascending_node: 20,
+    mean_anomaly: 0, epoch: 2451545.0
+  });
+  const automatic = k.radec(date);
+  const explicit = Orb.XYZtoRadecOfDate(k.xyz(date));
+  assert.ok(Math.abs(automatic.ra - explicit.ra) < 1e-12, 'RA mismatch');
+  assert.ok(Math.abs(automatic.dec - explicit.dec) < 1e-12, 'Dec mismatch');
 });
 
 test('Constant GM values are close to JPL', () => {

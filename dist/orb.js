@@ -632,8 +632,51 @@
       y: cos * source.y - sin * source.z,
       z: sin * source.y + cos * source.z
     };
-  };
+  }; // Convert an ecliptic rectangular vector referred to the equinox of J2000.0
+  // (as produced by VSOP87A and typical published osculating elements) to the
+  // apparent ecliptic of date. The rotations follow the IAU 1976 precession
+  // model used elsewhere in orb.js, followed by the library's nutation model.
 
+
+  var EclipticJ2000ToDate = function EclipticJ2000ToDate(vector, date) {
+    var rad = Const.RAD;
+    var time = new Time(date);
+    var t = (time.jd_tt() - 2451545.0) / 36525;
+    var arcsecond = rad / 3600;
+    var zeta = (2306.2181 * t + 0.30188 * t * t + 0.017998 * t * t * t) * arcsecond;
+    var z = (2306.2181 * t + 1.09468 * t * t + 0.018203 * t * t * t) * arcsecond;
+    var theta = (2004.3109 * t - 0.42665 * t * t - 0.041833 * t * t * t) * arcsecond; // J2000 ecliptic -> J2000 equatorial.
+
+    var obliquityJ2000 = (23 + 26.0 / 60 + 21.448 / 3600) * rad;
+    var ex = vector.x;
+    var ey = Math.cos(obliquityJ2000) * vector.y - Math.sin(obliquityJ2000) * vector.z;
+    var ez = Math.sin(obliquityJ2000) * vector.y + Math.cos(obliquityJ2000) * vector.z; // J2000 equator -> mean equator and equinox of date.
+
+    var cosZeta = Math.cos(zeta);
+    var sinZeta = Math.sin(zeta);
+    var cosZ = Math.cos(z);
+    var sinZ = Math.sin(z);
+    var cosTheta = Math.cos(theta);
+    var sinTheta = Math.sin(theta);
+    var px = (cosZ * cosTheta * cosZeta - sinZ * sinZeta) * ex + (-cosZ * cosTheta * sinZeta - sinZ * cosZeta) * ey + -cosZ * sinTheta * ez;
+    var py = (sinZ * cosTheta * cosZeta + cosZ * sinZeta) * ex + (-sinZ * cosTheta * sinZeta + cosZ * cosZeta) * ey + -sinZ * sinTheta * ez;
+    var pz = sinTheta * cosZeta * ex + -sinTheta * sinZeta * ey + cosTheta * ez; // Mean equator of date -> mean ecliptic of date.
+
+    var meanObliquity = MeanObliquity(date) * rad;
+    var mx = px;
+    var my = Math.cos(meanObliquity) * py + Math.sin(meanObliquity) * pz;
+    var mz = -Math.sin(meanObliquity) * py + Math.cos(meanObliquity) * pz; // Mean equinox -> true equinox of date.
+
+    var nutation = Nutation(date) * rad;
+    return {
+      x: Math.cos(nutation) * mx - Math.sin(nutation) * my,
+      y: Math.sin(nutation) * mx + Math.cos(nutation) * my,
+      z: mz,
+      date: date,
+      coordinate_keywords: "ecliptic rectangular",
+      unit_keywords: vector.unit_keywords || ""
+    };
+  };
   var ConvertRectangularPlane = function ConvertRectangularPlane() {
     var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
         _ref2$position = _ref2.position,
@@ -766,18 +809,16 @@
   };
   var XYZtoRadecOfDate = function XYZtoRadecOfDate(parameter) {
     var date = parameter.date || new Date();
-    var spherical;
 
     if (parameter.coordinate_keywords && parameter.coordinate_keywords.match(/ecliptic/)) {
-      var rect = EclipticToEquatorialJ2000({
+      var rect = EclipticToEquatorialOfDate({
         date: date,
         ecliptic: parameter
       });
-      spherical = XYZtoRadec(rect);
-    } else {
-      spherical = XYZtoRadec(parameter);
+      return XYZtoRadec(rect);
     }
 
+    var spherical = XYZtoRadec(parameter);
     return Precession({
       ra: spherical.ra,
       dec: spherical.dec,
@@ -809,7 +850,13 @@
   var EclipticToEquatorial = function EclipticToEquatorial(parameter) {
     // ecliptic rectangular(x,y,z) to equatorial rectangular(x,y,z)
     var date = parameter.date;
+    var source = parameter.ecliptic;
     var ecliptic = geocentricEcliptic(parameter);
+
+    if (source.coordinate_keywords && source.coordinate_keywords.match(/j2000/i)) {
+      ecliptic = EclipticJ2000ToDate(ecliptic, date);
+    }
+
     var obliquity = Obliquity(parameter.date);
     var equatorial = rotateEclipticToEquatorial({
       ecliptic: ecliptic,
@@ -843,16 +890,12 @@
   };
   var EclipticToEquatorialOfDate = function EclipticToEquatorialOfDate(parameter) {
     var date = parameter.date;
-    var rectJ2000 = EclipticToEquatorialJ2000(parameter);
-    var spherical = XYZtoRadec(rectJ2000);
-    var precessed = Precession({
-      ra: spherical.ra,
-      dec: spherical.dec,
-      distance: spherical.distance,
-      from: J2000Epoch,
-      to: date
+    var ecliptic = EclipticJ2000ToDate(geocentricEcliptic(parameter), date);
+    var obliquity = Obliquity(date);
+    var rect = rotateEclipticToEquatorial({
+      ecliptic: ecliptic,
+      obliquity: obliquity
     });
-    var rect = RadecToXYZ(precessed);
     return {
       'x': rect.x,
       'y': rect.y,
@@ -873,7 +916,7 @@
     _defineProperty(this, "exec_vsop", function (date) {
       var target_data = _this.vsop_target;
       var time = new Time(date);
-      var jd = time.jd();
+      var jd = time.jd_tt();
       var t = (jd - 2451545.0) / 365250;
       var v = [0, 0, 0];
 
@@ -899,7 +942,7 @@
         y: v[1],
         z: v[2],
         "date": date,
-        "coordinate_keywords": "ecliptic rectangular",
+        "coordinate_keywords": "ecliptic rectangular j2000",
         "unit_keywords": "au"
       };
     });
@@ -3685,6 +3728,7 @@
   exports.Constant = Constant;
   exports.ConvertRectangularPlane = ConvertRectangularPlane;
   exports.Earth = Earth;
+  exports.EclipticJ2000ToDate = EclipticJ2000ToDate;
   exports.EclipticToEquatorial = EclipticToEquatorial;
   exports.EclipticToEquatorialJ2000 = EclipticToEquatorialJ2000;
   exports.EclipticToEquatorialOfDate = EclipticToEquatorialOfDate;

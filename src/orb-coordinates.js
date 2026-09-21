@@ -3,7 +3,8 @@
 
 import {Earth} from './orb-earth.js'
 import {Const} from './orb-core.js'
-import {MeanObliquity, Obliquity} from './orb-obliquity.js'
+import {Time} from './orb-time.js'
+import {MeanObliquity, Nutation, Obliquity} from './orb-obliquity.js'
 import {J2000Epoch, Precession} from './orb-precession.js'
 
 const cloneRectangular = (position = {}) => {
@@ -61,6 +62,60 @@ const rotateRectangularOnXAxis = (position, radians) => {
     x: source.x,
     y: (cos * source.y) - (sin * source.z),
     z: (sin * source.y) + (cos * source.z)
+  };
+}
+
+// Convert an ecliptic rectangular vector referred to the equinox of J2000.0
+// (as produced by VSOP87A and typical published osculating elements) to the
+// apparent ecliptic of date. The rotations follow the IAU 1976 precession
+// model used elsewhere in orb.js, followed by the library's nutation model.
+export const EclipticJ2000ToDate = (vector, date) => {
+  const rad = Const.RAD;
+  const time = new Time(date);
+  const t = (time.jd_tt() - 2451545.0) / 36525;
+  const arcsecond = rad / 3600;
+  const zeta = (2306.2181 * t + 0.30188 * t * t + 0.017998 * t * t * t) * arcsecond;
+  const z = (2306.2181 * t + 1.09468 * t * t + 0.018203 * t * t * t) * arcsecond;
+  const theta = (2004.3109 * t - 0.42665 * t * t - 0.041833 * t * t * t) * arcsecond;
+
+  // J2000 ecliptic -> J2000 equatorial.
+  const obliquityJ2000 = (23 + 26.0 / 60 + 21.448 / 3600) * rad;
+  const ex = vector.x;
+  const ey = Math.cos(obliquityJ2000) * vector.y - Math.sin(obliquityJ2000) * vector.z;
+  const ez = Math.sin(obliquityJ2000) * vector.y + Math.cos(obliquityJ2000) * vector.z;
+
+  // J2000 equator -> mean equator and equinox of date.
+  const cosZeta = Math.cos(zeta);
+  const sinZeta = Math.sin(zeta);
+  const cosZ = Math.cos(z);
+  const sinZ = Math.sin(z);
+  const cosTheta = Math.cos(theta);
+  const sinTheta = Math.sin(theta);
+  const px = (cosZ * cosTheta * cosZeta - sinZ * sinZeta) * ex
+    + (-cosZ * cosTheta * sinZeta - sinZ * cosZeta) * ey
+    + (-cosZ * sinTheta) * ez;
+  const py = (sinZ * cosTheta * cosZeta + cosZ * sinZeta) * ex
+    + (-sinZ * cosTheta * sinZeta + cosZ * cosZeta) * ey
+    + (-sinZ * sinTheta) * ez;
+  const pz = (sinTheta * cosZeta) * ex
+    + (-sinTheta * sinZeta) * ey
+    + cosTheta * ez;
+
+  // Mean equator of date -> mean ecliptic of date.
+  const meanObliquity = MeanObliquity(date) * rad;
+  const mx = px;
+  const my = Math.cos(meanObliquity) * py + Math.sin(meanObliquity) * pz;
+  const mz = -Math.sin(meanObliquity) * py + Math.cos(meanObliquity) * pz;
+
+  // Mean equinox -> true equinox of date.
+  const nutation = Nutation(date) * rad;
+  return {
+    x: Math.cos(nutation) * mx - Math.sin(nutation) * my,
+    y: Math.sin(nutation) * mx + Math.cos(nutation) * my,
+    z: mz,
+    date: date,
+    coordinate_keywords: "ecliptic rectangular",
+    unit_keywords: vector.unit_keywords || ""
   };
 }
 
@@ -176,15 +231,12 @@ export const XYZtoRadec = function (parameter) {
 
 export const XYZtoRadecOfDate = function (parameter) {
   const date = parameter.date || new Date();
-  let spherical;
-
   if (parameter.coordinate_keywords && parameter.coordinate_keywords.match(/ecliptic/)) {
-    const rect = EclipticToEquatorialJ2000({ date: date, ecliptic: parameter });
-    spherical = XYZtoRadec(rect);
-  } else {
-    spherical = XYZtoRadec(parameter);
+    const rect = EclipticToEquatorialOfDate({ date: date, ecliptic: parameter });
+    return XYZtoRadec(rect);
   }
 
+  const spherical = XYZtoRadec(parameter);
   return Precession({
     ra: spherical.ra,
     dec: spherical.dec,
@@ -218,7 +270,11 @@ export const EquatorialToEcliptic = function (parameter) {
 export const EclipticToEquatorial = function (parameter) {
   // ecliptic rectangular(x,y,z) to equatorial rectangular(x,y,z)
   const date = parameter.date
-  const ecliptic = geocentricEcliptic(parameter);
+  const source = parameter.ecliptic;
+  let ecliptic = geocentricEcliptic(parameter);
+  if(source.coordinate_keywords && source.coordinate_keywords.match(/j2000/i)){
+    ecliptic = EclipticJ2000ToDate(ecliptic, date);
+  }
   const obliquity = Obliquity(parameter.date)
   const equatorial = rotateEclipticToEquatorial({ ecliptic: ecliptic, obliquity: obliquity });
   return {
@@ -248,16 +304,9 @@ export const EclipticToEquatorialJ2000 = function (parameter) {
 
 export const EclipticToEquatorialOfDate = function (parameter) {
   const date = parameter.date;
-  const rectJ2000 = EclipticToEquatorialJ2000(parameter);
-  const spherical = XYZtoRadec(rectJ2000);
-  const precessed = Precession({
-    ra: spherical.ra,
-    dec: spherical.dec,
-    distance: spherical.distance,
-    from: J2000Epoch,
-    to: date
-  });
-  const rect = RadecToXYZ(precessed);
+  const ecliptic = EclipticJ2000ToDate(geocentricEcliptic(parameter), date);
+  const obliquity = Obliquity(date);
+  const rect = rotateEclipticToEquatorial({ ecliptic: ecliptic, obliquity: obliquity });
   return {
     'x': rect.x,
     'y': rect.y,
