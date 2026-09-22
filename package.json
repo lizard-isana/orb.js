@@ -24,7 +24,8 @@
   },
   "scripts": {
     "test": "node test/run.js",
-    "build": "rollup -c rollup.config.js"
+    "build": "rollup -c rollup.config.js",
+    "bench": "node tools/bench.mjs"
   },
   "repository": {
     "type": "git",
