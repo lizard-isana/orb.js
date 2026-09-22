@@ -57,6 +57,8 @@ test('package: exact tarball supports CJS, ESM, UMD, and full VSOP subpaths', ()
     assert.ok(files.has('src/vsop87a/package.json'));
     assert.ok(![...files].some((filename) => filename.startsWith('test/')));
     assert.ok(![...files].some((filename) => filename.startsWith('.ai/')));
+    assert.ok(![...files].some((filename) => filename.startsWith('tools/')));
+    assert.ok(![...files].some((filename) => filename.startsWith('src/data/')));
 
     const consumer = path.join(temporary, 'consumer');
     fs.mkdirSync(consumer);

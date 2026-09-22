@@ -5,7 +5,8 @@
   "main": "dist/orb.js",
   "files": [
     "dist",
-    "src",
+    "src/*.js",
+    "src/vsop87a",
     "readme.md",
     "usage.en.md",
     "usage.ja.md",
@@ -25,7 +26,9 @@
   "scripts": {
     "test": "node test/run.js",
     "build": "rollup -c rollup.config.js",
-    "bench": "node tools/bench.mjs"
+    "bench": "node tools/bench.mjs",
+    "vsop:check": "node tools/vsop-compile.mjs --check",
+    "vsop:write": "node tools/vsop-compile.mjs --write"
   },
   "repository": {
     "type": "git",
