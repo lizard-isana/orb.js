@@ -13,7 +13,7 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/orb.esm.js",
+      "import": "./dist/orb.esm.mjs",
       "default": "./dist/orb.js"
     },
     "./dist/*": "./dist/*",
@@ -36,6 +36,9 @@
     "url": "https://github.com/lizard-isana/orb.js/issues"
   },
   "homepage": "https://github.com/lizard-isana/orb.js",
+  "engines": {
+    "node": ">=18"
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

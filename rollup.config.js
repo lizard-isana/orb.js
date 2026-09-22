@@ -9,6 +9,11 @@ export default {
       format: "es",
       sourcemap: true,
     },
+    {
+      file: "dist/orb.esm.mjs",
+      format: "es",
+      sourcemap: true,
+    },
     { 
       name:"Orb",
       file: "dist/orb.js",

@@ -8,5 +8,6 @@ require('./suites/kepler.test.js');
 require('./suites/properties.test.js');
 require('./suites/sgp4.test.js');
 require('./suites/observer.test.js');
+require('./suites/package.test.js');
 
 finish();

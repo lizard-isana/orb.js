@@ -30,6 +30,13 @@ Set `publishConfig.access` to `public` so a scoped release cannot accidentally
 use npm's private-package default. Pin `publishConfig.registry` to the public
 npm registry.
 
+The package supports Node 18 and later. The conditional ESM entry points to the
+generated `dist/orb.esm.mjs`, while the existing `dist/orb.esm.js` remains in
+the package for browser and direct-path compatibility. Optional VSOP87A source
+modules have a nested `type: module` package boundary so their interpretation
+does not depend on newer Node syntax detection. The UMD/CommonJS entry remains
+`dist/orb.js`.
+
 ## Release policy
 
 - Keep the package version at `3.0.0` while v3.1 work is in progress.
