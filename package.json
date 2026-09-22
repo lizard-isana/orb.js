@@ -23,7 +23,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "test": "node test/smoke.js",
+    "test": "node test/run.js",
     "build": "rollup -c rollup.config.js"
   },
   "repository": {
