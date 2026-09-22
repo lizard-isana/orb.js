@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "source": "NASA/JPL Horizons API",
+  "sourceVersion": "API 1.2; DE441 for Earth, Moon, and Sun; mar099 for Mars; generated 2026-09-21 22:33:04-05 Pasadena time",
+  "procedure": "Observer queries used CENTER=coord@399, COORD_TYPE=GEODETIC, SITE_COORD=139.741,35.658,0.025, START_TIME=2026-07-18 00:00, STOP_TIME=2026-07-19 00:00, STEP_SIZE=6 h, TIME_TYPE=UT, QUANTITIES=2,4,20, REF_SYSTEM=ICRF, ANG_FORMAT=DEG, APPARENT=AIRLESS, RANGE_UNITS=AU, and EXTRA_PREC=YES. Targets were Moon 301, Sun 10, and Mars 499.",
+  "instant": "2026-07-18T00:00:00Z through 2026-07-19T00:00:00Z at six-hour intervals",
+  "timeScale": "UTC output converted by Horizons from its internal dynamical time",
+  "frame": "Airless apparent Earth equator and equinox of date plus local topocentric horizontal coordinates, EOP-corrected IAU 1976/1980 as defined by Horizons",
+  "center": "WGS-84 geodetic site at east longitude 139.741 degrees, latitude 35.658 degrees, altitude 0.025 km",
+  "units": {
+    "rightAscension": "degrees",
+    "declination": "degrees",
+    "azimuth": "degrees clockwise from north",
+    "elevation": "degrees",
+    "range": "au",
+    "legacyRange": "km"
+  },
+  "accuracy": "Horizons extra-precision output is the independent reference. legacyBaseline records orb.js v3 at f598300 before modern observer work; it is a change detector, not an accuracy oracle. modernTarget is the eventual M3 model goal, while legacyEnvelope only bounds the current low-precision models.",
+  "tolerance": {
+    "baselineAngleDeg": 1e-9,
+    "baselineRangeKm": 0.000001,
+    "bodies": {
+      "moon": {
+        "legacySkyArcsec": 15,
+        "legacyRangeKm": 50,
+        "modernSkyArcsec": 15,
+        "modernRangeKm": 50
+      },
+      "sun": {
+        "legacySkyArcsec": 35,
+        "legacyRangeKm": 5000,
+        "modernSkyArcsec": 1,
+        "modernRangeKm": 100
+      },
+      "mars": {
+        "legacySkyArcsec": 45,
+        "legacyRangeKm": 75000,
+        "modernSkyArcsec": 1,
+        "modernRangeKm": 100
+      }
+    }
+  },
+  "site": {
+    "latitudeDeg": 35.658,
+    "longitudeDeg": 139.741,
+    "altitudeKm": 0.025
+  },
+  "bodies": {
+    "moon": [
+      {"utc": "2026-07-18T00:00:00Z", "raDeg": 165.423160268, "decDeg": 4.665362159, "azDeg": 86.287282670, "elDeg": 2.830527686, "rangeAu": 0.00251170278388, "legacyBaseline": {"azDeg": 86.28805597209552, "elDeg": 2.831165781577035, "rangeKm": 375717.3439403862}},
+      {"utc": "2026-07-18T06:00:00Z", "raDeg": 167.688729938, "decDeg": 3.118631144, "azDeg": 176.512941529, "elDeg": 57.414144145, "rangeAu": 0.00248826202848, "legacyBaseline": {"azDeg": 176.51519560530022, "elDeg": 57.41402389655159, "rangeKm": 372209.6250436722}},
+      {"utc": "2026-07-18T12:00:00Z", "raDeg": 169.876940752, "decDeg": 1.492171722, "azDeg": 268.984296894, "elDeg": 3.974817427, "rangeAu": 0.00253126073644, "legacyBaseline": {"azDeg": 268.98493479740716, "elDeg": 3.973768803517281, "rangeKm": 378640.4139807617}},
+      {"utc": "2026-07-18T18:00:00Z", "raDeg": 173.527125101, "decDeg": -0.085041910, "azDeg": 347.705201890, "elDeg": -53.796385108, "rangeAu": 0.00257917480393, "legacyBaseline": {"azDeg": 347.70715000209816, "elDeg": -53.79659871031982, "rangeKm": 385805.7847570968}},
+      {"utc": "2026-07-19T00:00:00Z", "raDeg": 177.328839750, "decDeg": -1.646624903, "azDeg": 85.015043733, "elDeg": -9.710551419, "rangeAu": 0.00256196526024, "legacyBaseline": {"azDeg": 85.01573110494675, "elDeg": -9.709524290780521, "rangeKm": 383229.6654649451}}
+    ],
+    "sun": [
+      {"utc": "2026-07-18T00:00:00Z", "raDeg": 117.382792319, "decDeg": 21.053716469, "azDeg": 100.340555489, "elDeg": 50.760797823, "rangeAu": 1.01626372856372, "legacyBaseline": {"azDeg": 100.3364639604417, "elDeg": 50.75418340138617, "rangeKm": 152034312.85026175}},
+      {"utc": "2026-07-18T06:00:00Z", "raDeg": 117.631124606, "decDeg": 21.009854469, "azDeg": 264.126084486, "elDeg": 45.625530722, "rangeAu": 1.01624996404144, "legacyBaseline": {"azDeg": 264.1196251772564, "elDeg": 45.630912009457475, "rangeKm": 152032432.5040588}},
+      {"utc": "2026-07-18T12:00:00Z", "raDeg": 117.882330120, "decDeg": 20.964651629, "azDeg": 318.193722701, "elDeg": -20.903645949, "rangeAu": 1.01627904726210, "legacyBaseline": {"azDeg": 318.18692741419204, "elDeg": -20.90059955019686, "rangeKm": 152036970.5250493}},
+      {"utc": "2026-07-18T18:00:00Z", "raDeg": 118.136296720, "decDeg": 20.920090357, "azDeg": 46.810600551, "elDeg": -17.340972282, "rangeAu": 1.01625954588425, "legacyBaseline": {"azDeg": 46.805813237752886, "elDeg": -17.346207452978376, "rangeKm": 152034248.10790452}},
+      {"utc": "2026-07-19T00:00:00Z", "raDeg": 118.387100062, "decDeg": 20.876129461, "azDeg": 100.566249466, "elDeg": 50.653965187, "rangeAu": 1.01619647815926, "legacyBaseline": {"azDeg": 100.56231994965404, "elDeg": 50.64766741369706, "rangeKm": 152025014.95386726}}
+    ],
+    "mars": [
+      {"utc": "2026-07-18T00:00:00Z", "raDeg": 72.111167919, "decDeg": 22.327767718, "azDeg": 193.633575018, "elDeg": 76.335163817, "rangeAu": 2.05097394413151, "legacyBaseline": {"azDeg": 193.6027499667053, "elDeg": 76.33779376446857, "rangeKm": 306891572.54753387}},
+      {"utc": "2026-07-18T06:00:00Z", "raDeg": 72.295382047, "decDeg": 22.351608289, "azDeg": 290.330204345, "elDeg": 10.115729408, "rangeAu": 2.05011571768772, "legacyBaseline": {"azDeg": 290.326632271812, "elDeg": 10.12265031754782, "rangeKm": 306763117.8594596}},
+      {"utc": "2026-07-18T12:00:00Z", "raDeg": 72.481683230, "decDeg": 22.375220311, "azDeg": 3.891416223, "elDeg": -31.868170692, "rangeAu": 2.04925128882763, "legacyBaseline": {"azDeg": 3.882277903973943, "elDeg": -31.867591199853493, "rangeKm": 306633735.29830724}},
+      {"utc": "2026-07-18T18:00:00Z", "raDeg": 72.667994169, "decDeg": 22.399355614, "azDeg": 73.377645259, "elDeg": 15.649121816, "rangeAu": 2.04832051887431, "legacyBaseline": {"azDeg": 73.37247671560618, "elDeg": 15.64330124065767, "rangeKm": 306494427.1953709}},
+      {"utc": "2026-07-19T00:00:00Z", "raDeg": 72.852181054, "decDeg": 22.423282392, "azDeg": 194.657185106, "elDeg": 76.379880726, "rangeAu": 2.04739156259839, "legacyBaseline": {"azDeg": 194.6272112743151, "elDeg": 76.38252300892643, "rangeKm": 306355389.18523955}}
+    ]
+  }
+}

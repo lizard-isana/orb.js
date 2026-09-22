@@ -4,8 +4,15 @@ const assert = require('assert');
 const Orb = require('../../dist/orb.js');
 const { test } = require('../helpers/harness.js');
 const { ISS_TLE } = require('../helpers/sgp4-fixtures.js');
+const { loadReferenceFixture } = require('../helpers/reference-fixture.js');
 
 const observer = { latitude: 35.0, longitude: 139.0, altitude: 0 };
+const HORIZONS = loadReferenceFixture('horizons-topocentric-tokyo-2026-07-18.json');
+const AU_KM = 149597870.7;
+
+function angleDifference(actual, expected) {
+  return ((actual - expected + 540) % 360) - 180;
+}
 
 test('Observation.azel accepts a plain ra/dec object', () => {
   const obs = new Orb.Observation({ observer, target: { ra: 6.45, dec: -16.72 } });
@@ -47,3 +54,52 @@ test('Observation.azel works for a satellite xyz target', () => {
   assert.ok(Number.isFinite(a.azimuth) && Number.isFinite(a.elevation));
   assert.ok(a.distance > 400 && a.distance < 15000, 'range=' + a.distance);
 });
+
+const horizonsBodies = {
+  moon: () => new Orb.Luna(),
+  sun: () => new Orb.Sun(),
+  mars: () => new Orb.Mars()
+};
+
+for (const [name, rows] of Object.entries(HORIZONS.bodies)) {
+  test('Observation legacy baseline and Horizons envelope: ' + name, () => {
+    const site = {
+      latitude: HORIZONS.site.latitudeDeg,
+      longitude: HORIZONS.site.longitudeDeg,
+      altitude: HORIZONS.site.altitudeKm
+    };
+    const observation = new Orb.Observation({ observer: site, target: horizonsBodies[name]() });
+    const tolerance = HORIZONS.tolerance.bodies[name];
+
+    for (const row of rows) {
+      const actual = observation.azel(new Date(row.utc));
+      const baseline = row.legacyBaseline;
+      assert.ok(
+        Math.abs(angleDifference(actual.azimuth, baseline.azDeg)) < HORIZONS.tolerance.baselineAngleDeg,
+        row.utc + ' legacy azimuth changed'
+      );
+      assert.ok(
+        Math.abs(actual.elevation - baseline.elDeg) < HORIZONS.tolerance.baselineAngleDeg,
+        row.utc + ' legacy elevation changed'
+      );
+      assert.ok(
+        Math.abs(actual.distance - baseline.rangeKm) < HORIZONS.tolerance.baselineRangeKm,
+        row.utc + ' legacy range changed'
+      );
+
+      const azResidual = angleDifference(actual.azimuth, row.azDeg)
+        * Math.cos(row.elDeg * Math.PI / 180) * 3600;
+      const elResidual = (actual.elevation - row.elDeg) * 3600;
+      const skyResidual = Math.hypot(azResidual, elResidual);
+      const rangeResidual = Math.abs(actual.distance - row.rangeAu * AU_KM);
+      assert.ok(
+        skyResidual < tolerance.legacySkyArcsec,
+        row.utc + ' Horizons sky residual=' + skyResidual + ' arcsec'
+      );
+      assert.ok(
+        rangeResidual < tolerance.legacyRangeKm,
+        row.utc + ' Horizons range residual=' + rangeResidual + ' km'
+      );
+    }
+  });
+}

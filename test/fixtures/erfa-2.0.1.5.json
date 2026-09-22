@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "source": "ERFA, derived from the IAU SOFA algorithms",
+  "sourceVersion": "ERFA 2.0.1.5",
+  "procedure": "UTC instants were converted to two-part TT Julian dates, then evaluated with eraNut00b, eraObl06, eraPmat06, and eraPnm06a. Matrix rows are stored in row-major order as selected independent reference components.",
+  "instant": "Four UTC instants from 1987 through 2050; see cases",
+  "timeScale": "UTC input converted to TT before evaluating ERFA precession-nutation models",
+  "frame": "IAU 2006 precession with IAU 2000A or 2000B nutation, as named by each stored quantity",
+  "center": "Earth",
+  "units": {
+    "angles": "radians",
+    "matrix": "dimensionless",
+    "legacyResidual": "arcseconds"
+  },
+  "accuracy": "ERFA double-precision reference values. v3 intentionally remains on IAU 1976 mean obliquity and a four-term nutation approximation during M0, so its residual is bounded separately and is not the modern-model target.",
+  "tolerance": {
+    "modernAngleRad": 1e-14,
+    "modernMatrixComponent": 1e-13,
+    "legacyMeanObliquityArcsec": 0.1,
+    "legacyNutationLongitudeArcsec": 2.5,
+    "legacyNutationObliquityArcsec": 0.1
+  },
+  "cases": [
+    {
+      "utc": "1987-04-10T19:21:00Z",
+      "nut00b": {
+        "dpsi": -0.000018715898774942653,
+        "deps": 0.000045903688111084264
+      },
+      "obl06": 0.4091215008725581,
+      "pmat06Row0": [0.9999951861163564, 0.0028457172109116807, 0.00123678521557509]
+    },
+    {
+      "utc": "2000-01-01T12:00:00Z",
+      "nut00b": {
+        "dpsi": -0.00006754258698513216,
+        "deps": -0.00002797099730557557
+      },
+      "obl06": 0.40909260059596453
+    },
+    {
+      "utc": "2026-07-18T00:00:00Z",
+      "nut00b": {
+        "dpsi": 0.000044524281448767655,
+        "deps": 0.000037808037317840246
+      },
+      "obl06": 0.40903233129840494,
+      "pmat06Row0": [0.9999790602199642, -0.005935419416990023, -0.0025787434811352585],
+      "pnm06aRow2": [0.002596676636173666, 0.00002998199346027075, 0.9999966281800791]
+    },
+    {
+      "utc": "2050-01-01T00:00:00Z",
+      "nut00b": {
+        "dpsi": 0.00007355280242925511,
+        "deps": -0.000025841232385596943
+      },
+      "obl06": 0.4089790660556442,
+      "pmat06Row0": [0.9999256843032829, -0.01118167293109456, -0.004857577696102033],
+      "pnm06aRow2": [0.004886533933527286, -0.000053418453088927016, 0.9999880593950037]
+    }
+  ]
+}
