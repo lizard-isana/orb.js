@@ -66,3 +66,11 @@ export {
   toHorizontal,
   fromHorizontal
 } from './state.js';
+export {
+  adaptLegacyBody,
+  adaptLegacyPlanet,
+  adaptLegacyMoon,
+  adaptLegacySun,
+  adaptLegacyKepler,
+  adaptLegacySatellite
+} from './adapters.js';

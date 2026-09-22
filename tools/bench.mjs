@@ -7,6 +7,7 @@
 
 import * as Orb from '../dist/orb.esm.mjs';
 import { MARS_FULL_COEF } from '../src/vsop87a/mars.js';
+import { GM, propagateKepler } from '../src/kepler/index.js';
 
 const DEFAULT_DURATION_MS = 300;
 const DATE = new Date('2026-07-18T12:00:00Z');
@@ -16,6 +17,8 @@ const ISS_TLE = {
   first_line: '1 25544U 98067A   20014.52632156  .00016717  00000-0  10270-3 0  9015',
   second_line: '2 25544  51.6423  33.7380 0004871 130.9389 229.2183 15.49556564  8038'
 };
+const VALLADO_R0 = [1131.340, -2282.343, 6672.423];
+const VALLADO_V0 = [-5.64305, 4.30333, 2.42879];
 
 function parseDuration(args) {
   const inline = args.find((argument) => argument.startsWith('--duration='));
@@ -95,6 +98,11 @@ const cases = [
   ['Mars: full VSOP87A position', () => marsFull.xyz(DATE).x, 'Mars: short VSOP87A position'],
   ['Kepler: elliptic propagation', () => elliptic.xyz(DATE).x],
   ['Kepler: hyperbolic propagation', () => hyperbolic.xyz(DATE).x],
+  [
+    'Kepler: structured propagation',
+    () => propagateKepler(VALLADO_R0, VALLADO_V0, 2400, GM.earth).r[0],
+    'Kepler: elliptic propagation'
+  ],
   ['SGP4: ISS TEME propagation', () => satellite.xyz(SGP4_DATE).x],
   ['observer: Moon azimuth/elevation', () => moonObservation.azel(DATE).elevation]
 ];

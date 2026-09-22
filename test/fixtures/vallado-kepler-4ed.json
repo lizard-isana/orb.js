@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "source": "David A. Vallado, Fundamentals of Astrodynamics and Applications",
+  "sourceVersion": "Fourth edition, example 2-4",
+  "procedure": "The published initial Cartesian state was propagated by 40 minutes with the universal-variable formulation. The stored final state is the worked-example result, also cross-checked independently in this suite with direct RK4 integration.",
+  "instant": "Relative propagation from the example epoch by 2400 seconds",
+  "timeScale": "Elapsed SI seconds; no civil-time scale involved",
+  "frame": "Example inertial Cartesian frame",
+  "center": "Earth",
+  "units": {
+    "position": "km",
+    "velocity": "km/s",
+    "elapsedTime": "s",
+    "gm": "km^3/s^2"
+  },
+  "accuracy": "Published worked-example precision",
+  "tolerance": {
+    "positionKm": 0.001,
+    "velocityKmPerSecond": 0.00001
+  },
+  "gm": 398600.4418,
+  "initial": {
+    "r": [1131.340, -2282.343, 6672.423],
+    "v": [-5.64305, 4.30333, 2.42879]
+  },
+  "elapsedSeconds": 2400,
+  "expected": {
+    "r": [-4219.7527, 4363.0292, -3958.7666],
+    "v": [3.689866, -1.916735, -6.112511]
+  }
+}

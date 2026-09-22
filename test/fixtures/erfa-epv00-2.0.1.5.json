@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "source": "ERFA, derived from the IAU SOFA epv00 algorithm",
+  "sourceVersion": "ERFA 2.0.1.5",
+  "procedure": "The UTC instant was converted to a two-part TT Julian date and evaluated with eraEpv00. The stored heliocentric Earth position and velocity are the ERFA ph and vh outputs.",
+  "instant": "2026-07-18T00:00:00Z",
+  "timeScale": "UTC input converted to TT; EPV00 uses TDB approximated by TT",
+  "frame": "BCRS-compatible equatorial J2000 orientation used by ERFA EPV00",
+  "center": "Sun",
+  "units": {
+    "position": "au",
+    "velocity": "au/day"
+  },
+  "accuracy": "Values rounded to ten decimal places from ERFA double-precision output",
+  "tolerance": {
+    "componentAu": 1e-9,
+    "componentAuPerDay": 1e-9,
+    "analyticVelocityKmPerSecond": 1e-6
+  },
+  "cases": [
+    {
+      "utc": "2026-07-18T00:00:00Z",
+      "positionAu": [0.4303010348, -0.8447527032, -0.3661869687],
+      "velocityAuPerDay": [0.0153099208, 0.0066301118, 0.0028746475]
+    }
+  ]
+}

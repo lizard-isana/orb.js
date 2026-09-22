@@ -33,7 +33,7 @@ test('package: metadata and local CommonJS entry are stable', () => {
   assert.strictEqual(Orb.makeState, undefined);
 });
 
-test('package: exact tarball supports CJS, ESM, UMD, and full VSOP subpaths', () => {
+test('package: exact tarball supports legacy entries and optional model subpaths', () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'orb-package-test-'));
   const npmCache = path.join(temporary, 'npm-cache');
   const npmEnvironment = {
@@ -60,6 +60,9 @@ test('package: exact tarball supports CJS, ESM, UMD, and full VSOP subpaths', ()
     assert.ok(files.has('src/time/index.js'));
     assert.ok(files.has('src/frames/index.js'));
     assert.ok(files.has('src/geodesy/index.js'));
+    assert.ok(files.has('src/kepler/index.js'));
+    assert.ok(files.has('src/models/earth-epv00/index.js'));
+    assert.ok(files.has('src/models/earth-epv00/LICENSE-ERFA'));
     assert.ok(files.has('src/vocab/index.js'));
     assert.ok(![...files].some((filename) => filename.startsWith('test/')));
     assert.ok(![...files].some((filename) => filename.startsWith('.ai/')));
@@ -83,6 +86,10 @@ test('package: exact tarball supports CJS, ESM, UMD, and full VSOP subpaths', ()
       'function'
     );
     assert.strictEqual(
+      runNode(consumer, ['-e', `Object.freeze(Math); require('${PACKAGE_NAME}'); console.log('ok')`]),
+      'ok'
+    );
+    assert.strictEqual(
       runNode(consumer, [
         '--input-type=module',
         '-e',
@@ -97,6 +104,22 @@ test('package: exact tarball supports CJS, ESM, UMD, and full VSOP subpaths', ()
         `import { SATURN_FULL_COEF } from '${PACKAGE_NAME}/vsop87a/saturn'; console.log(Array.isArray(SATURN_FULL_COEF))`
       ]),
       'true'
+    );
+    assert.strictEqual(
+      runNode(consumer, [
+        '--input-type=module',
+        '-e',
+        `import { GM, propagateKepler } from '${PACKAGE_NAME}/kepler'; console.log(propagateKepler([7000,0,0],[0,7.5,0],0,GM.earth).r[0])`
+      ]),
+      '7000'
+    );
+    assert.strictEqual(
+      runNode(consumer, [
+        '--input-type=module',
+        '-e',
+        `import { earthEpv00 } from '${PACKAGE_NAME}/models/earth-epv00'; import { Instant } from '${PACKAGE_NAME}/time'; console.log(earthEpv00.state(Instant.fromISO('2026-07-18T00:00:00Z')).frame)`
+      ]),
+      'equatorial-j2000'
     );
     assert.strictEqual(
       runNode(consumer, [
@@ -132,8 +155,11 @@ test('package: exact tarball supports CJS, ESM, UMD, and full VSOP subpaths', ()
     );
 
     const umdPath = path.join(consumer, 'node_modules', '@lizard-isana', 'orb', 'dist', 'orb.min.js');
+    const umdSource = fs.readFileSync(umdPath, 'utf8');
     const browserContext = {};
-    vm.runInNewContext(fs.readFileSync(umdPath, 'utf8'), browserContext, { filename: umdPath });
+    assert.ok(!umdSource.includes('earthEpv00'));
+    assert.ok(!umdSource.includes('erfa-epv00'));
+    vm.runInNewContext(umdSource, browserContext, { filename: umdPath });
     assert.strictEqual(typeof browserContext.Orb.Time, 'function');
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });

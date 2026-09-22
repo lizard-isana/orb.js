@@ -106,6 +106,16 @@
     return str.slice(0 - length);
   };
 
+  function _typeof(obj) {
+    "@babel/helpers - typeof";
+
+    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
+      return typeof obj;
+    } : function (obj) {
+      return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    }, _typeof(obj);
+  }
+
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -144,6 +154,39 @@
     }
 
     return obj;
+  }
+
+  function _toConsumableArray(arr) {
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
+  }
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) return _arrayLikeToArray(arr);
+  }
+
+  function _iterableToArray(iter) {
+    if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
+  }
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
   var ObliquityCoef = function ObliquityCoef(date) {
@@ -1415,38 +1458,449 @@
     B: [[0, 0, 0, 1, 5128122], [0, 0, 1, 1, 280602], [0, 0, 1, -1, 277693], [2, 0, 0, -1, 173237], [2, 0, -1, 1, 55413], [2, 0, -1, -1, 46271], [2, 0, 0, 1, 32573], [0, 0, 2, 1, 17198], [2, 0, 1, -1, 9266], [0, 0, 2, -1, 8822], [2, -1, 0, -1, 8216], [2, 0, -2, -1, 4324], [2, 0, 1, 1, 4200], [2, 1, 0, -1, -3359], [2, -1, -1, 1, 2463], [2, -1, 0, 1, 2211], [2, -1, -1, -1, 2065], [0, 1, -1, -1, -1870], [4, 0, -1, -1, 1828], [0, 1, 0, 1, -1794], [0, 0, 0, 3, -1749], [0, 1, -1, 1, -1565], [1, 0, 0, 1, -1491], [0, 1, 1, 1, -1475], [0, 1, 1, -1, -1410], [0, 1, 0, -1, -1344], [1, 0, 0, -1, -1335], [0, 0, 3, 1, 1107], [4, 0, 0, -1, 1021], [4, 0, -1, 1, 833], [0, 0, 1, -3, 777], [4, 0, -2, 1, 671], [2, 0, 0, -3, 607], [2, 0, 2, -1, 596], [2, -1, 1, -1, 491], [2, 0, -2, 1, -451], [0, 0, 3, -1, 439], [2, 0, 2, 1, 422], [2, 0, -3, -1, 421], [2, 1, -1, 1, -366], [2, 1, 0, 1, -351], [4, 0, 0, 1, 331], [2, -1, 1, 1, 315], [2, -2, 0, -1, 302], [0, 0, 1, 3, -283], [2, 1, 1, -1, -229], [1, 1, 0, -1, 223], [1, 1, 0, 1, 223], [0, 1, -2, -1, -220], [2, 1, -1, -1, -220], [1, 0, 1, 1, -185], [2, -1, -2, -1, 181], [0, 1, 2, 1, -177], [4, 0, -2, -1, 176], [4, -1, -1, -1, 166], [1, 0, 1, -1, -164], [4, 0, 1, -1, 132], [1, 0, -1, -1, -119], [4, -1, 0, -1, 115], [2, -2, 0, 1, 107]]
   };
 
+  function requireVector$1(value) {
+    var label = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'vector';
+    if (!value || value.length !== 3) throw new TypeError("".concat(label, ": expected a 3-vector"));
+
+    for (var index = 0; index < 3; index++) {
+      if (!Number.isFinite(value[index])) throw new TypeError("".concat(label, ": components must be finite"));
+    }
+
+    return value;
+  }
+
+  function requireMatrix(value) {
+    var label = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'matrix';
+    if (!value || value.length !== 9) throw new TypeError("".concat(label, ": expected a 3x3 matrix"));
+
+    for (var index = 0; index < 9; index++) {
+      if (!Number.isFinite(value[index])) throw new TypeError("".concat(label, ": components must be finite"));
+    }
+
+    return value;
+  }
+  function add(a, b) {
+    requireVector$1(a, 'add: a');
+    requireVector$1(b, 'add: b');
+    return Float64Array.of(a[0] + b[0], a[1] + b[1], a[2] + b[2]);
+  }
+  function scale(a, scalar) {
+    requireVector$1(a, 'scale: vector');
+    if (!Number.isFinite(scalar)) throw new TypeError('scale: scalar must be finite');
+    return Float64Array.of(a[0] * scalar, a[1] * scalar, a[2] * scalar);
+  }
+  function dot(a, b) {
+    requireVector$1(a, 'dot: a');
+    requireVector$1(b, 'dot: b');
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  }
+  function norm(a) {
+    requireVector$1(a, 'norm: vector');
+    return Math.hypot(a[0], a[1], a[2]);
+  }
+  function matrixVector(matrix, vector) {
+    requireMatrix(matrix, 'matrixVector: matrix');
+    requireVector$1(vector, 'matrixVector: vector');
+    return Float64Array.of(matrix[0] * vector[0] + matrix[1] * vector[1] + matrix[2] * vector[2], matrix[3] * vector[0] + matrix[4] * vector[1] + matrix[5] * vector[2], matrix[6] * vector[0] + matrix[7] * vector[1] + matrix[8] * vector[2]);
+  }
+  function rotationX(angle) {
+    if (!Number.isFinite(angle)) throw new TypeError('rotationX: angle must be finite');
+    var cosine = Math.cos(angle);
+    var sine = Math.sin(angle);
+    return Float64Array.of(1, 0, 0, 0, cosine, sine, 0, -sine, cosine);
+  }
+  function rotationZ(angle) {
+    if (!Number.isFinite(angle)) throw new TypeError('rotationZ: angle must be finite');
+    var cosine = Math.cos(angle);
+    var sine = Math.sin(angle);
+    return Float64Array.of(cosine, sine, 0, -sine, cosine, 0, 0, 0, 1);
+  }
+  function rotateX(vector, angle) {
+    return matrixVector(rotationX(angle), vector);
+  }
+  function rotateZ(vector, angle) {
+    return matrixVector(rotationZ(angle), vector);
+  }
+
+  Object.freeze({
+    sun: 1.32712440018e11,
+    earth: 398600.4418,
+    moon: 4902.800066
+  });
+  var DEFAULT_MAX_ITERATIONS = 100;
+  var DEFAULT_TOLERANCE = 1e-12;
+
+  function requireFinite(value, label) {
+    if (!Number.isFinite(value)) throw new TypeError("".concat(label, " must be finite"));
+    return value;
+  }
+
+  function requirePositive(value, label) {
+    requireFinite(value, label);
+    if (value <= 0) throw new RangeError("".concat(label, " must be greater than zero"));
+    return value;
+  }
+
+  function requireVector(value, label) {
+    if (!value || value.length !== 3) throw new TypeError("".concat(label, " must be a 3-vector"));
+    var vector = Float64Array.from(value);
+
+    for (var index = 0; index < 3; index++) {
+      requireFinite(vector[index], "".concat(label, "[").concat(index, "]"));
+    }
+
+    return vector;
+  }
+
+  function stumpffC(z) {
+    requireFinite(z, 'stumpffC: z');
+
+    if (Math.abs(z) <= 0.1) {
+      var term = 0.5;
+      var sum = term;
+
+      for (var k = 1; k < 16; k++) {
+        term *= -z / ((2 * k + 1) * (2 * k + 2));
+        sum += term;
+        if (Math.abs(term) <= Number.EPSILON * Math.abs(sum)) break;
+      }
+
+      return sum;
+    }
+
+    if (z > 0) return (1 - Math.cos(Math.sqrt(z))) / z;
+    var root = Math.sqrt(-z);
+    return (Math.cosh(root) - 1) / -z;
+  }
+  function stumpffS(z) {
+    requireFinite(z, 'stumpffS: z');
+
+    if (Math.abs(z) <= 0.1) {
+      var term = 1 / 6;
+      var sum = term;
+
+      for (var k = 1; k < 16; k++) {
+        term *= -z / ((2 * k + 2) * (2 * k + 3));
+        sum += term;
+        if (Math.abs(term) <= Number.EPSILON * Math.abs(sum)) break;
+      }
+
+      return sum;
+    }
+
+    if (z > 0) {
+      var _root = Math.sqrt(z);
+
+      return (_root - Math.sin(_root)) / Math.pow(_root, 3);
+    }
+
+    var root = Math.sqrt(-z);
+    return (Math.sinh(root) - root) / Math.pow(root, 3);
+  }
+
+  function initialUniversalAnomaly(alpha, radius, radialDot, dt, mu) {
+    var sign = Math.sign(dt) || 1;
+    var sqrtMu = Math.sqrt(mu);
+    if (alpha > 1e-12) return sqrtMu * alpha * dt;
+
+    if (alpha < -1e-12) {
+      var semiMajorAxis = 1 / alpha;
+      var numerator = -2 * mu * alpha * dt;
+      var denominator = radialDot + sign * Math.sqrt(-mu * semiMajorAxis) * (1 - radius * alpha);
+      var argument = numerator / denominator;
+
+      if (argument > 0 && Number.isFinite(argument)) {
+        return sign * Math.sqrt(-semiMajorAxis) * Math.log(argument);
+      }
+
+      return sign * sqrtMu * Math.abs(alpha) * Math.abs(dt);
+    }
+
+    return sqrtMu * dt / radius;
+  }
+
+  function universalEquation(chi, alpha, radius, radialDot, dt, sqrtMu) {
+    var z = alpha * chi * chi;
+
+    if (!Number.isFinite(z)) {
+      return {
+        F: Math.sign(chi) * Infinity,
+        derivative: Infinity,
+        z: z,
+        C: Infinity,
+        S: Infinity
+      };
+    }
+
+    var C = stumpffC(z);
+    var S = stumpffS(z);
+    var F = radialDot / sqrtMu * chi * chi * C + (1 - alpha * radius) * Math.pow(chi, 3) * S + radius * chi - sqrtMu * dt;
+    var derivative = radialDot / sqrtMu * chi * (1 - z * S) + (1 - alpha * radius) * chi * chi * C + radius;
+    return {
+      F: F,
+      derivative: derivative,
+      z: z,
+      C: C,
+      S: S
+    };
+  }
+
+  function solveUniversalAnomaly(alpha, radius, radialDot, dt, mu, options) {
+    var _options$maxIteration, _options$tolerance;
+
+    var maxIterations = (_options$maxIteration = options.maxIterations) !== null && _options$maxIteration !== void 0 ? _options$maxIteration : DEFAULT_MAX_ITERATIONS;
+    var tolerance = (_options$tolerance = options.tolerance) !== null && _options$tolerance !== void 0 ? _options$tolerance : DEFAULT_TOLERANCE;
+
+    if (!Number.isInteger(maxIterations) || maxIterations < 1 || maxIterations > 10000) {
+      throw new RangeError('propagateKepler: maxIterations must be an integer from 1 to 10000');
+    }
+
+    requirePositive(tolerance, 'propagateKepler: tolerance');
+    var sqrtMu = Math.sqrt(mu);
+    var guess = initialUniversalAnomaly(alpha, radius, radialDot, dt, mu);
+    var lower;
+    var upper;
+
+    if (dt > 0) {
+      lower = 0;
+      upper = Math.max(1, Math.abs(guess));
+
+      for (var count = 0; count < maxIterations; count++) {
+        var value = universalEquation(upper, alpha, radius, radialDot, dt, sqrtMu).F;
+        if (!Number.isFinite(value) || value >= 0) break;
+        upper *= 2;
+        if (!Number.isFinite(upper)) throw new RangeError('propagateKepler: could not bracket the solution');
+      }
+
+      var upperResidual = universalEquation(upper, alpha, radius, radialDot, dt, sqrtMu).F;
+
+      if (Number.isFinite(upperResidual) && upperResidual < 0) {
+        throw new RangeError('propagateKepler: could not bracket the solution');
+      }
+    } else {
+      upper = 0;
+      lower = -Math.max(1, Math.abs(guess));
+
+      for (var _count = 0; _count < maxIterations; _count++) {
+        var _value = universalEquation(lower, alpha, radius, radialDot, dt, sqrtMu).F;
+        if (!Number.isFinite(_value) || _value <= 0) break;
+        lower *= 2;
+        if (!Number.isFinite(lower)) throw new RangeError('propagateKepler: could not bracket the solution');
+      }
+
+      var lowerResidual = universalEquation(lower, alpha, radius, radialDot, dt, sqrtMu).F;
+
+      if (Number.isFinite(lowerResidual) && lowerResidual > 0) {
+        throw new RangeError('propagateKepler: could not bracket the solution');
+      }
+    }
+
+    var chi = Math.min(upper, Math.max(lower, guess));
+    if (chi === lower || chi === upper || !Number.isFinite(chi)) chi = (lower + upper) / 2;
+    var residualScale = Math.max(1, Math.abs(sqrtMu * dt));
+
+    for (var iteration = 0; iteration < maxIterations; iteration++) {
+      var _value2 = universalEquation(chi, alpha, radius, radialDot, dt, sqrtMu);
+
+      if (Number.isFinite(_value2.F)) {
+        if (Math.abs(_value2.F) <= tolerance * residualScale) return chi;
+        if (_value2.F < 0) lower = chi;else upper = chi;
+      } else if (chi > 0) {
+        upper = chi;
+      } else {
+        lower = chi;
+      }
+
+      var candidate = Number.isFinite(_value2.F) && Number.isFinite(_value2.derivative) && _value2.derivative > 0 ? chi - _value2.F / _value2.derivative : Number.NaN;
+
+      if (!Number.isFinite(candidate) || candidate <= lower || candidate >= upper) {
+        candidate = (lower + upper) / 2;
+      }
+
+      if (Math.abs(candidate - chi) <= tolerance * (1 + Math.abs(candidate))) {
+        var candidateResidual = universalEquation(candidate, alpha, radius, radialDot, dt, sqrtMu).F;
+        if (Number.isFinite(candidateResidual) && Math.abs(candidateResidual) <= tolerance * residualScale) return candidate;
+      }
+
+      chi = candidate;
+    }
+
+    throw new RangeError("propagateKepler: no convergence after ".concat(maxIterations, " iterations"));
+  }
+
+  function propagateKepler(r0Input, v0Input, dtSeconds, mu) {
+    var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+    var r0 = requireVector(r0Input, 'propagateKepler: r0');
+    var v0 = requireVector(v0Input, 'propagateKepler: v0');
+    requireFinite(dtSeconds, 'propagateKepler: dtSeconds');
+    requirePositive(mu, 'propagateKepler: mu');
+    var r0Magnitude = norm(r0);
+    if (r0Magnitude === 0) throw new RangeError('propagateKepler: initial position must not be zero');
+    if (dtSeconds === 0) return {
+      r: r0,
+      v: v0
+    };
+    var speedSquared = dot(v0, v0);
+    var alpha = 2 / r0Magnitude - speedSquared / mu;
+    var radialDot = dot(r0, v0);
+    var sqrtMu = Math.sqrt(mu);
+    var chi = solveUniversalAnomaly(alpha, r0Magnitude, radialDot, dtSeconds, mu, options);
+    var z = alpha * chi * chi;
+    var C = stumpffC(z);
+    var S = stumpffS(z);
+    var f = 1 - chi * chi / r0Magnitude * C;
+    var g = dtSeconds - Math.pow(chi, 3) / sqrtMu * S;
+    var r = add(scale(r0, f), scale(v0, g));
+    var radius = norm(r);
+
+    if (!Number.isFinite(radius) || radius === 0) {
+      throw new RangeError('propagateKepler: propagation reached a singular position');
+    }
+
+    var fdot = sqrtMu / (radius * r0Magnitude) * chi * (z * S - 1);
+    var gdot = 1 - chi * chi / radius * C;
+    var v = add(scale(r0, fdot), scale(v0, gdot));
+
+    if (![].concat(_toConsumableArray(r), _toConsumableArray(v)).every(Number.isFinite)) {
+      throw new RangeError('propagateKepler: non-finite result');
+    }
+
+    return {
+      r: r,
+      v: v
+    };
+  }
+  function elementsToState(elements, mu) {
+    var _elements$inclination, _elements$raan, _elements$argumentOfP;
+
+    if (!elements || _typeof(elements) !== 'object') throw new TypeError('elementsToState: elements are required');
+    requirePositive(mu, 'elementsToState: mu');
+    var eccentricity = requireFinite(elements.eccentricity, 'elementsToState: eccentricity');
+    if (eccentricity < 0) throw new RangeError('elementsToState: eccentricity must not be negative');
+    var inclination = requireFinite((_elements$inclination = elements.inclination) !== null && _elements$inclination !== void 0 ? _elements$inclination : 0, 'elementsToState: inclination');
+    var raan = requireFinite((_elements$raan = elements.raan) !== null && _elements$raan !== void 0 ? _elements$raan : 0, 'elementsToState: raan');
+    var argumentOfPeriapsis = requireFinite((_elements$argumentOfP = elements.argumentOfPeriapsis) !== null && _elements$argumentOfP !== void 0 ? _elements$argumentOfP : 0, 'elementsToState: argumentOfPeriapsis');
+    var trueAnomaly = requireFinite(elements.trueAnomaly, 'elementsToState: trueAnomaly');
+
+    if (inclination < 0 || inclination > Math.PI) {
+      throw new RangeError('elementsToState: inclination must be within 0 and pi radians');
+    }
+
+    var semiLatusRectum;
+
+    if (elements.semiLatusRectum !== undefined) {
+      semiLatusRectum = requirePositive(elements.semiLatusRectum, 'elementsToState: semiLatusRectum');
+    } else {
+      if (eccentricity === 1) {
+        throw new RangeError('elementsToState: a parabola requires semiLatusRectum');
+      }
+
+      var semiMajorAxis = requireFinite(elements.semiMajorAxis, 'elementsToState: semiMajorAxis');
+
+      if (eccentricity < 1 && semiMajorAxis <= 0 || eccentricity > 1 && semiMajorAxis >= 0) {
+        throw new RangeError('elementsToState: semiMajorAxis sign does not match eccentricity');
+      }
+
+      semiLatusRectum = semiMajorAxis * (1 - Math.pow(eccentricity, 2));
+      requirePositive(semiLatusRectum, 'elementsToState: derived semiLatusRectum');
+    }
+
+    var denominator = 1 + eccentricity * Math.cos(trueAnomaly);
+
+    if (denominator <= 0) {
+      throw new RangeError('elementsToState: trueAnomaly lies outside the physical conic branch');
+    }
+
+    var radius = semiLatusRectum / denominator;
+    var perifocalPosition = Float64Array.of(radius * Math.cos(trueAnomaly), radius * Math.sin(trueAnomaly), 0);
+    var velocityScale = Math.sqrt(mu / semiLatusRectum);
+    var perifocalVelocity = Float64Array.of(-velocityScale * Math.sin(trueAnomaly), velocityScale * (eccentricity + Math.cos(trueAnomaly)), 0);
+
+    var toInertial = function toInertial(vector) {
+      return rotateZ(rotateX(rotateZ(vector, -argumentOfPeriapsis), -inclination), -raan);
+    };
+
+    return {
+      r: toInertial(perifocalPosition),
+      v: toInertial(perifocalVelocity)
+    };
+  }
+
+  var AU_KM = 149597870.7;
+  var SECONDS_PER_DAY = 86400;
+  var DEG = Math.PI / 180;
+
+  function finite(value) {
+    return value !== null && value !== undefined && Number.isFinite(Number(value));
+  }
+
+  function solveEllipticAnomaly(meanAnomaly, eccentricity) {
+    var anomaly = eccentricity < 0.8 ? meanAnomaly : Math.PI;
+
+    for (var iteration = 0; iteration < 50; iteration++) {
+      var delta = (anomaly - eccentricity * Math.sin(anomaly) - meanAnomaly) / (1 - eccentricity * Math.cos(anomaly));
+      anomaly -= delta;
+      if (Math.abs(delta) < 1e-14) return anomaly;
+    }
+
+    throw new RangeError('Orb.Kepler: mean-anomaly conversion did not converge');
+  }
+
+  function trueAnomalyAtEpoch(elements, eccentricity) {
+    if (!(eccentricity < 1 && finite(elements.mean_anomaly) && finite(elements.epoch))) return 0;
+    var meanAnomaly = (Number(elements.mean_anomaly) % 360 + 360) % 360 * DEG;
+    var eccentricAnomaly = solveEllipticAnomaly(meanAnomaly, eccentricity);
+    return Math.atan2(Math.sqrt(1 - Math.pow(eccentricity, 2)) * Math.sin(eccentricAnomaly), Math.cos(eccentricAnomaly) - eccentricity);
+  }
+
+  function legacyOrbitalPlane(elements, targetJd, gmAuDay) {
+    var eccentricity = Number(elements.eccentricity);
+
+    if (!Number.isFinite(eccentricity) || eccentricity < 0) {
+      throw new RangeError('Orb.Kepler: eccentricity must be a finite non-negative number');
+    }
+
+    var periapsisDistance = finite(elements.periapsis_distance) ? Number(elements.periapsis_distance) : finite(elements.perihelion_distance) ? Number(elements.perihelion_distance) : null;
+    var semiLatusRectumAu;
+
+    if (eccentricity < 1) {
+      var semiMajorAxis = finite(elements.semi_major_axis) ? Number(elements.semi_major_axis) : periapsisDistance / (1 - eccentricity);
+      semiLatusRectumAu = semiMajorAxis * (1 - Math.pow(eccentricity, 2));
+    } else if (eccentricity === 1) {
+      semiLatusRectumAu = 2 * periapsisDistance;
+    } else {
+      var semiMajorAxisMagnitude = finite(elements.semi_major_axis) && Number(elements.semi_major_axis) > 0 ? Number(elements.semi_major_axis) : periapsisDistance / (eccentricity - 1);
+      semiLatusRectumAu = semiMajorAxisMagnitude * (Math.pow(eccentricity, 2) - 1);
+    }
+
+    if (!Number.isFinite(semiLatusRectumAu) || semiLatusRectumAu <= 0) {
+      throw new RangeError('Orb.Kepler: a positive semi-major axis or periapsis distance is required');
+    }
+
+    var epochJd = finite(elements.time_of_periapsis) ? Number(elements.time_of_periapsis) : finite(elements.epoch) ? Number(elements.epoch) : Number(targetJd);
+    var trueAnomaly = trueAnomalyAtEpoch(elements, eccentricity);
+    var mu = Number(gmAuDay) * Math.pow(AU_KM, 3) / Math.pow(SECONDS_PER_DAY, 2);
+    if (!Number.isFinite(mu) || mu <= 0) throw new RangeError('Orb.Kepler: gm must be positive and finite');
+    var initial = elementsToState({
+      eccentricity: eccentricity,
+      semiLatusRectum: semiLatusRectumAu * AU_KM,
+      inclination: 0,
+      raan: 0,
+      argumentOfPeriapsis: 0,
+      trueAnomaly: trueAnomaly
+    }, mu);
+    var propagated = propagateKepler(initial.r, initial.v, (Number(targetJd) - epochJd) * SECONDS_PER_DAY, mu);
+    return {
+      r: Math.hypot.apply(Math, _toConsumableArray(propagated.r)) / AU_KM,
+      x: propagated.r[0] / AU_KM,
+      y: propagated.r[1] / AU_KM,
+      xdot: propagated.v[0] / AU_KM * SECONDS_PER_DAY,
+      ydot: propagated.v[1] / AU_KM * SECONDS_PER_DAY
+    };
+  }
+
   var hasFiniteOrbitalValue = function hasFiniteOrbitalValue(value) {
     return value !== null && value !== undefined && Number.isFinite(Number(value));
-  };
-
-  var normalizeDegrees = function normalizeDegrees(value) {
-    var normalized = Number(value) % 360;
-    return normalized < 0 ? normalized + 360 : normalized;
-  };
-
-  Math.cosh = Math.cosh || function (x) {
-    var y = Math.exp(x);
-    return (y + 1 / y) / 2;
-  };
-
-  Math.sinh = Math.sinh || function (x) {
-    var y = Math.exp(x);
-    return (y - 1 / y) / 2;
-  };
-
-  Math.tanh = Math.tanh || function (x) {
-    if (x === Infinity) {
-      return 1;
-    } else if (x === -Infinity) {
-      return -1;
-    } else {
-      var y = Math.exp(2 * x);
-      return (y - 1) / (y + 1);
-    }
-  };
-
-  Math.atanh = Math.atanh || function (x) {
-    return Math.log((1 + x) / (1 - x)) / 2;
   };
 
   var Kepler = /*#__PURE__*/_createClass(function Kepler(_orbital_elements) {
@@ -1455,183 +1909,15 @@
     _classCallCheck(this, Kepler);
 
     _defineProperty(this, "EllipticalOrbit", function (time) {
-      var rad = Constant.RAD;
-      var gm = _this.gm;
-      var epoch = _this.epoch;
-      var orbital_elements = _this.orbital_elements;
-      var eccentricity = Number(orbital_elements.eccentricity);
-
-      if (orbital_elements.semi_major_axis) {
-        var semi_major_axis = orbital_elements.semi_major_axis;
-      } else if (orbital_elements.periapsis_distance) {
-        var semi_major_axis = orbital_elements.periapsis_distance / (1 - eccentricity);
-      }
-
-      var mean_motion = Math.sqrt(gm / (semi_major_axis * semi_major_axis * semi_major_axis)) / rad;
-      var elapsed_time = Number(time.jd()) - Number(epoch);
-
-      if (hasFiniteOrbitalValue(orbital_elements.mean_anomaly) && hasFiniteOrbitalValue(orbital_elements.epoch)) {
-        var mean_anomaly = Number(orbital_elements.mean_anomaly);
-        var l = mean_motion * elapsed_time + mean_anomaly;
-      } else if (hasFiniteOrbitalValue(orbital_elements.time_of_periapsis)) {
-        var mean_anomaly = mean_motion * elapsed_time;
-        var l = mean_anomaly;
-      } else {
-        var l = 0;
-      }
-
-      l = normalizeDegrees(l);
-      l = l * rad;
-      var u = l;
-      var i = 0;
-
-      do {
-        var ut = u;
-        var delta_u = (l - u + eccentricity * Math.sin(u)) / (1 - eccentricity * Math.cos(u));
-        u = u + delta_u;
-
-        if (i > 1000000) {
-          break;
-        }
-
-        i++;
-      } while (Math.abs(ut - u) > 0.0000001);
-
-      var eccentric_anomaly = u;
-      var p = Math.abs(semi_major_axis * (1 - eccentricity * eccentricity));
-      var true_anomaly = 2 * Math.atan(Math.sqrt((1 + eccentricity) / (1 - eccentricity)) * Math.tan(eccentric_anomaly / 2));
-      var r = p / (1 + eccentricity * Math.cos(true_anomaly));
-      var orbital_plane = {
-        r: r,
-        x: r * Math.cos(true_anomaly),
-        y: r * Math.sin(true_anomaly),
-        xdot: -Math.sqrt(gm / p) * Math.sin(true_anomaly),
-        ydot: Math.sqrt(gm / p) * (eccentricity + Math.cos(true_anomaly))
-      };
-      return orbital_plane;
-    });
-
-    _defineProperty(this, "EllipticalOrbit", function (time) {
-      var rad = Constant.RAD;
-      var gm = _this.gm;
-      var epoch = _this.epoch;
-      var orbital_elements = _this.orbital_elements;
-      var eccentricity = Number(orbital_elements.eccentricity);
-
-      if (orbital_elements.semi_major_axis) {
-        var semi_major_axis = orbital_elements.semi_major_axis;
-      } else if (orbital_elements.periapsis_distance) {
-        var semi_major_axis = orbital_elements.periapsis_distance / (1 - eccentricity);
-      }
-
-      var mean_motion = Math.sqrt(gm / (semi_major_axis * semi_major_axis * semi_major_axis)) / rad;
-      var elapsed_time = Number(time.jd()) - Number(epoch);
-
-      if (hasFiniteOrbitalValue(orbital_elements.mean_anomaly) && hasFiniteOrbitalValue(orbital_elements.epoch)) {
-        var mean_anomaly = Number(orbital_elements.mean_anomaly);
-        var l = mean_motion * elapsed_time + mean_anomaly;
-      } else if (hasFiniteOrbitalValue(orbital_elements.time_of_periapsis)) {
-        var mean_anomaly = mean_motion * elapsed_time;
-        var l = mean_anomaly;
-      } else {
-        var l = 0;
-      }
-
-      l = normalizeDegrees(l);
-      l = l * rad;
-      var u = l;
-      var i = 0;
-
-      do {
-        var ut = u;
-        var delta_u = (l - u + eccentricity * Math.sin(u)) / (1 - eccentricity * Math.cos(u));
-        u = u + delta_u;
-
-        if (i > 1000000) {
-          break;
-        }
-
-        i++;
-      } while (Math.abs(ut - u) > 0.0000001);
-
-      var eccentric_anomaly = u;
-      var p = Math.abs(semi_major_axis * (1 - eccentricity * eccentricity));
-      var true_anomaly = 2 * Math.atan(Math.sqrt((1 + eccentricity) / (1 - eccentricity)) * Math.tan(eccentric_anomaly / 2));
-      var r = p / (1 + eccentricity * Math.cos(true_anomaly));
-      var orbital_plane = {
-        r: r,
-        x: r * Math.cos(true_anomaly),
-        y: r * Math.sin(true_anomaly),
-        xdot: -Math.sqrt(gm / p) * Math.sin(true_anomaly),
-        ydot: Math.sqrt(gm / p) * (eccentricity + Math.cos(true_anomaly))
-      };
-      return orbital_plane;
+      return legacyOrbitalPlane(_this.orbital_elements, time.jd(), _this.gm);
     });
 
     _defineProperty(this, "HyperbolicOrbit", function (time) {
-      Constant.RAD;
-      var gm = _this.gm;
-      var epoch = _this.epoch;
-      var orbital_elements = _this.orbital_elements;
-      var eccentricity = Number(orbital_elements.eccentricity);
-
-      if (orbital_elements.semi_major_axis && orbital_elements.semi_major_axis > 0) {
-        var semi_major_axis = orbital_elements.semi_major_axis;
-      } else if (orbital_elements.periapsis_distance) {
-        var semi_major_axis = orbital_elements.periapsis_distance / (eccentricity - 1);
-      }
-
-      var mean_motion = Math.sqrt(gm / (semi_major_axis * semi_major_axis * semi_major_axis));
-      var elapsed_time = Number(time.jd()) - Number(epoch);
-      var mean_anomaly = mean_motion * elapsed_time;
-      var l = mean_anomaly;
-      var u = l / (eccentricity - 1);
-      var i = 0;
-
-      do {
-        var ut = u;
-        var delta_u = (l - eccentricity * Math.sinh(u) + u) / (eccentricity * Math.cosh(u) - 1);
-        u = u + delta_u;
-
-        if (i++ > 100000) {
-          break;
-        }
-      } while (Math.abs(ut - u) > 0.0000001);
-
-      var eccentric_anomaly = u;
-      var p = Math.abs(semi_major_axis * (1 - eccentricity * eccentricity));
-      var true_anomaly = 2 * Math.atan(Math.sqrt((eccentricity + 1) / (eccentricity - 1)) * Math.tanh(eccentric_anomaly / 2));
-      var orbital_plane = {
-        x: semi_major_axis * (eccentricity - Math.cosh(u)),
-        y: semi_major_axis * Math.sqrt(Math.pow(eccentricity, 2) - 1) * Math.sinh(u),
-        r: semi_major_axis * (1 - eccentricity * Math.cosh(u)),
-        xdot: -Math.sqrt(gm / p) * Math.sin(true_anomaly),
-        ydot: Math.sqrt(gm / p) * (eccentricity + Math.cos(true_anomaly))
-      };
-      return orbital_plane;
+      return legacyOrbitalPlane(_this.orbital_elements, time.jd(), _this.gm);
     });
 
     _defineProperty(this, "ParabolicOrbit", function (time) {
-      var gm = _this.gm;
-      var epoch = _this.epoch;
-      var orbital_elements = _this.orbital_elements;
-      var periapsis_distance = Number(orbital_elements.periapsis_distance);
-      var elapsed_time = Number(time.jd()) - Number(epoch); //Barker's equation: D^3/3 + D = A, D = tan(true_anomaly/2)
-
-      var a = 1.5 * Math.sqrt(gm / (2 * periapsis_distance * periapsis_distance * periapsis_distance)) * elapsed_time;
-      var b = Math.cbrt(a + Math.sqrt(a * a + 1));
-      var d = b - 1 / b;
-      var true_anomaly = 2 * Math.atan(d);
-      var r = periapsis_distance * (1 + d * d);
-      var p = 2 * periapsis_distance;
-      var orbital_plane = {
-        r: r,
-        x: r * Math.cos(true_anomaly),
-        y: r * Math.sin(true_anomaly),
-        xdot: -Math.sqrt(gm / p) * Math.sin(true_anomaly),
-        ydot: Math.sqrt(gm / p) * (1 + Math.cos(true_anomaly))
-      };
-      return orbital_plane;
+      return legacyOrbitalPlane(_this.orbital_elements, time.jd(), _this.gm);
     });
 
     _defineProperty(this, "EclipticRectangular", function (orbital_plane, date) {
@@ -1719,20 +2005,20 @@
     this.orbital_elements = _orbital_elements;
 
     if (_orbital_elements.gm) {
-      var _gm = Number(_orbital_elements.gm);
+      var gm = Number(_orbital_elements.gm);
     } else {
-      var _gm = Constant.GM;
+      var gm = Constant.GM;
     }
 
-    this.gm = _gm;
+    this.gm = gm;
 
     if (hasFiniteOrbitalValue(_orbital_elements.time_of_periapsis)) {
-      var _epoch = _orbital_elements.time_of_periapsis;
+      var epoch = _orbital_elements.time_of_periapsis;
     } else {
-      var _epoch = _orbital_elements.epoch;
+      var epoch = _orbital_elements.epoch;
     }
 
-    this.epoch = _epoch;
+    this.epoch = epoch;
 
     if (_orbital_elements.perihelion_distance) {
       _orbital_elements.periapsis_distance = _orbital_elements.perihelion_distance;

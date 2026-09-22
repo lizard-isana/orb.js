@@ -1,44 +1,14 @@
 //kepler.js
 //require core.js, time.js, coordinates.js, earth.js
 
-import {Const, Constant,RoundAngle} from './orb-core.js'
+import {Constant} from './orb-core.js'
 import {Time} from './orb-time.js'
 import {EclipticToEquatorial, XYZtoRadec} from './orb-coordinates.js'
-import {Nutation,Obliquity} from './orb-obliquity.js'
+import {legacyOrbitalPlane} from './kepler/legacy.js'
 
 const hasFiniteOrbitalValue = (value) => {
   return value !== null && value !== undefined && Number.isFinite(Number(value));
 }
-
-const normalizeDegrees = (value) => {
-  const normalized = Number(value) % 360;
-  return normalized < 0 ? normalized + 360 : normalized;
-}
-
-Math.cosh = Math.cosh || function (x) {
-  var y = Math.exp(x);
-  return (y + 1 / y) / 2;
-};
-
-Math.sinh = Math.sinh || function (x) {
-  var y = Math.exp(x);
-  return (y - 1 / y) / 2;
-};
-
-Math.tanh = Math.tanh || function (x) {
-  if (x === Infinity) {
-    return 1;
-  } else if (x === -Infinity) {
-    return -1;
-  } else {
-    var y = Math.exp(2 * x);
-    return (y - 1) / (y + 1);
-  }
-}
-
-Math.atanh = Math.atanh || function (x) {
-  return Math.log((1 + x) / (1 - x)) / 2;
-};
 
 export class Kepler{
   constructor(orbital_elements){
@@ -60,159 +30,16 @@ export class Kepler{
     }  
   }
 
-  EllipticalOrbit = (time) =>{
-    var rad = Constant.RAD;
-    var gm = this.gm;
-    var epoch = this.epoch;
-    var orbital_elements = this.orbital_elements;
-    var eccentricity = Number(orbital_elements.eccentricity);
-    if (orbital_elements.semi_major_axis) {
-      var semi_major_axis = orbital_elements.semi_major_axis;
-    } else if (orbital_elements.periapsis_distance) {
-      var semi_major_axis = (orbital_elements.periapsis_distance) / (1 - eccentricity)
-    }
-    var mean_motion = Math.sqrt(gm / (semi_major_axis * semi_major_axis * semi_major_axis)) / rad;
-    var elapsed_time = Number(time.jd()) - Number(epoch);
-    if (hasFiniteOrbitalValue(orbital_elements.mean_anomaly) && hasFiniteOrbitalValue(orbital_elements.epoch)) {
-      var mean_anomaly = Number(orbital_elements.mean_anomaly);
-      var l = (mean_motion * elapsed_time) + mean_anomaly;
-    } else if (hasFiniteOrbitalValue(orbital_elements.time_of_periapsis)) {
-      var mean_anomaly = mean_motion * elapsed_time;
-      var l = mean_anomaly;
-    } else {
-      var l = 0;
-    }
-    l = normalizeDegrees(l);
-    l = l * rad
-    var u = l
-    var i = 0;
-    do {
-      var ut = u;
-      var delta_u = (l - u + (eccentricity * Math.sin(u))) / (1 - (eccentricity * Math.cos(u)));
-      u = u + delta_u;
-      if (i > 1000000) { break; }
-      i++
-    } while (Math.abs(ut - u) > 0.0000001);
-    var eccentric_anomaly = u;
-    var p = Math.abs(semi_major_axis * (1 - eccentricity * eccentricity))
-    var true_anomaly = 2 * Math.atan(Math.sqrt((1 + eccentricity) / (1 - eccentricity)) * Math.tan(eccentric_anomaly / 2));
-    var r = p / (1 + eccentricity * Math.cos(true_anomaly));
-    var orbital_plane = {
-      r: r,
-      x: r * Math.cos(true_anomaly),
-      y: r * Math.sin(true_anomaly),
-      xdot: -Math.sqrt(gm / p) * Math.sin(true_anomaly),
-      ydot: Math.sqrt(gm / p) * (eccentricity + Math.cos(true_anomaly))
-    };
-    return orbital_plane;
-  }
-
   EllipticalOrbit = (time) => {
-    var rad = Constant.RAD;
-    var gm = this.gm;
-    var epoch = this.epoch;
-    var orbital_elements = this.orbital_elements;
-    var eccentricity = Number(orbital_elements.eccentricity);
-    if (orbital_elements.semi_major_axis) {
-      var semi_major_axis = orbital_elements.semi_major_axis;
-    } else if (orbital_elements.periapsis_distance) {
-      var semi_major_axis = (orbital_elements.periapsis_distance) / (1 - eccentricity)
-    }
-    var mean_motion = Math.sqrt(gm / (semi_major_axis * semi_major_axis * semi_major_axis)) / rad;
-    var elapsed_time = Number(time.jd()) - Number(epoch);
-    if (hasFiniteOrbitalValue(orbital_elements.mean_anomaly) && hasFiniteOrbitalValue(orbital_elements.epoch)) {
-      var mean_anomaly = Number(orbital_elements.mean_anomaly);
-      var l = (mean_motion * elapsed_time) + mean_anomaly;
-    } else if (hasFiniteOrbitalValue(orbital_elements.time_of_periapsis)) {
-      var mean_anomaly = mean_motion * elapsed_time;
-      var l = mean_anomaly;
-    } else {
-      var l = 0;
-    }
-    l = normalizeDegrees(l);
-    l = l * rad
-    var u = l
-    var i = 0;
-    do {
-      var ut = u;
-      var delta_u = (l - u + (eccentricity * Math.sin(u))) / (1 - (eccentricity * Math.cos(u)));
-      u = u + delta_u;
-      if (i > 1000000) { break; }
-      i++
-    } while (Math.abs(ut - u) > 0.0000001);
-    var eccentric_anomaly = u;
-    var p = Math.abs(semi_major_axis * (1 - eccentricity * eccentricity))
-    var true_anomaly = 2 * Math.atan(Math.sqrt((1 + eccentricity) / (1 - eccentricity)) * Math.tan(eccentric_anomaly / 2));
-    var r = p / (1 + eccentricity * Math.cos(true_anomaly));
-    var orbital_plane = {
-      r: r,
-      x: r * Math.cos(true_anomaly),
-      y: r * Math.sin(true_anomaly),
-      xdot: -Math.sqrt(gm / p) * Math.sin(true_anomaly),
-      ydot: Math.sqrt(gm / p) * (eccentricity + Math.cos(true_anomaly))
-    };
-    return orbital_plane;
+    return legacyOrbitalPlane(this.orbital_elements, time.jd(), this.gm);
   }
 
   HyperbolicOrbit = (time) => {
-    var rad = Constant.RAD;
-    var gm = this.gm;
-    var epoch = this.epoch;
-    var orbital_elements = this.orbital_elements;
-    var eccentricity = Number(orbital_elements.eccentricity);
-    if (orbital_elements.semi_major_axis && orbital_elements.semi_major_axis > 0) {
-      var semi_major_axis = orbital_elements.semi_major_axis;
-    } else if (orbital_elements.periapsis_distance) {
-      var semi_major_axis = orbital_elements.periapsis_distance / (eccentricity - 1);
-    }
-    var mean_motion = Math.sqrt(gm / (semi_major_axis * semi_major_axis * semi_major_axis));
-    var elapsed_time = Number(time.jd()) - Number(epoch);
-    var mean_anomaly = mean_motion * elapsed_time;
-    var l = mean_anomaly;
-    var u = l / (eccentricity - 1);
-    var i = 0;
-    do {
-      var ut = u;
-      var delta_u = (l - (eccentricity * Math.sinh(u)) + u) / ((eccentricity * Math.cosh(u)) - 1);
-      u = u + delta_u;
-      if (i++ > 100000) {
-        break
-      }
-    } while (Math.abs(ut - u) > 0.0000001);
-    var eccentric_anomaly = u;
-    var p = Math.abs(semi_major_axis * (1 - eccentricity * eccentricity))
-    var true_anomaly = 2 * Math.atan(Math.sqrt((eccentricity + 1) / (eccentricity - 1)) * Math.tanh(eccentric_anomaly / 2));
-    var orbital_plane = {
-      x: semi_major_axis * (eccentricity - Math.cosh(u)),
-      y: semi_major_axis * Math.sqrt(Math.pow(eccentricity, 2) - 1) * Math.sinh(u),
-      r: semi_major_axis * (1 - (eccentricity * Math.cosh(u))),
-      xdot: -Math.sqrt(gm / p) * Math.sin(true_anomaly),
-      ydot: Math.sqrt(gm / p) * (eccentricity + Math.cos(true_anomaly))
-    }
-    return orbital_plane;
+    return legacyOrbitalPlane(this.orbital_elements, time.jd(), this.gm);
   }
 
   ParabolicOrbit = (time) => {
-    var gm = this.gm;
-    var epoch = this.epoch;
-    var orbital_elements = this.orbital_elements;
-    var periapsis_distance = Number(orbital_elements.periapsis_distance);
-    var elapsed_time = Number(time.jd()) - Number(epoch);
-    //Barker's equation: D^3/3 + D = A, D = tan(true_anomaly/2)
-    var a = 1.5 * Math.sqrt(gm / (2 * periapsis_distance * periapsis_distance * periapsis_distance)) * elapsed_time;
-    var b = Math.cbrt(a + Math.sqrt(a * a + 1));
-    var d = b - 1 / b;
-    var true_anomaly = 2 * Math.atan(d);
-    var r = periapsis_distance * (1 + d * d);
-    var p = 2 * periapsis_distance;
-    var orbital_plane = {
-      r: r,
-      x: r * Math.cos(true_anomaly),
-      y: r * Math.sin(true_anomaly),
-      xdot: -Math.sqrt(gm / p) * Math.sin(true_anomaly),
-      ydot: Math.sqrt(gm / p) * (1 + Math.cos(true_anomaly))
-    };
-    return orbital_plane;
+    return legacyOrbitalPlane(this.orbital_elements, time.jd(), this.gm);
   }
 
   EclipticRectangular = (orbital_plane, date) => {

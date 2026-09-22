@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "source": "orb.js v3 legacy Kepler implementation",
+  "sourceVersion": "commit 1bdd016 before the M2 universal-variable adapter",
+  "procedure": "The three legacy conic branches were evaluated at their common 2026-07-18 epoch and at plus or minus 100 days. Values were recorded before replacing the branch-specific propagation internals.",
+  "instant": "2026-07-18T00:00:00Z with offsets listed per case",
+  "timeScale": "Legacy Julian-date elapsed days",
+  "frame": "Ecliptic rectangular J2000",
+  "center": "Sun",
+  "units": {
+    "position": "au",
+    "velocity": "au/day"
+  },
+  "accuracy": "Frozen compatibility baseline; tolerances admit floating-point algorithm changes but not observable legacy drift",
+  "tolerance": {
+    "positionAu": 1e-10,
+    "velocityAuPerDay": 1e-12
+  },
+  "epochJd": 2461239.5,
+  "common": {
+    "inclination": 31,
+    "argument_of_periapsis": 47,
+    "longitude_of_ascending_node": 123
+  },
+  "orbits": {
+    "ellipse": {
+      "elements": {
+        "eccentricity": 0.4,
+        "semi_major_axis": 2.3,
+        "mean_anomaly": 37,
+        "epoch": 2461239.5
+      },
+      "states": [
+        {"days": -100, "r": [-1.2211043897028955, -0.18948621500756424, 0.6773537217024483], "v": [0.0026399190230436227, -0.01637443788197063, 0.0040282511030512655]},
+        {"days": 0, "r": [-0.489193692325517, -1.5439246872661574, 0.7517691690937816], "v": [0.010179175500777723, -0.009769639231874969, -0.0019323966009710896]},
+        {"days": 100, "r": [0.5655267781777233, -2.1582099614139802, 0.42129626299989437], "v": [0.010272551177665767, -0.002962186947144004, -0.004207204237178755]}
+      ]
+    },
+    "parabola": {
+      "elements": {
+        "eccentricity": 1,
+        "periapsis_distance": 0.8,
+        "time_of_periapsis": 2461239.5
+      },
+      "states": [
+        {"days": -100, "r": [0.43387717928983205, 1.6744417545976145, -0.7666058347270823], "v": [-0.013112722038156773, -0.007618005202772017, 0.00910082543350049]},
+        {"days": 0, "r": [-0.7177593596017731, 0.18443347003629557, 0.30134000204822375], "v": [-0.0025009905923846117, -0.02534267797571954, 0.009553755271607123]},
+        {"days": 100, "r": [0.0900990567776134, -1.8090812464296584, 0.546622635709813], "v": [0.010997726838630366, -0.013813359803157463, -0.0010215681190484313]}
+      ]
+    },
+    "hyperbola": {
+      "elements": {
+        "eccentricity": 1.4,
+        "periapsis_distance": 0.8,
+        "time_of_periapsis": 2461239.5
+      },
+      "states": [
+        {"days": -100, "r": [0.3919892190922284, 2.0060776402240323, -0.8540260372218244], "v": [-0.012577209025520758, -0.01224390858635473, 0.010344804329120612]},
+        {"days": 0, "r": [-0.7177593596017731, 0.18443347003629557, 0.30134000204822375], "v": [-0.0027396979271145194, -0.027761512789781905, 0.010465614542286231]},
+        {"days": 100, "r": [-0.013554458459459712, -2.1033191950044268, 0.6951461424232838], "v": [0.009598249693643875, -0.0179420534402112, 0.0010347860249902809]}
+      ]
+    }
+  }
+}

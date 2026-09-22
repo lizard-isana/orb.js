@@ -9,6 +9,8 @@
     "src/time",
     "src/frames",
     "src/geodesy",
+    "src/kepler",
+    "src/models/earth-epv00",
     "src/vocab",
     "src/vsop87a",
     "readme.md",
@@ -32,6 +34,12 @@
     "./geodesy": {
       "import": "./src/geodesy/index.js"
     },
+    "./kepler": {
+      "import": "./src/kepler/index.js"
+    },
+    "./models/earth-epv00": {
+      "import": "./src/models/earth-epv00/index.js"
+    },
     "./vocab": {
       "import": "./src/vocab/index.js"
     },
@@ -40,7 +48,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "test": "node test/run.js && node test/m1/core.mjs",
+    "test": "node test/run.js && node test/m1/core.mjs && node test/m2/core.mjs",
     "build": "rollup -c rollup.config.js",
     "bench": "node tools/bench.mjs",
     "vsop:check": "node tools/vsop-compile.mjs --check",

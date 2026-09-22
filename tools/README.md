@@ -19,9 +19,9 @@ npm run bench -- --duration=1000
 The benchmark is deliberately not a CI pass/fail gate. Node.js version,
 machine load, and JIT state affect absolute throughput. Compare results from
 the same machine and process setup, and treat order-of-magnitude changes as a
-signal to investigate. The `relative` column compares only equivalent paths
-measured in the same run; currently it records the cost of full versus short
-Mars VSOP87A coefficients.
+signal to investigate. The `relative` column compares related paths measured
+in the same run; it records the cost of full versus short Mars VSOP87A
+coefficients and structured versus legacy Kepler propagation.
 
 ## VSOP87A generation and verification
 
