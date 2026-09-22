@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "source": "NASA/JPL Solar System Dynamics astrodynamic parameters and planetary satellite physical parameters tables",
+  "sourceVersion": "Tables retrieved 2026-09-22; DE440, MAR097, JUP365, SAT441, URA111, and NEP097 references as listed by JPL",
+  "procedure": "Mercury, Venus, and Sun values were taken from JPL's astrodynamic parameters table. Planet-only Earth, Mars, Jupiter, Saturn, Uranus, and Neptune values and the Moon value were taken from JPL's planetary satellite physical parameters table. The solar value was converted from m^3/s^2 to km^3/s^2.",
+  "instant": "Not applicable; gravitational-parameter reference constants",
+  "timeScale": "Not applicable",
+  "frame": "Not applicable",
+  "center": "Each named body",
+  "units": {
+    "gm": "km^3/s^2"
+  },
+  "accuracy": "Reference-table precision; this test is a broad legacy sanity check rather than a request to replace orb.js constants.",
+  "tolerance": {
+    "relative": 0.0003
+  },
+  "expected": {
+    "Mercury": 22031.868551,
+    "Venus": 324858.592,
+    "Earth": 398600.436,
+    "Moon": 4902.8,
+    "Mars": 42828.37362,
+    "Jupiter": 126686531.9,
+    "Saturn": 37931206.23,
+    "Uranus": 5793951.3,
+    "Neptune": 6835099.97,
+    "Sun": 132712440041.27942
+  }
+}

@@ -3,24 +3,44 @@
 const assert = require('assert');
 const Orb = require('../../dist/orb.js');
 const { test } = require('../helpers/harness.js');
+const { loadReferenceFixture } = require('../helpers/reference-fixture.js');
+
+const HORIZONS_SUN = loadReferenceFixture('horizons-sun-2026-07-18.json');
+const MEEUS = loadReferenceFixture('meeus-2ed.json');
 
 test('Luna.latlng reproduces Meeus example 47.a (1992 Apr 12.0 TD)', () => {
-  // Input date is TT; the equivalent UTC instant is 58.184s earlier.
-  const date = new Date(Date.UTC(1992, 3, 12, 0, 0, 0) - 58184);
+  const date = new Date(MEEUS.moon.utcDateInput);
   const m = new Orb.Luna().latlng(date);
-  // Meeus: apparent longitude 133.167265 (full nutation; the library's
-  // 4-term nutation differs by ~2 arcsec), latitude -3.229126, distance 368409.7
-  assert.ok(Math.abs(m.longitude - 133.167265) < 0.002, 'longitude=' + m.longitude);
-  assert.ok(Math.abs(m.latitude - (-3.229126)) < 0.0001, 'latitude=' + m.latitude);
-  assert.ok(Math.abs(m.distance - 368409.7) < 0.5, 'distance=' + m.distance);
+  assert.ok(
+    Math.abs(m.longitude - MEEUS.moon.longitudeDeg) < MEEUS.tolerance.moonLongitudeDeg,
+    'longitude=' + m.longitude
+  );
+  assert.ok(
+    Math.abs(m.latitude - MEEUS.moon.latitudeDeg) < MEEUS.tolerance.moonLatitudeDeg,
+    'latitude=' + m.latitude
+  );
+  assert.ok(
+    Math.abs(m.distance - MEEUS.moon.distanceKm) < MEEUS.tolerance.moonDistanceKm,
+    'distance=' + m.distance
+  );
 });
 
 test('Sun.radec agrees with ephemeris (2026-07-18)', () => {
-  // Reference: apparent RA/Dec ~ 7h49.5m, +21.05 deg
-  const s = new Orb.Sun().radec(new Date(Date.UTC(2026, 6, 18, 0, 0, 0)));
-  assert.ok(Math.abs(s.ra - 7.826) < 0.02, 'ra=' + s.ra);
-  assert.ok(Math.abs(s.dec - 21.05) < 0.1, 'dec=' + s.dec);
-  assert.ok(Math.abs(s.distance - 1.016) < 0.005, 'distance=' + s.distance);
+  const s = new Orb.Sun().radec(new Date(HORIZONS_SUN.instant));
+  const expected = HORIZONS_SUN.expected;
+  const tolerance = HORIZONS_SUN.tolerance;
+  assert.ok(
+    Math.abs(s.ra * 15 - expected.rightAscensionDeg) < tolerance.legacyRightAscensionDeg,
+    'ra=' + s.ra
+  );
+  assert.ok(
+    Math.abs(s.dec - expected.declinationDeg) < tolerance.legacyDeclinationDeg,
+    'dec=' + s.dec
+  );
+  assert.ok(
+    Math.abs(s.distance - expected.rangeAu) < tolerance.legacyRangeAu,
+    'distance=' + s.distance
+  );
 });
 
 test('Luna.radec returns plausible geocentric position', () => {
@@ -35,7 +55,7 @@ test('VSOP pipeline agrees with the Sun theory (equinox of date)', () => {
   // the origin through the VSOP/J2000 pipeline must give the same apparent
   // RA/Dec as the of-date Sun theory; before precession was applied the two
   // frames disagreed by ~24 arcmin (accumulated precession since J2000).
-  const date = new Date(Date.UTC(2026, 6, 18, 0, 0, 0));
+  const date = new Date(HORIZONS_SUN.instant);
   const s1 = new Orb.Sun().radec(date);
   const rect = Orb.EclipticToEquatorial({
     date,
@@ -45,14 +65,17 @@ test('VSOP pipeline agrees with the Sun theory (equinox of date)', () => {
   const dra = Math.abs(s1.ra - s2.ra) * 15 * Math.cos(s1.dec * Math.PI / 180);
   const ddec = Math.abs(s1.dec - s2.dec);
   // tolerance is the stated accuracy of the low-precision solar theory (~0.01 deg)
-  assert.ok(dra < 0.01, 'RA diff deg=' + dra);
-  assert.ok(ddec < 0.01, 'Dec diff deg=' + ddec);
-  // JPL Horizons geocentric airless apparent coordinates at this instant:
-  // RA 117.38134 deg, Dec +21.05451 deg. orb.js omits light-time,
-  // gravitational deflection and aberration, so use the documented 0.01 deg
-  // low-precision tolerance.
-  assert.ok(Math.abs(s2.ra * 15 - 117.38134) < 0.01, 'RA=' + s2.ra * 15);
-  assert.ok(Math.abs(s2.dec - 21.05451) < 0.01, 'Dec=' + s2.dec);
+  const tolerance = HORIZONS_SUN.tolerance.vsopPipelineAngleDeg;
+  assert.ok(dra < tolerance, 'RA diff deg=' + dra);
+  assert.ok(ddec < tolerance, 'Dec diff deg=' + ddec);
+  assert.ok(
+    Math.abs(s2.ra * 15 - HORIZONS_SUN.expected.rightAscensionDeg) < tolerance,
+    'RA=' + s2.ra * 15
+  );
+  assert.ok(
+    Math.abs(s2.dec - HORIZONS_SUN.expected.declinationDeg) < tolerance,
+    'Dec=' + s2.dec
+  );
   assert.strictEqual(typeof Orb.EclipticJ2000ToDate, 'function');
 });
 

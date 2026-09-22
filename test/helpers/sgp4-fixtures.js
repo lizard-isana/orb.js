@@ -1,8 +1,17 @@
 'use strict';
 
+const { loadReferenceFixture } = require('./reference-fixture.js');
+
+const SGP4_REFERENCE = loadReferenceFixture('python-sgp4-2.27.json');
+const ISS_CASE = SGP4_REFERENCE.cases.find(({ id }) => id === 'iss-near-earth');
+
+if (!ISS_CASE) {
+  throw new Error('python-sgp4-2.27.json is missing the iss-near-earth case');
+}
+
 const ISS_TLE = {
-  first_line: '1 25544U 98067A   20014.52632156  .00016717  00000-0  10270-3 0  9015',
-  second_line: '2 25544  51.6423  33.7380 0004871 130.9389 229.2183 15.49556564  8038'
+  first_line: ISS_CASE.line1,
+  second_line: ISS_CASE.line2
 };
 
-module.exports = { ISS_TLE };
+module.exports = { ISS_CASE, ISS_TLE, SGP4_REFERENCE };

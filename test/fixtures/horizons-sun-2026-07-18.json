@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "source": "NASA/JPL Horizons API",
+  "sourceVersion": "API 1.2, DE441; generated 2026-09-21 22:19:28 Pasadena time",
+  "procedure": "Observer ephemeris query with COMMAND=10, CENTER=500@399, TLIST=2026-07-18 00:00, TIME_TYPE=UT, QUANTITIES=2,20, REF_SYSTEM=ICRF, ANG_FORMAT=DEG, APPARENT=AIRLESS, RANGE_UNITS=AU, and EXTRA_PREC=YES.",
+  "instant": "2026-07-18T00:00:00Z",
+  "timeScale": "UTC output converted by Horizons from its internal TDB dynamics",
+  "frame": "Airless apparent Earth equator and equinox of date, EOP-corrected IAU 1976/1980 as defined by Horizons",
+  "center": "Earth geocenter (500@399)",
+  "units": {
+    "rightAscension": "degrees",
+    "declination": "degrees",
+    "range": "au"
+  },
+  "accuracy": "Horizons extra-precision output. The legacy orb.js comparison intentionally uses the lower accuracy of its solar and frame models and omits several apparent-place corrections.",
+  "tolerance": {
+    "legacyRightAscensionDeg": 0.3,
+    "legacyDeclinationDeg": 0.1,
+    "legacyRangeAu": 0.005,
+    "vsopPipelineAngleDeg": 0.01
+  },
+  "query": {
+    "COMMAND": "10",
+    "CENTER": "500@399",
+    "TLIST": "2026-07-18 00:00",
+    "TIME_TYPE": "UT",
+    "QUANTITIES": "2,20",
+    "REF_SYSTEM": "ICRF",
+    "ANG_FORMAT": "DEG",
+    "APPARENT": "AIRLESS",
+    "RANGE_UNITS": "AU",
+    "EXTRA_PREC": "YES"
+  },
+  "expected": {
+    "rightAscensionDeg": 117.381337386,
+    "declinationDeg": 21.054510744,
+    "rangeAu": 1.01629672587752
+  }
+}

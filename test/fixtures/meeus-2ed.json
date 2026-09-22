@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "source": "Jean Meeus, Astronomical Algorithms",
+  "sourceVersion": "Second edition (1998), examples 12.b and 47.a",
+  "procedure": "Values were transcribed from the worked examples. Example 12.b supplies Greenwich mean and apparent sidereal time. Example 47.a supplies the Moon's apparent geocentric ecliptic longitude, latitude, and distance.",
+  "instant": "1987-04-10T19:21:00 UT for example 12.b; 1992-04-12T00:00:00 TD for example 47.a",
+  "timeScale": "UT for sidereal time; TD, treated as TT, for lunar position",
+  "frame": "Greenwich sidereal angle for example 12.b; apparent geocentric ecliptic of date for example 47.a",
+  "center": "Earth",
+  "units": {
+    "siderealTime": "hours",
+    "longitude": "degrees",
+    "latitude": "degrees",
+    "distance": "km"
+  },
+  "accuracy": "Published worked-example precision. The orb.js lunar model uses a four-term nutation approximation, so its longitude tolerance includes the approximately two-arcsecond model difference from the full nutation used by Meeus.",
+  "tolerance": {
+    "meanSiderealSeconds": 0.001,
+    "apparentSiderealSeconds": 0.2,
+    "moonLongitudeDeg": 0.002,
+    "moonLatitudeDeg": 0.0001,
+    "moonDistanceKm": 0.5
+  },
+  "sidereal": {
+    "utc": "1987-04-10T19:21:00Z",
+    "meanHours": 8.582524888888888,
+    "apparentHours": 8.582459166666667
+  },
+  "moon": {
+    "tt": "1992-04-12T00:00:00Z",
+    "utcDateInput": "1992-04-11T23:59:01.816Z",
+    "longitudeDeg": 133.167265,
+    "latitudeDeg": -3.229126,
+    "distanceKm": 368409.7
+  }
+}

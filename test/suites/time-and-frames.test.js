@@ -3,6 +3,9 @@
 const assert = require('assert');
 const Orb = require('../../dist/orb.js');
 const { test } = require('../helpers/harness.js');
+const { loadReferenceFixture } = require('../helpers/reference-fixture.js');
+
+const MEEUS = loadReferenceFixture('meeus-2ed.json');
 
 test('Time.jd matches J2000.0 epoch', () => {
   const t = new Orb.Time(new Date(Date.UTC(2000, 0, 1, 12, 0, 0)));
@@ -22,19 +25,23 @@ test('Time.delta_t follows the NASA polynomial', () => {
 });
 
 test('Time.gast reproduces Meeus example 12.b', () => {
-  // 1987 Apr 10, 19:21:00 UT -> apparent sidereal time 8h34m56.853s
-  const t = new Orb.Time(new Date(Date.UTC(1987, 3, 10, 19, 21, 0)));
-  const ref = 8 + 34 / 60 + 56.853 / 3600;
-  assert.ok(Math.abs(t.gast() - ref) * 3600 < 0.2, 'gast=' + t.gast());
+  const t = new Orb.Time(new Date(MEEUS.sidereal.utc));
+  const ref = MEEUS.sidereal.apparentHours;
+  assert.ok(
+    Math.abs(t.gast() - ref) * 3600 < MEEUS.tolerance.apparentSiderealSeconds,
+    'gast=' + t.gast()
+  );
   // gmst() is kept as a backward-compatible alias of gast()
   assert.strictEqual(t.gmst(), t.gast());
 });
 
 test('Time.gmst82 reproduces Meeus example 12.b (mean sidereal time)', () => {
-  // 1987 Apr 10, 19:21:00 UT -> mean sidereal time 8h34m57.0896s
-  const t = new Orb.Time(new Date(Date.UTC(1987, 3, 10, 19, 21, 0)));
-  const ref = 8 + 34 / 60 + 57.0896 / 3600;
-  assert.ok(Math.abs(t.gmst82() - ref) * 3600 < 0.001, 'gmst82=' + t.gmst82());
+  const t = new Orb.Time(new Date(MEEUS.sidereal.utc));
+  const ref = MEEUS.sidereal.meanHours;
+  assert.ok(
+    Math.abs(t.gmst82() - ref) * 3600 < MEEUS.tolerance.meanSiderealSeconds,
+    'gmst82=' + t.gmst82()
+  );
 });
 
 test('Time.tt_minus_utc uses the leap second table', () => {

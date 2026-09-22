@@ -3,6 +3,9 @@
 const assert = require('assert');
 const Orb = require('../../dist/orb.js');
 const { test } = require('../helpers/harness.js');
+const { loadReferenceFixture } = require('../helpers/reference-fixture.js');
+
+const JPL_GM = loadReferenceFixture('jpl-gm.json');
 
 test('Kepler elliptical orbit accepts mean_anomaly of 0', () => {
   const k = new Orb.Kepler({
@@ -56,12 +59,10 @@ test('Kepler radec converts J2000 elements to the equinox of date', () => {
 });
 
 test('Constant GM values are close to JPL', () => {
-  const ref = {
-    Mercury: 22031.87, Venus: 324858.6, Earth: 398600.44, Moon: 4902.8,
-    Mars: 42828.37, Jupiter: 126686532, Saturn: 37931206,
-    Uranus: 5793951, Neptune: 6835100, Sun: 1.32712440018e11
-  };
-  for (const [key, value] of Object.entries(ref)) {
-    assert.ok(Math.abs(Orb.Constant[key].gm / value - 1) < 3e-4, key + '=' + Orb.Constant[key].gm);
+  for (const [key, value] of Object.entries(JPL_GM.expected)) {
+    assert.ok(
+      Math.abs(Orb.Constant[key].gm / value - 1) < JPL_GM.tolerance.relative,
+      key + '=' + Orb.Constant[key].gm
+    );
   }
 });

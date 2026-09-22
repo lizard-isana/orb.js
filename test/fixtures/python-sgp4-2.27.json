@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "source": "python-sgp4 by Brandon Rhodes, wrapping the Vallado reference implementation",
+  "sourceVersion": "python-sgp4 2.27",
+  "procedure": "Each TLE was loaded with Satrec.twoline2rv using the default WGS-72 gravity model. Satrec.sgp4 was evaluated at the listed number of minutes after the TLE epoch. The stored values are the returned TEME position vectors.",
+  "instant": "Per-case offsets from each TLE epoch",
+  "timeScale": "TLE epoch interpreted as UTC; propagation offsets are uniform minutes from epoch",
+  "frame": "TEME",
+  "center": "Earth",
+  "units": {
+    "timeOffset": "minutes",
+    "position": "km"
+  },
+  "accuracy": "Regression oracle for agreement with python-sgp4 2.27 and the same Vallado algorithm lineage; not an independent estimate of real satellite position accuracy.",
+  "tolerance": {
+    "positionNormKm": 0.000001
+  },
+  "gravityModel": "WGS-72",
+  "cases": [
+    {
+      "id": "iss-near-earth",
+      "name": "ISS near-Earth",
+      "expectedMethod": "n",
+      "line1": "1 25544U 98067A   20014.52632156  .00016717  00000-0  10270-3 0  9015",
+      "line2": "2 25544  51.6423  33.7380 0004871 130.9389 229.2183 15.49556564  8038",
+      "states": [
+        {
+          "minutesSinceEpoch": 1440,
+          "positionKm": [-5864.673756515094, -3424.3178193580643, -223.71977790043377]
+        }
+      ]
+    },
+    {
+      "id": "geo-resonant",
+      "name": "GEO (24h resonance)",
+      "expectedMethod": "d",
+      "line1": "1 90001U 20001A   20014.50000000  .00000000  00000-0  00000-0 0  9995",
+      "line2": "2 90001   1.0000  90.0000 0001000  50.0000 310.0000  1.00270000  8031",
+      "states": [
+        {
+          "minutesSinceEpoch": 360,
+          "positionKm": [-42154.26042654016, -197.88391977789678, 749.0506370984336]
+        },
+        {
+          "minutesSinceEpoch": 4320,
+          "positionKm": [-2167.1609784046923, 42106.15401288822, 47.44802877139221]
+        }
+      ]
+    },
+    {
+      "id": "molniya-resonant",
+      "name": "Molniya (12h resonance)",
+      "expectedMethod": "d",
+      "line1": "1 90002U 20002A   20014.50000000  .00000000  00000-0  10000-3 0  9996",
+      "line2": "2 90002  63.4000 120.0000 7200000 270.0000  10.0000  2.00600000  8032",
+      "states": [
+        {
+          "minutesSinceEpoch": 360,
+          "positionKm": [-16656.757177462827, -11880.225956933378, 40691.099555122266]
+        },
+        {
+          "minutesSinceEpoch": 4320,
+          "positionKm": [-6926.438107614998, 11450.802317334232, 721.0398899302185]
+        }
+      ]
+    },
+    {
+      "id": "gps-like-deep",
+      "name": "GPS-like (deep, non-resonant)",
+      "expectedMethod": "d",
+      "line1": "1 90003U 20003A   20014.50000000  .00000000  00000-0  00000-0 0  9997",
+      "line2": "2 90003  55.0000 200.0000 0100000  60.0000 300.0000  2.00560000  8033",
+      "states": [
+        {
+          "minutesSinceEpoch": 360,
+          "positionKm": [24939.673250260297, 9510.387469057981, -585.7204214052479]
+        },
+        {
+          "minutesSinceEpoch": 4320,
+          "positionKm": [-24265.237776123966, -10230.032079296045, 1950.8012690221706]
+        }
+      ]
+    }
+  ]
+}
