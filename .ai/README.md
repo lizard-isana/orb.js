@@ -6,6 +6,20 @@ This directory stores development notes and decisions for `orb.js`.
 
 - `decisions/`
   One topic per file for important implementation or API decisions.
+- `plans/`
+  Ordered implementation plans with scope, verification gates, and release
+  criteria.
+
+Current release-related decisions:
+
+- `decisions/2026-04-27-full-vsop87a-api.md`
+- `decisions/2026-09-22-npm-package-and-release-lines.md`
+- `decisions/2026-09-22-separate-educational-materials.md`
+
+Current implementation plans:
+
+- `plans/2026-09-22-v3.1-implementation-plan-revised.md` (current)
+- `plans/2026-09-22-v3.1-implementation-plan.md` (superseded initial draft)
 
 ## Guidelines
 

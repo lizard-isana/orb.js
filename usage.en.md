@@ -8,18 +8,18 @@ No runtime dependencies.
 ## Install / Load
 
 ```
-npm install lizard-isana/orb.js
+npm install @lizard-isana/orb
 ```
 
 ```js
 // CommonJS / bundlers (UMD build)
-const Orb = require('orb.js');
+const Orb = require('@lizard-isana/orb');
 
 // Browser
 <script src="dist/orb.js"></script>  // exposes window.Orb
 
-// ES modules (source)
-import * as Orb from './src/orb.es6.js';
+// ES modules / bundlers
+import * as Orb from '@lizard-isana/orb';
 ```
 
 All methods take a JavaScript `Date` object. **The `Date` is interpreted as

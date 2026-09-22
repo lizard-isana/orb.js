@@ -1,5 +1,5 @@
 {
-  "name": "orb.js",
+  "name": "@lizard-isana/orb",
   "version": "3.0.0",
   "description": "JavaScript library for astronomical calculations",
   "main": "dist/orb.js",
@@ -36,6 +36,10 @@
     "url": "https://github.com/lizard-isana/orb.js/issues"
   },
   "homepage": "https://github.com/lizard-isana/orb.js",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "browserslist": [
     "defaults"
   ],

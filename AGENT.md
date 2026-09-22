@@ -17,8 +17,8 @@ The default planet position path uses the shortened VSOP87A table in `src/orb-vs
 Full VSOP87A data is optional and loaded per body:
 
 ```js
-import * as Orb from "orb.js";
-import { SATURN_FULL_COEF } from "orb.js/vsop87a/saturn";
+import * as Orb from "@lizard-isana/orb";
+import { SATURN_FULL_COEF } from "@lizard-isana/orb/vsop87a/saturn";
 
 Orb.registerVSOP87A("Saturn", SATURN_FULL_COEF);
 

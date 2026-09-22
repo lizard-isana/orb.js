@@ -22,7 +22,7 @@ const saturn = new Orb.Saturn();
 Full precision is explicit:
 
 ```js
-import { SATURN_FULL_COEF } from "orb.js/vsop87a/saturn";
+import { SATURN_FULL_COEF } from "@lizard-isana/orb/vsop87a/saturn";
 
 Orb.registerVSOP87A("Saturn", SATURN_FULL_COEF);
 
@@ -53,7 +53,7 @@ Consumers choose the loading strategy:
 Example dynamic import:
 
 ```js
-const module = await import("orb.js/vsop87a/saturn");
+const module = await import("@lizard-isana/orb/vsop87a/saturn");
 Orb.registerVSOP87A("Saturn", module.SATURN_FULL_COEF);
 ```
 

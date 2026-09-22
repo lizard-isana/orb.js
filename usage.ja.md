@@ -7,18 +7,18 @@
 ## インストール / 読み込み
 
 ```
-npm install lizard-isana/orb.js
+npm install @lizard-isana/orb
 ```
 
 ```js
 // CommonJS / バンドラ(UMD ビルド)
-const Orb = require('orb.js');
+const Orb = require('@lizard-isana/orb');
 
 // ブラウザ
 <script src="dist/orb.js"></script>  // window.Orb が定義されます
 
-// ES モジュール(ソース)
-import * as Orb from './src/orb.es6.js';
+// ES モジュール / バンドラ
+import * as Orb from '@lizard-isana/orb';
 ```
 
 各メソッドは JavaScript の `Date` オブジェクトを受け取ります。**`Date` は UTC の

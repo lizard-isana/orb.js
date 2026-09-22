@@ -6,8 +6,12 @@ Positions of the Sun, Moon and planets (VSOP87A), Keplerian orbits,
 Earth-orbiting satellites (SGP4/TLE), and azimuth/elevation for an observer.
 Written in ES2015, bundled to UMD, no runtime dependencies.
 
+```sh
+npm install @lizard-isana/orb
+```
+
 ```js
-const Orb = require('orb.js');
+const Orb = require('@lizard-isana/orb');
 const date = new Date();
 
 new Orb.Sun().radec(date);   // apparent RA/Dec of the Sun
