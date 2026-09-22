@@ -29,6 +29,8 @@ test('package: metadata and local CommonJS entry are stable', () => {
   assert.strictEqual(typeof Orb.Kepler, 'function');
   assert.strictEqual(typeof Orb.SGP4, 'function');
   assert.strictEqual(typeof Orb.Observation, 'function');
+  assert.strictEqual(Orb.Instant, undefined);
+  assert.strictEqual(Orb.makeState, undefined);
 });
 
 test('package: exact tarball supports CJS, ESM, UMD, and full VSOP subpaths', () => {
@@ -55,6 +57,10 @@ test('package: exact tarball supports CJS, ESM, UMD, and full VSOP subpaths', ()
     assert.ok(files.has('dist/orb.esm.js'));
     assert.ok(files.has('dist/orb.esm.mjs'));
     assert.ok(files.has('src/vsop87a/package.json'));
+    assert.ok(files.has('src/time/index.js'));
+    assert.ok(files.has('src/frames/index.js'));
+    assert.ok(files.has('src/geodesy/index.js'));
+    assert.ok(files.has('src/vocab/index.js'));
     assert.ok(![...files].some((filename) => filename.startsWith('test/')));
     assert.ok(![...files].some((filename) => filename.startsWith('.ai/')));
     assert.ok(![...files].some((filename) => filename.startsWith('tools/')));
@@ -89,6 +95,38 @@ test('package: exact tarball supports CJS, ESM, UMD, and full VSOP subpaths', ()
         '--input-type=module',
         '-e',
         `import { SATURN_FULL_COEF } from '${PACKAGE_NAME}/vsop87a/saturn'; console.log(Array.isArray(SATURN_FULL_COEF))`
+      ]),
+      'true'
+    );
+    assert.strictEqual(
+      runNode(consumer, [
+        '--input-type=module',
+        '-e',
+        `import { Instant } from '${PACKAGE_NAME}/time'; console.log(Instant.fromISO('2000-01-01T12:00:00Z').jd('utc'))`
+      ]),
+      '2451545'
+    );
+    assert.strictEqual(
+      runNode(consumer, [
+        '--input-type=module',
+        '-e',
+        `import { makeState } from '${PACKAGE_NAME}/frames'; import { Instant } from '${PACKAGE_NAME}/time'; console.log(makeState({t:Instant.fromUnixMs(0),frame:'ecef',center:'earth',r:[1,2,3]}).r.constructor.name)`
+      ]),
+      'Float64Array'
+    );
+    assert.strictEqual(
+      runNode(consumer, [
+        '--input-type=module',
+        '-e',
+        `import { geodeticToEcef } from '${PACKAGE_NAME}/geodesy'; console.log(geodeticToEcef({latitude:0,longitude:0})[0])`
+      ]),
+      '6378.137'
+    );
+    assert.strictEqual(
+      runNode(consumer, [
+        '--input-type=module',
+        '-e',
+        `import { isFrame } from '${PACKAGE_NAME}/vocab'; console.log(isFrame('teme'))`
       ]),
       'true'
     );

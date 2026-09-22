@@ -6,6 +6,10 @@
   "files": [
     "dist",
     "src/*.js",
+    "src/time",
+    "src/frames",
+    "src/geodesy",
+    "src/vocab",
     "src/vsop87a",
     "readme.md",
     "usage.en.md",
@@ -19,12 +23,24 @@
     },
     "./dist/*": "./dist/*",
     "./src/*": "./src/*",
+    "./time": {
+      "import": "./src/time/index.js"
+    },
+    "./frames": {
+      "import": "./src/frames/index.js"
+    },
+    "./geodesy": {
+      "import": "./src/geodesy/index.js"
+    },
+    "./vocab": {
+      "import": "./src/vocab/index.js"
+    },
     "./vsop87a/*.js": "./src/vsop87a/*.js",
     "./vsop87a/*": "./src/vsop87a/*.js",
     "./package.json": "./package.json"
   },
   "scripts": {
-    "test": "node test/run.js",
+    "test": "node test/run.js && node test/m1/core.mjs",
     "build": "rollup -c rollup.config.js",
     "bench": "node tools/bench.mjs",
     "vsop:check": "node tools/vsop-compile.mjs --check",
