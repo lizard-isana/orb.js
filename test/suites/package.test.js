@@ -96,6 +96,11 @@ test('package: exact tarball supports legacy entries and optional model subpaths
     assert.ok(files.has('src/observer/index.js'));
     assert.ok(files.has('src/sgp4/index.js'));
     assert.ok(files.has('src/vocab/index.js'));
+    assert.ok(files.has('readme.md'));
+    assert.ok(files.has('usage.en.md'));
+    assert.ok(files.has('usage.ja.md'));
+    assert.ok(files.has('migration-v2-to-v3.1.en.md'));
+    assert.ok(files.has('migration-v2-to-v3.1.ja.md'));
     assert.ok(![...files].some((filename) => filename.startsWith('test/')));
     assert.ok(![...files].some((filename) => filename.startsWith('.ai/')));
     assert.ok(![...files].some((filename) => filename.startsWith('tools/')));

@@ -20,6 +20,8 @@
     "readme.md",
     "usage.en.md",
     "usage.ja.md",
+    "migration-v2-to-v3.1.en.md",
+    "migration-v2-to-v3.1.ja.md",
     "MIT-LICENSE"
   ],
   "exports": {
@@ -61,7 +63,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "test": "node test/run.js && node test/m1/core.mjs && node test/m2/core.mjs && node test/m3/core.mjs && node test/m4/core.mjs && node test/m5/core.mjs",
+    "test": "node test/run.js && node test/m1/core.mjs && node test/m2/core.mjs && node test/m3/core.mjs && node test/m4/core.mjs && node test/m5/core.mjs && node test/m7/docs.mjs",
     "build": "rollup -c rollup.config.js",
     "bench": "node tools/bench.mjs",
     "vsop:check": "node tools/vsop-compile.mjs --check",
