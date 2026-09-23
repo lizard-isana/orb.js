@@ -106,6 +106,32 @@
     return str.slice(0 - length);
   };
 
+  function ownKeys(object, enumerableOnly) {
+    var keys = Object.keys(object);
+
+    if (Object.getOwnPropertySymbols) {
+      var symbols = Object.getOwnPropertySymbols(object);
+      enumerableOnly && (symbols = symbols.filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+      })), keys.push.apply(keys, symbols);
+    }
+
+    return keys;
+  }
+
+  function _objectSpread2(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = null != arguments[i] ? arguments[i] : {};
+      i % 2 ? ownKeys(Object(source), !0).forEach(function (key) {
+        _defineProperty(target, key, source[key]);
+      }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) {
+        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+      });
+    }
+
+    return target;
+  }
+
   function _typeof(obj) {
     "@babel/helpers - typeof";
 
@@ -156,6 +182,10 @@
     return obj;
   }
 
+  function _slicedToArray(arr, i) {
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
+  }
+
   function _toConsumableArray(arr) {
     return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
   }
@@ -164,8 +194,42 @@
     if (Array.isArray(arr)) return _arrayLikeToArray(arr);
   }
 
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+
   function _iterableToArray(iter) {
     if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
+  }
+
+  function _iterableToArrayLimit(arr, i) {
+    var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"];
+
+    if (_i == null) return;
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+
+    var _s, _e;
+
+    try {
+      for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
   }
 
   function _unsupportedIterableToArray(o, minLen) {
@@ -187,6 +251,67 @@
 
   function _nonIterableSpread() {
     throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  function _createForOfIteratorHelper(o, allowArrayLike) {
+    var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+
+    if (!it) {
+      if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+        if (it) o = it;
+        var i = 0;
+
+        var F = function () {};
+
+        return {
+          s: F,
+          n: function () {
+            if (i >= o.length) return {
+              done: true
+            };
+            return {
+              done: false,
+              value: o[i++]
+            };
+          },
+          e: function (e) {
+            throw e;
+          },
+          f: F
+        };
+      }
+
+      throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+    }
+
+    var normalCompletion = true,
+        didErr = false,
+        err;
+    return {
+      s: function () {
+        it = it.call(o);
+      },
+      n: function () {
+        var step = it.next();
+        normalCompletion = step.done;
+        return step;
+      },
+      e: function (e) {
+        didErr = true;
+        err = e;
+      },
+      f: function () {
+        try {
+          if (!normalCompletion && it.return != null) it.return();
+        } finally {
+          if (didErr) throw err;
+        }
+      }
+    };
   }
 
   var ObliquityCoef = function ObliquityCoef(date) {
@@ -1828,7 +1953,7 @@
 
   var AU_KM = 149597870.7;
   var SECONDS_PER_DAY = 86400;
-  var DEG = Math.PI / 180;
+  var DEG$1 = Math.PI / 180;
 
   function finite(value) {
     return value !== null && value !== undefined && Number.isFinite(Number(value));
@@ -1848,7 +1973,7 @@
 
   function trueAnomalyAtEpoch(elements, eccentricity) {
     if (!(eccentricity < 1 && finite(elements.mean_anomaly) && finite(elements.epoch))) return 0;
-    var meanAnomaly = (Number(elements.mean_anomaly) % 360 + 360) % 360 * DEG;
+    var meanAnomaly = (Number(elements.mean_anomaly) % 360 + 360) % 360 * DEG$1;
     var eccentricAnomaly = solveEllipticAnomaly(meanAnomaly, eccentricity);
     return Math.atan2(Math.sqrt(1 - Math.pow(eccentricity, 2)) * Math.sin(eccentricAnomaly), Math.cos(eccentricAnomaly) - eccentricity);
   }
@@ -3459,176 +3584,595 @@
     return result;
   };
 
-  // spelling instead of five digits: the leading digit becomes a capital
-  // letter, skipping I and O so they are not confused with 1 and 0. A is 10,
-  // B is 11, ... Z is 33, which covers catalog numbers up to 339999.
-  // Space-Track keeps reporting NORAD_CAT_ID numerically in the GP class, so
-  // decode Alpha-5 back to a number instead of leaving Number() to yield NaN.
+  var ALPHA5_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  var DEG = Math.PI / 180;
+  var MINUTES_PER_DAY = 1440;
+  var MS_PER_DAY = 86400000;
 
-  var ALPHA5_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-  function ParseCatalogNumber(value) {
-    var text = String(value === null || value === undefined ? "" : value).trim();
+  function fail(message) {
+    var ErrorType = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : RangeError;
+    throw new ErrorType("sgp4: ".concat(message));
+  }
 
-    if (text.length === 0) {
-      return NaN;
+  function requireObject(value, label) {
+    if (!value || _typeof(value) !== 'object' || Array.isArray(value)) {
+      fail("".concat(label, " must be an object"), TypeError);
     }
 
+    return value;
+  }
+
+  function finiteNumber(value, label) {
+    if (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) {
+      fail("".concat(label, " must be a finite number"), TypeError);
+    }
+
+    return Number(value);
+  }
+
+  function boundedNumber(value, minimum, maximum, label) {
+    var maximumInclusive = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+    var number = finiteNumber(value, label);
+
+    if (number < minimum || (maximumInclusive ? number > maximum : number >= maximum)) {
+      var upper = maximumInclusive ? '<=' : '<';
+      fail("".concat(label, " must satisfy ").concat(minimum, " <= value ").concat(upper, " ").concat(maximum));
+    }
+
+    return number;
+  }
+
+  function integer(value, label, fallback) {
+    if ((value === undefined || value === null || value === '') && fallback !== undefined) {
+      return fallback;
+    }
+
+    var number = finiteNumber(value, label);
+    if (!Number.isInteger(number)) fail("".concat(label, " must be an integer"));
+    return number;
+  }
+
+  function parseCatalogNumber(value) {
+    var text = String(value === null || value === undefined ? '' : value).trim();
+    if (text.length === 0) return NaN;
     var alpha5 = text.toUpperCase();
 
     if (/^[A-HJ-NP-Z][0-9]{4}$/.test(alpha5)) {
-      var letter_index = ALPHA5_LETTERS.indexOf(alpha5.charAt(0));
+      var letterIndex = ALPHA5_LETTERS.indexOf(alpha5[0]);
+      if (letterIndex >= 0) return (letterIndex + 10) * 10000 + Number(alpha5.slice(1));
+    }
 
-      if (letter_index >= 0) {
-        return (letter_index + 10) * 10000 + Number(alpha5.slice(1));
+    if (/^[0-9]+$/.test(text)) return Number(text);
+    return NaN;
+  }
+
+  function requireCatalogNumber(value, label) {
+    var number = parseCatalogNumber(value);
+
+    if (!Number.isInteger(number) || number < 0 || number > 339999) {
+      fail("".concat(label, " is not a numeric or Alpha-5 catalogue number"));
+    }
+
+    return number;
+  }
+
+  function parseImpliedDecimal(mantissa, exponent) {
+    var mantissaText = String(mantissa);
+    var exponentText = String(exponent);
+
+    if (!/^[ +-][0-9]{5}$/.test(mantissaText)) {
+      fail("invalid implied-decimal mantissa '".concat(mantissaText, "'"));
+    }
+
+    if (!/^[+-][0-9]$/.test(exponentText)) {
+      fail("invalid implied-decimal exponent '".concat(exponentText, "'"));
+    }
+
+    return Number(mantissaText) * 1e-5 * Math.pow(10, Number(exponentText));
+  }
+  function normalizeTleInput(input) {
+    var _input$line, _input$line2, _input$name;
+
+    requireObject(input, 'TLE');
+    var firstLine = input.first_line;
+    var secondLine = input.second_line;
+    var line1 = (_input$line = input.line1) !== null && _input$line !== void 0 ? _input$line : firstLine;
+    var line2 = (_input$line2 = input.line2) !== null && _input$line2 !== void 0 ? _input$line2 : secondLine;
+
+    if (input.line1 !== undefined && firstLine !== undefined && input.line1 !== firstLine) {
+      fail('line1 and first_line disagree');
+    }
+
+    if (input.line2 !== undefined && secondLine !== undefined && input.line2 !== secondLine) {
+      fail('line2 and second_line disagree');
+    }
+
+    if (typeof line1 !== 'string' || typeof line2 !== 'string') {
+      fail('TLE must provide string line1/line2 or first_line/second_line', TypeError);
+    }
+
+    if (line1.length < 69) fail('TLE line 1 must contain at least 69 columns');
+    if (line2.length < 69) fail('TLE line 2 must contain at least 69 columns');
+    if (line1[0] !== '1') fail("TLE line 1 must start with '1'");
+    if (line2[0] !== '2') fail("TLE line 2 must start with '2'");
+    return Object.freeze({
+      name: (_input$name = input.name) !== null && _input$name !== void 0 ? _input$name : null,
+      line1: line1,
+      line2: line2
+    });
+  }
+  function computeTleChecksum(line) {
+    if (typeof line !== 'string' || line.length < 68) {
+      fail('checksum requires at least the first 68 TLE columns', TypeError);
+    }
+
+    var sum = 0;
+
+    var _iterator = _createForOfIteratorHelper(line.slice(0, 68)),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var character = _step.value;
+        if (character >= '0' && character <= '9') sum += Number(character);else if (character === '-') sum += 1;
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+
+    return sum % 10;
+  }
+
+  function checksumForLine(line) {
+    var expected = computeTleChecksum(line);
+    var character = line[68];
+    var actual = /^[0-9]$/.test(character) ? Number(character) : null;
+    return Object.freeze({
+      expected: expected,
+      actual: actual,
+      valid: actual === expected
+    });
+  }
+
+  function tleChecksumStatus(input) {
+    var tle = normalizeTleInput(input);
+    return Object.freeze({
+      line1: checksumForLine(tle.line1),
+      line2: checksumForLine(tle.line2)
+    });
+  }
+  function validateTleChecksum(input) {
+    var status = tleChecksumStatus(input);
+
+    for (var _i = 0, _arr = [1, 2]; _i < _arr.length; _i++) {
+      var lineNumber = _arr[_i];
+      var result = status["line".concat(lineNumber)];
+
+      if (!result.valid) {
+        var _result$actual;
+
+        fail("TLE line ".concat(lineNumber, " checksum mismatch: expected ").concat(result.expected, ", got ").concat((_result$actual = result.actual) !== null && _result$actual !== void 0 ? _result$actual : 'none'));
       }
     }
 
-    return Number(text);
+    return true;
   }
+
+  function numericField(text, pattern, label) {
+    if (!pattern.test(text)) fail("invalid ".concat(label, " field '").concat(text, "'"));
+    return finiteNumber(text, label);
+  }
+
+  function parseInternationalDesignator(text) {
+    var compact = text.trim();
+    if (compact === '') return null;
+
+    if (!/^[0-9]{5}[A-Z0-9]{0,3}$/i.test(compact)) {
+      fail("invalid international designator '".concat(text, "'"));
+    }
+
+    var shortYear = Number(compact.slice(0, 2));
+    var year = shortYear < 57 ? shortYear + 2000 : shortYear + 1900;
+    return "".concat(year, "-").concat(compact.slice(2));
+  }
+
+  function daysInYear(year) {
+    return new Date(Date.UTC(year, 1, 29)).getUTCMonth() === 1 ? 366 : 365;
+  }
+
+  function epochFromTle(line1) {
+    var yearText = line1.slice(18, 20);
+    var dayText = line1.slice(20, 32);
+    if (!/^[0-9]{2}$/.test(yearText)) fail("invalid epoch year '".concat(yearText, "'"));
+    var shortYear = Number(yearText);
+    var year = shortYear < 57 ? 2000 + shortYear : 1900 + shortYear;
+    var day = numericField(dayText, /^[0-9]{3}\.[0-9]{8}$/, 'epoch day');
+    if (day < 1 || day >= daysInYear(year) + 1) fail("epoch day ".concat(day, " is outside year ").concat(year));
+    return {
+      epochYear: year,
+      epochDay: day,
+      epochUnixMs: Date.UTC(year, 0, 1) + (day - 1) * MS_PER_DAY
+    };
+  }
+
+  function parseTleOptions(options) {
+    var _options$validateChec;
+
+    if (options === undefined) return {
+      validateChecksum: false
+    };
+    requireObject(options, 'TLE options');
+
+    for (var _i2 = 0, _Object$keys = Object.keys(options); _i2 < _Object$keys.length; _i2++) {
+      var key = _Object$keys[_i2];
+      if (key !== 'validateChecksum') fail("unknown TLE option '".concat(key, "'"));
+    }
+
+    var validateChecksum = (_options$validateChec = options.validateChecksum) !== null && _options$validateChec !== void 0 ? _options$validateChec : false;
+
+    if (typeof validateChecksum !== 'boolean') {
+      fail('validateChecksum must be boolean', TypeError);
+    }
+
+    return {
+      validateChecksum: validateChecksum
+    };
+  }
+
+  function parseTleRecord(input, options) {
+    var tle = normalizeTleInput(input);
+    var parsedOptions = parseTleOptions(options);
+    if (parsedOptions.validateChecksum) validateTleChecksum(tle);
+    var catalogNumber1 = requireCatalogNumber(tle.line1.slice(2, 7), 'TLE line 1 catalogue number');
+    var catalogNumber2 = requireCatalogNumber(tle.line2.slice(2, 7), 'TLE line 2 catalogue number');
+
+    if (catalogNumber1 !== catalogNumber2) {
+      fail("TLE catalogue numbers do not match (".concat(catalogNumber1, " !== ").concat(catalogNumber2, ")"));
+    }
+
+    var epoch = epochFromTle(tle.line1);
+    var inclinationDeg = boundedNumber(numericField(tle.line2.slice(8, 16), /^ *[0-9]{1,3}\.[0-9]{4}$/, 'inclination'), 0, 180, 'inclination');
+    var rightAscensionDeg = boundedNumber(numericField(tle.line2.slice(17, 25), /^ *[0-9]{1,3}\.[0-9]{4}$/, 'right ascension'), 0, 360, 'right ascension', false);
+    var eccentricityText = tle.line2.slice(26, 33);
+
+    if (!/^[0-9]{7}$/.test(eccentricityText)) {
+      fail("invalid eccentricity field '".concat(eccentricityText, "'"));
+    }
+
+    var eccentricity = Number("0.".concat(eccentricityText));
+    var argumentOfPerigeeDeg = boundedNumber(numericField(tle.line2.slice(34, 42), /^ *[0-9]{1,3}\.[0-9]{4}$/, 'argument of perigee'), 0, 360, 'argument of perigee', false);
+    var meanAnomalyDeg = boundedNumber(numericField(tle.line2.slice(43, 51), /^ *[0-9]{1,3}\.[0-9]{4}$/, 'mean anomaly'), 0, 360, 'mean anomaly', false);
+    var meanMotionRevPerDay = numericField(tle.line2.slice(52, 63), /^ *[0-9]{1,2}\.[0-9]{8}$/, 'mean motion');
+    if (!(meanMotionRevPerDay > 0)) fail('mean motion must be positive');
+    var checksums = tleChecksumStatus(tle);
+    return Object.freeze(_objectSpread2(_objectSpread2({
+      sourceFormat: 'tle',
+      name: tle.name,
+      line1: tle.line1,
+      line2: tle.line2,
+      catalogNumber: catalogNumber1,
+      classification: tle.line1.slice(7, 8),
+      internationalDesignator: parseInternationalDesignator(tle.line1.slice(9, 17)),
+      legacyInternationalDesignator: function () {
+        var raw = tle.line1.slice(9, 18);
+        var shortYear = Number(raw.slice(0, 2));
+        var century = shortYear < 58 ? '20' : '19';
+        return "".concat(century).concat(raw.slice(0, 2), "-").concat(raw.slice(2, 7));
+      }()
+    }, epoch), {}, {
+      meanMotionDot: numericField(tle.line1.slice(33, 43), /^[ +-]\.[0-9]{8}$/, 'mean motion first derivative'),
+      meanMotionDdot: parseImpliedDecimal(tle.line1.slice(44, 50), tle.line1.slice(50, 52)),
+      bstar: parseImpliedDecimal(tle.line1.slice(53, 59), tle.line1.slice(59, 61)),
+      ephemerisType: integer(tle.line1.slice(62, 63).trim() || 0, 'ephemeris type'),
+      elementSetNumber: integer(tle.line1.slice(64, 68).trim() || 0, 'element set number'),
+      inclination: inclinationDeg * DEG,
+      inclinationDeg: inclinationDeg,
+      rightAscension: rightAscensionDeg * DEG,
+      rightAscensionDeg: rightAscensionDeg,
+      eccentricity: eccentricity,
+      argumentOfPerigee: argumentOfPerigeeDeg * DEG,
+      argumentOfPerigeeDeg: argumentOfPerigeeDeg,
+      meanAnomaly: meanAnomalyDeg * DEG,
+      meanAnomalyDeg: meanAnomalyDeg,
+      meanMotionRevPerDay: meanMotionRevPerDay,
+      meanMotion: meanMotionRevPerDay * 2 * Math.PI / MINUTES_PER_DAY,
+      revolutionsAtEpoch: integer(tle.line2.slice(63, 68).trim() || 0, 'revolutions at epoch'),
+      checksums: checksums,
+      elementType: 'sgp4-mean-elements',
+      bstarType: 'sgp4-drag-term',
+      gravityModel: 'wgs72'
+    }));
+  }
+
+  function parseUtcEpoch(value) {
+    if (typeof value !== 'string') fail('OMM EPOCH must be an ISO string', TypeError);
+    var match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(?:Z)?$/.exec(value.trim());
+    if (!match) fail("invalid OMM EPOCH '".concat(value, "'"));
+
+    var _match = _slicedToArray(match, 8),
+        yearText = _match[1],
+        monthText = _match[2],
+        dayText = _match[3],
+        hourText = _match[4],
+        minuteText = _match[5],
+        secondText = _match[6],
+        _match$ = _match[7],
+        fraction = _match$ === void 0 ? '' : _match$;
+
+    var year = Number(yearText);
+    var month = Number(monthText);
+    var day = Number(dayText);
+    var hour = Number(hourText);
+    var minute = Number(minuteText);
+    var second = Number(secondText);
+
+    if (month < 1 || month > 12 || hour > 23 || minute > 59 || second > 59) {
+      fail("invalid OMM EPOCH '".concat(value, "'"));
+    }
+
+    var whole = Date.UTC(year, month - 1, day, hour, minute, second);
+    var date = new Date(whole);
+
+    if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+      fail("invalid OMM EPOCH '".concat(value, "'"));
+    }
+
+    var fractionalMilliseconds = fraction === '' ? 0 : Number("0.".concat(fraction)) * 1000;
+    return whole + fractionalMilliseconds;
+  }
+
+  function requireOmmConvention(omm, key, expected) {
+    if (omm[key] !== undefined && String(omm[key]).toUpperCase() !== expected) {
+      fail("OMM ".concat(key, " must be '").concat(expected, "'"));
+    }
+  }
+
+  function normalizeOmm(input) {
+    var _omm$OBJECT_NAME, _omm$OBJECT_ID, _omm$CLASSIFICATION_T, _omm$BSTAR, _omm$MEAN_MOTION_DOT, _omm$MEAN_MOTION_DDOT;
+
+    var omm = requireObject(input, 'OMM');
+    if (omm.CCSDS_OMM_VERS === undefined) fail('OMM must provide CCSDS_OMM_VERS');
+    requireOmmConvention(omm, 'CENTER_NAME', 'EARTH');
+    requireOmmConvention(omm, 'REF_FRAME', 'TEME');
+    requireOmmConvention(omm, 'TIME_SYSTEM', 'UTC');
+    requireOmmConvention(omm, 'MEAN_ELEMENT_THEORY', 'SGP4');
+    var catalogNumber = requireCatalogNumber(omm.NORAD_CAT_ID, 'OMM NORAD_CAT_ID');
+    parseUtcEpoch(omm.EPOCH);
+    var eccentricity = boundedNumber(omm.ECCENTRICITY, 0, 1, 'OMM ECCENTRICITY', false);
+    var inclinationDeg = boundedNumber(omm.INCLINATION, 0, 180, 'OMM INCLINATION');
+    var rightAscensionDeg = boundedNumber(omm.RA_OF_ASC_NODE, 0, 360, 'OMM RA_OF_ASC_NODE', false);
+    var argumentOfPerigeeDeg = boundedNumber(omm.ARG_OF_PERICENTER, 0, 360, 'OMM ARG_OF_PERICENTER', false);
+    var meanAnomalyDeg = boundedNumber(omm.MEAN_ANOMALY, 0, 360, 'OMM MEAN_ANOMALY', false);
+    var meanMotionRevPerDay = finiteNumber(omm.MEAN_MOTION, 'OMM MEAN_MOTION');
+    if (!(meanMotionRevPerDay > 0)) fail('OMM MEAN_MOTION must be positive');
+    return Object.freeze(_objectSpread2(_objectSpread2({}, omm), {}, {
+      CCSDS_OMM_VERS: String(omm.CCSDS_OMM_VERS),
+      OBJECT_NAME: (_omm$OBJECT_NAME = omm.OBJECT_NAME) !== null && _omm$OBJECT_NAME !== void 0 ? _omm$OBJECT_NAME : null,
+      OBJECT_ID: (_omm$OBJECT_ID = omm.OBJECT_ID) !== null && _omm$OBJECT_ID !== void 0 ? _omm$OBJECT_ID : null,
+      CENTER_NAME: 'EARTH',
+      REF_FRAME: 'TEME',
+      TIME_SYSTEM: 'UTC',
+      MEAN_ELEMENT_THEORY: 'SGP4',
+      EPOCH: omm.EPOCH,
+      NORAD_CAT_ID: catalogNumber,
+      CLASSIFICATION_TYPE: (_omm$CLASSIFICATION_T = omm.CLASSIFICATION_TYPE) !== null && _omm$CLASSIFICATION_T !== void 0 ? _omm$CLASSIFICATION_T : 'U',
+      MEAN_MOTION: meanMotionRevPerDay,
+      ECCENTRICITY: eccentricity,
+      INCLINATION: inclinationDeg,
+      RA_OF_ASC_NODE: rightAscensionDeg,
+      ARG_OF_PERICENTER: argumentOfPerigeeDeg,
+      MEAN_ANOMALY: meanAnomalyDeg,
+      EPHEMERIS_TYPE: integer(omm.EPHEMERIS_TYPE, 'OMM EPHEMERIS_TYPE', 0),
+      ELEMENT_SET_NO: integer(omm.ELEMENT_SET_NO, 'OMM ELEMENT_SET_NO', 0),
+      REV_AT_EPOCH: integer(omm.REV_AT_EPOCH, 'OMM REV_AT_EPOCH', 0),
+      BSTAR: finiteNumber((_omm$BSTAR = omm.BSTAR) !== null && _omm$BSTAR !== void 0 ? _omm$BSTAR : 0, 'OMM BSTAR'),
+      MEAN_MOTION_DOT: finiteNumber((_omm$MEAN_MOTION_DOT = omm.MEAN_MOTION_DOT) !== null && _omm$MEAN_MOTION_DOT !== void 0 ? _omm$MEAN_MOTION_DOT : 0, 'OMM MEAN_MOTION_DOT'),
+      MEAN_MOTION_DDOT: finiteNumber((_omm$MEAN_MOTION_DDOT = omm.MEAN_MOTION_DDOT) !== null && _omm$MEAN_MOTION_DDOT !== void 0 ? _omm$MEAN_MOTION_DDOT : 0, 'OMM MEAN_MOTION_DDOT')
+    }));
+  }
+  function parseOmmRecord(input) {
+    var _omm$USER_DEFINED_TLE, _omm$USER_DEFINED_TLE2;
+
+    var omm = normalizeOmm(input);
+    var epochUnixMs = parseUtcEpoch(omm.EPOCH);
+    return Object.freeze({
+      sourceFormat: 'omm',
+      name: omm.OBJECT_NAME,
+      line1: (_omm$USER_DEFINED_TLE = omm.USER_DEFINED_TLE_LINE1) !== null && _omm$USER_DEFINED_TLE !== void 0 ? _omm$USER_DEFINED_TLE : null,
+      line2: (_omm$USER_DEFINED_TLE2 = omm.USER_DEFINED_TLE_LINE2) !== null && _omm$USER_DEFINED_TLE2 !== void 0 ? _omm$USER_DEFINED_TLE2 : null,
+      catalogNumber: omm.NORAD_CAT_ID,
+      classification: omm.CLASSIFICATION_TYPE,
+      internationalDesignator: omm.OBJECT_ID,
+      legacyInternationalDesignator: omm.OBJECT_ID,
+      epochYear: new Date(epochUnixMs).getUTCFullYear(),
+      epochDay: null,
+      epochUnixMs: epochUnixMs,
+      meanMotionDot: omm.MEAN_MOTION_DOT,
+      meanMotionDdot: omm.MEAN_MOTION_DDOT,
+      bstar: omm.BSTAR,
+      ephemerisType: omm.EPHEMERIS_TYPE,
+      elementSetNumber: omm.ELEMENT_SET_NO,
+      inclination: omm.INCLINATION * DEG,
+      inclinationDeg: omm.INCLINATION,
+      rightAscension: omm.RA_OF_ASC_NODE * DEG,
+      rightAscensionDeg: omm.RA_OF_ASC_NODE,
+      eccentricity: omm.ECCENTRICITY,
+      argumentOfPerigee: omm.ARG_OF_PERICENTER * DEG,
+      argumentOfPerigeeDeg: omm.ARG_OF_PERICENTER,
+      meanAnomaly: omm.MEAN_ANOMALY * DEG,
+      meanAnomalyDeg: omm.MEAN_ANOMALY,
+      meanMotionRevPerDay: omm.MEAN_MOTION,
+      meanMotion: omm.MEAN_MOTION * 2 * Math.PI / MINUTES_PER_DAY,
+      revolutionsAtEpoch: omm.REV_AT_EPOCH,
+      checksums: null,
+      elementType: 'sgp4-mean-elements',
+      bstarType: 'sgp4-drag-term',
+      gravityModel: 'wgs72',
+      omm: omm
+    });
+  }
+
+  function formatCreationDate(value) {
+    var date = value instanceof Date ? value : new Date(value);
+    if (!Number.isFinite(date.getTime())) fail('creationDate must be a valid Date', TypeError);
+    return date.toISOString().replace('T', ' ').slice(0, 19);
+  }
+
+  function formatEpoch(epochUnixMs, fractionDigits, truncateFraction) {
+    var wholeMilliseconds = Math.floor(epochUnixMs);
+    var secondStart = Math.floor(wholeMilliseconds / 1000) * 1000;
+    if (fractionDigits === 0) return new Date(secondStart).toISOString().slice(0, 19);
+    var secondsFraction = (epochUnixMs - Math.floor(epochUnixMs / 1000) * 1000) / 1000;
+    var scale = Math.pow(10, fractionDigits);
+    var units = truncateFraction ? Math.floor(secondsFraction * scale + 1e-7) : Math.round(secondsFraction * scale);
+
+    if (units === scale) {
+      secondStart += 1000;
+      units = 0;
+    }
+
+    var secondBase = new Date(secondStart).toISOString().slice(0, 19);
+    var fraction = String(units).padStart(fractionDigits, '0');
+    return "".concat(secondBase, ".").concat(fraction);
+  }
+
+  function tleRecordToOmm(record) {
+    var _options$fractionDigi, _options$truncateFrac, _options$legacyFormat, _record$name, _record$legacyInterna, _record$international;
+
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    requireObject(record, 'TLE record');
+    requireObject(options, 'TLE-to-OMM options');
+
+    for (var _i3 = 0, _Object$keys2 = Object.keys(options); _i3 < _Object$keys2.length; _i3++) {
+      var key = _Object$keys2[_i3];
+
+      if (key !== 'creationDate' && key !== 'fractionDigits' && key !== 'truncateFraction' && key !== 'legacyFormatting') {
+        fail("unknown TLE-to-OMM option '".concat(key, "'"));
+      }
+    }
+
+    var fractionDigits = (_options$fractionDigi = options.fractionDigits) !== null && _options$fractionDigi !== void 0 ? _options$fractionDigi : 6;
+
+    if (!Number.isInteger(fractionDigits) || fractionDigits < 0 || fractionDigits > 9) {
+      fail('fractionDigits must be an integer between 0 and 9');
+    }
+
+    var truncateFraction = (_options$truncateFrac = options.truncateFraction) !== null && _options$truncateFrac !== void 0 ? _options$truncateFrac : false;
+
+    if (typeof truncateFraction !== 'boolean') {
+      fail('truncateFraction must be boolean', TypeError);
+    }
+
+    var legacyFormatting = (_options$legacyFormat = options.legacyFormatting) !== null && _options$legacyFormat !== void 0 ? _options$legacyFormat : false;
+
+    if (typeof legacyFormatting !== 'boolean') {
+      fail('legacyFormatting must be boolean', TypeError);
+    }
+
+    var name = (_record$name = record.name) !== null && _record$name !== void 0 ? _record$name : 'N/A';
+    var result = {
+      CCSDS_OMM_VERS: '2.0',
+      COMMENT: 'GENERATED VIA ORB.JS',
+      ORIGINATOR: '',
+      OBJECT_NAME: name,
+      OBJECT_ID: legacyFormatting ? (_record$legacyInterna = record.legacyInternationalDesignator) !== null && _record$legacyInterna !== void 0 ? _record$legacyInterna : '' : (_record$international = record.internationalDesignator) !== null && _record$international !== void 0 ? _record$international : '',
+      CENTER_NAME: 'EARTH',
+      REF_FRAME: 'TEME',
+      TIME_SYSTEM: 'UTC',
+      MEAN_ELEMENT_THEORY: 'SGP4',
+      EPOCH: formatEpoch(record.epochUnixMs, fractionDigits, truncateFraction),
+      MEAN_MOTION: record.meanMotionRevPerDay,
+      ECCENTRICITY: record.eccentricity,
+      INCLINATION: record.inclinationDeg,
+      RA_OF_ASC_NODE: record.rightAscensionDeg,
+      ARG_OF_PERICENTER: record.argumentOfPerigeeDeg,
+      MEAN_ANOMALY: record.meanAnomalyDeg,
+      EPHEMERIS_TYPE: record.ephemerisType,
+      CLASSIFICATION_TYPE: record.classification,
+      NORAD_CAT_ID: record.catalogNumber,
+      ELEMENT_SET_NO: record.elementSetNumber,
+      REV_AT_EPOCH: record.revolutionsAtEpoch,
+      BSTAR: record.bstar,
+      MEAN_MOTION_DOT: record.meanMotionDot,
+      MEAN_MOTION_DDOT: record.meanMotionDdot,
+      USER_DEFINED_TLE_LINE0: "0 ".concat(name),
+      USER_DEFINED_TLE_LINE1: record.line1,
+      USER_DEFINED_TLE_LINE2: record.line2
+    };
+
+    if (options.creationDate !== undefined) {
+      result.CREATION_DATE = formatCreationDate(options.creationDate);
+    }
+
+    return Object.freeze(result);
+  }
+
+  var ParseCatalogNumber = parseCatalogNumber;
   var SGP4 = /*#__PURE__*/_createClass(function SGP4(elements) {
     var _this = this;
 
     _classCallCheck(this, SGP4);
 
     _defineProperty(this, "TLE2OMM", function () {
-      var tle = _this.tle;
-
-      if (tle.name) {
-        var name = tle.name;
-      } else {
-        var name = "N/A";
-      }
-
-      var line1 = tle.first_line;
-      var line2 = tle.second_line;
-      var date = new Date();
-      var creation_date = date.getUTCFullYear() + "-" + ZeroFill(date.getUTCMonth() + 1, 2) + "-" + ZeroFill(date.getUTCDate(), 2) + " " + ZeroFill(date.getUTCHours(), 2) + ":" + ZeroFill(date.getUTCMinutes(), 2) + ":" + ZeroFill(date.getUTCSeconds(), 2);
-      var id = String(line1.slice(9, 18));
-
-      if (Number(id.slice(0, 2)) < 58) {
-        var epystr = "20";
-      } else {
-        var epystr = "19";
-      }
-      var international_designator = epystr + String(id.slice(0, 2)) + "-" + String(id.slice(2, 7));
-      var epy = Number(line1.slice(18, 20));
-
-      if (epy < 57) {
-        var epoch_year = epy + 2000;
-      } else {
-        var epoch_year = epy + 1900;
-      }
-      var doy = Number(line1.substring(20, 32));
-      var year2 = epoch_year - 1;
-      var epoch = new Date(Date.UTC(year2, 11, 31, 0, 0, 0) + doy * 24 * 60 * 60 * 1000);
-      var epoch_str = epoch.getUTCFullYear() + "-" + ZeroFill(epoch.getUTCMonth() + 1, 2) + "-" + ZeroFill(epoch.getUTCDate(), 2) + "T" + ZeroFill(epoch.getUTCHours(), 2) + ":" + ZeroFill(epoch.getUTCMinutes(), 2) + ":" + ZeroFill(epoch.getUTCSeconds(), 2) + "." + ZeroFill(epoch.getUTCMilliseconds(), 3);
-      var bstar_mantissa = Number(line1.substring(53, 59)) * 1e-5;
-      var bstar_exponent = Number("1e" + Number(line1.substring(59, 61)));
-      var bstar = bstar_mantissa * bstar_exponent;
-      var nddot_mantissa = Number(line1.substring(44, 50)) * 1e-5;
-      var nddot_exponent = Number(line1.substring(50, 52));
-      var mean_motion_ddot = nddot_mantissa * Math.pow(10, nddot_exponent);
-      var omm = {
-        "CCSDS_OMM_VERS": "2.0",
-        "COMMENT": "GENERATED VIA ORB.JS",
-        "CREATION_DATE": creation_date,
-        "ORIGINATOR": "",
-        "OBJECT_NAME": name,
-        "OBJECT_ID": international_designator,
-        "CENTER_NAME": "EARTH",
-        "REF_FRAME": "TEME",
-        "TIME_SYSTEM": "UTC",
-        "MEAN_ELEMENT_THEORY": "SGP4",
-        "EPOCH": epoch_str,
-        "MEAN_MOTION": Number(line2.substring(52, 63)),
-        "ECCENTRICITY": Number(line2.substring(26, 33)) * 1e-7,
-        "INCLINATION": Number(line2.substring(8, 16)),
-        "RA_OF_ASC_NODE": Number(line2.substring(17, 25)),
-        "ARG_OF_PERICENTER": Number(line2.substring(34, 42)),
-        "MEAN_ANOMALY": Number(line2.substring(43, 51)),
-        "EPHEMERIS_TYPE": Number(line1.substring(62, 63)),
-        "CLASSIFICATION_TYPE": line1.slice(7, 8),
-        "NORAD_CAT_ID": ParseCatalogNumber(line1.slice(2, 7)),
-        "ELEMENT_SET_NO": Number(line1.substring(64, 68)),
-        "REV_AT_EPOCH": Number(line2.substring(64, 68)),
-        "BSTAR": bstar,
-        "MEAN_MOTION_DOT": Number(line1.substring(34, 43)),
-        "MEAN_MOTION_DDOT": mean_motion_ddot,
-        "USER_DEFINED_TLE_LINE0": "0 " + name,
-        "USER_DEFINED_TLE_LINE1": line1,
-        "USER_DEFINED_TLE_LINE2": line2
-      };
-      return omm;
+      var record = parseTleRecord(_this.tle);
+      return _objectSpread2({}, tleRecordToOmm(record, {
+        creationDate: new Date(),
+        fractionDigits: 3,
+        truncateFraction: true,
+        legacyFormatting: true
+      }));
     });
 
     _defineProperty(this, "DecodeTLE", function () {
       var tle = _this.tle;
-
-      if (tle.name) {
-        var name = tle.name;
-      } else {
-        var name = "N/A";
-      }
-
       var line1 = tle.first_line;
       var line2 = tle.second_line;
-      var epy = Number(line1.slice(18, 20)); //epoch_year should be smaller than 2057.
-
-      if (epy < 57) {
-        var epoch_year = epy + 2000;
-      } else {
-        var epoch_year = epy + 1900;
-      }
+      var record = parseTleRecord(tle);
       var bstar_mantissa = Number(line1.substring(53, 59)) * 1e-5;
       var bstar_exponent = Number("1e" + Number(line1.substring(59, 61)));
-      var bstar = bstar_mantissa * bstar_exponent;
       var orbital_elements = {
-        name: name,
+        name: record.name || "N/A",
         line_number_1: Number(line1.slice(0, 1)),
-        catalog_no_1: ParseCatalogNumber(line1.slice(2, 7)),
-        security_classification: line1.slice(7, 8),
+        catalog_no_1: record.catalogNumber,
+        security_classification: record.classification,
         international_identification: Number(line1.slice(9, 17)),
-        epoch_year: epoch_year,
-        epoch: Number(line1.substring(20, 32)),
-        first_derivative_mean_motion: Number(line1.substring(33, 43)),
-        second_derivative_mean_motion: Number(line1.substring(44, 52)),
+        epoch_year: record.epochYear,
+        epoch: record.epochDay,
+        first_derivative_mean_motion: record.meanMotionDot,
+        second_derivative_mean_motion: record.meanMotionDdot,
         bstar_mantissa: bstar_mantissa,
         bstar_exponent: bstar_exponent,
-        bstar: bstar,
-        ephemeris_type: Number(line1.substring(62, 63)),
-        element_number: Number(line1.substring(64, 68)),
+        bstar: record.bstar,
+        ephemeris_type: record.ephemerisType,
+        element_number: record.elementSetNumber,
         check_sum_1: Number(line1.substring(68, 69)),
         line_number_2: Number(line2.slice(0, 1)),
-        catalog_no_2: ParseCatalogNumber(line2.slice(2, 7)),
-        inclination: Number(line2.substring(8, 16)),
-        right_ascension: Number(line2.substring(17, 25)),
-        eccentricity: Number(line2.substring(26, 33)) * 1e-7,
-        argument_of_perigee: Number(line2.substring(34, 42)),
-        mean_anomaly: Number(line2.substring(43, 51)),
-        mean_motion: Number(line2.substring(52, 63)),
-        rev_number_at_epoch: Number(line2.substring(64, 68)),
+        catalog_no_2: record.catalogNumber,
+        inclination: record.inclination / Constant.RAD,
+        right_ascension: record.rightAscension / Constant.RAD,
+        eccentricity: record.eccentricity,
+        argument_of_perigee: record.argumentOfPerigee / Constant.RAD,
+        mean_anomaly: record.meanAnomaly / Constant.RAD,
+        mean_motion: record.meanMotionRevPerDay,
+        rev_number_at_epoch: record.revolutionsAtEpoch,
         check_sum_2: Number(line2.substring(68, 69))
       };
       return orbital_elements;
     });
 
     _defineProperty(this, "ParseEpoch", function () {
-      //UTC epoch Date from the OMM EPOCH string
-      var epoch_array = _this.omm.EPOCH.split("T");
-
-      var epoch_date = epoch_array[0].split("-");
-      var epoch_time = epoch_array[1].split(":");
-      return new Date(Date.UTC(Number(epoch_date[0]), Number(epoch_date[1]) - 1, Number(epoch_date[2]), Number(epoch_time[0]), Number(epoch_time[1]), 0, Number(epoch_time[2]) * 1000));
+      return new Date(_this._record.epochUnixMs);
     });
 
     _defineProperty(this, "SetSGP4", function () {
-      var omm = _this.omm;
-      var torad = Math.PI / 180;
+      var record = _this._record;
       var epoch_jd = new Time(_this.ParseEpoch()).jd();
       var satrec = {}; //epoch in days since 1950 Jan 0.0; angles in radians, mean motion rad/min
 
-      sgp4init(satrec, 'i', epoch_jd - 2433281.5, omm.BSTAR, 0.0, 0.0, omm.ECCENTRICITY, omm.ARG_OF_PERICENTER * torad, omm.INCLINATION * torad, omm.MEAN_ANOMALY * torad, omm.MEAN_MOTION * 2.0 * Math.PI / 1440.0, omm.RA_OF_ASC_NODE * torad);
-      satrec.orbital_period = 1440.0 / omm.MEAN_MOTION;
+      sgp4init(satrec, 'i', epoch_jd - 2433281.5, record.bstar, 0.0, 0.0, record.eccentricity, record.argumentOfPerigee, record.inclination, record.meanAnomaly, record.meanMotion, record.rightAscension);
+      satrec.orbital_period = 1440.0 / record.meanMotionRevPerDay;
       satrec.apogee = satrec.alta * wgs72.radiusearthkm;
       satrec.perigee = satrec.altp * wgs72.radiusearthkm;
       return satrec;
@@ -3736,10 +4280,15 @@
       };
     });
 
+    if (!elements || _typeof(elements) !== 'object' || Array.isArray(elements)) {
+      throw new TypeError('sgp4: elements must be a TLE or OMM object');
+    }
+
     this.elements = elements;
 
     if (elements.CCSDS_OMM_VERS) {
       this.omm = elements;
+      this._record = parseOmmRecord(elements);
       this.tle = {
         name: elements.OBJECT_NAME,
         first_line: elements.USER_DEFINED_TLE_LINE1,
@@ -3747,27 +4296,33 @@
       };
     } else {
       this.tle = this.elements;
-      this.omm = this.TLE2OMM();
+      this._record = parseTleRecord(elements);
+      this.omm = _objectSpread2({}, tleRecordToOmm(this._record, {
+        creationDate: new Date(),
+        fractionDigits: 3,
+        truncateFraction: true,
+        legacyFormatting: true
+      }));
     }
 
-    var _omm = this.omm;
+    var omm = this.omm;
     this.orbital_elements = {
-      name: _omm.OBJECT_NAME,
-      catalog_number: _omm.NORAD_CAT_ID,
-      security_classification: _omm.CLASSIFICATION_TYPE,
-      international_designator: _omm.OBJECT_ID,
-      first_derivative_mean_motion: _omm.MEAN_MOTION_DOT,
-      second_derivative_mean_motion: _omm.MEAN_MOTION_DDOT,
-      bstar: _omm.BSTAR,
-      ephemeris_type: _omm.EPHEMERIS_TYPE,
-      element_number: _omm.ELEMENT_SET_NO,
-      inclination: _omm.INCLINATION,
-      right_ascension: _omm.RA_OF_ASC_NODE,
-      eccentricity: _omm.ECCENTRICITY,
-      argument_of_perigee: _omm.ARG_OF_PERICENTER,
-      mean_anomaly: _omm.MEAN_ANOMALY,
-      mean_motion: _omm.MEAN_MOTION,
-      rev_number_at_epoch: _omm.REV_AT_EPOCH
+      name: omm.OBJECT_NAME,
+      catalog_number: omm.NORAD_CAT_ID,
+      security_classification: omm.CLASSIFICATION_TYPE,
+      international_designator: omm.OBJECT_ID,
+      first_derivative_mean_motion: omm.MEAN_MOTION_DOT,
+      second_derivative_mean_motion: omm.MEAN_MOTION_DDOT,
+      bstar: omm.BSTAR,
+      ephemeris_type: omm.EPHEMERIS_TYPE,
+      element_number: omm.ELEMENT_SET_NO,
+      inclination: omm.INCLINATION,
+      right_ascension: omm.RA_OF_ASC_NODE,
+      eccentricity: omm.ECCENTRICITY,
+      argument_of_perigee: omm.ARG_OF_PERICENTER,
+      mean_anomaly: omm.MEAN_ANOMALY,
+      mean_motion: omm.MEAN_MOTION,
+      rev_number_at_epoch: omm.REV_AT_EPOCH
     };
     this.sgp4 = this.SetSGP4();
     this.orbital_period = this.sgp4.orbital_period;

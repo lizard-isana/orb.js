@@ -1,38 +1,27 @@
 //sgp4.js
 //require core.js, time.js
 
-import {Constant,ZeroFill} from './orb-core.js'
+import {Constant} from './orb-core.js'
 import {Time} from './orb-time.js'
 import {sgp4init, sgp4, wgs72} from './orb-sgp4-propagation.js'
+import {
+  parseCatalogNumber,
+  parseOmmRecord,
+  parseTleRecord,
+  tleRecordToOmm
+} from './sgp4/parser.js'
 
-// Catalog numbers passed 99999, so TLE columns 3-7 may hold the Alpha-5
-// spelling instead of five digits: the leading digit becomes a capital
-// letter, skipping I and O so they are not confused with 1 and 0. A is 10,
-// B is 11, ... Z is 33, which covers catalog numbers up to 339999.
-// Space-Track keeps reporting NORAD_CAT_ID numerically in the GP class, so
-// decode Alpha-5 back to a number instead of leaving Number() to yield NaN.
-const ALPHA5_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-
-export function ParseCatalogNumber(value){
-  var text = String(value === null || value === undefined ? "" : value).trim();
-  if(text.length === 0){
-    return NaN;
-  }
-  var alpha5 = text.toUpperCase();
-  if(/^[A-HJ-NP-Z][0-9]{4}$/.test(alpha5)){
-    var letter_index = ALPHA5_LETTERS.indexOf(alpha5.charAt(0));
-    if(letter_index >= 0){
-      return ((letter_index + 10) * 10000) + Number(alpha5.slice(1));
-    }
-  }
-  return Number(text);
-}
+export const ParseCatalogNumber = parseCatalogNumber;
 
 export class SGP4{
   constructor (elements) {
+    if (!elements || typeof elements !== 'object' || Array.isArray(elements)) {
+      throw new TypeError('sgp4: elements must be a TLE or OMM object');
+    }
     this.elements = elements;
     if (elements.CCSDS_OMM_VERS) {
       this.omm = elements;
+      this._record = parseOmmRecord(elements);
       this.tle = {
         name: elements.OBJECT_NAME,
         first_line: elements.USER_DEFINED_TLE_LINE1,
@@ -40,7 +29,13 @@ export class SGP4{
       }
     } else {
       this.tle = this.elements;
-      this.omm = this.TLE2OMM();
+      this._record = parseTleRecord(elements);
+      this.omm = { ...tleRecordToOmm(this._record, {
+        creationDate: new Date(),
+        fractionDigits: 3,
+        truncateFraction: true,
+        legacyFormatting: true
+      }) };
     }
     var omm = this.omm;
     this.orbital_elements = {
@@ -68,135 +63,70 @@ export class SGP4{
   }
 
   TLE2OMM = () => {
-    var tle = this.tle;
-    if (tle.name) {
-      var name = tle.name;
-    } else {
-      var name = "N/A";
-    }
-    var line1 = tle.first_line;
-    var line2 = tle.second_line;
-    var date = new Date();
-    var creation_date = date.getUTCFullYear() + "-" + ZeroFill(date.getUTCMonth() + 1, 2) + "-" + ZeroFill(date.getUTCDate(), 2) + " " + ZeroFill(date.getUTCHours(), 2) + ":" + ZeroFill(date.getUTCMinutes(), 2) + ":" + ZeroFill(date.getUTCSeconds(), 2);
-    var id = String(line1.slice(9, 18))
-    if (Number(id.slice(0, 2)) < 58) { var epystr = "20" } else { var epystr = "19" };
-    var international_designator = epystr + String(id.slice(0, 2)) + "-" + String(id.slice(2, 7))
-    var epy = Number(line1.slice(18, 20));
-    if (epy < 57) { var epoch_year = epy + 2000 } else { var epoch_year = epy + 1900 };
-    var doy = Number(line1.substring(20, 32))
-    var year2 = epoch_year - 1;
-    var epoch = new Date(Date.UTC(year2, 11, 31, 0, 0, 0) + (doy * 24 * 60 * 60 * 1000));
-    var epoch_str = epoch.getUTCFullYear() + "-" + ZeroFill(epoch.getUTCMonth() + 1, 2) + "-" + ZeroFill(epoch.getUTCDate(), 2) + "T" + ZeroFill(epoch.getUTCHours(), 2) + ":" + ZeroFill(epoch.getUTCMinutes(), 2) + ":" + ZeroFill(epoch.getUTCSeconds(), 2) + "." + ZeroFill(epoch.getUTCMilliseconds(), 3);
-    var bstar_mantissa = Number(line1.substring(53, 59)) * 1e-5;
-    var bstar_exponent = Number("1e" + Number(line1.substring(59, 61)));
-    var bstar = bstar_mantissa * bstar_exponent
-    var nddot_mantissa = Number(line1.substring(44, 50)) * 1e-5;
-    var nddot_exponent = Number(line1.substring(50, 52));
-    var mean_motion_ddot = nddot_mantissa * Math.pow(10, nddot_exponent);
-    var omm = {
-      "CCSDS_OMM_VERS": "2.0",
-      "COMMENT": "GENERATED VIA ORB.JS",
-      "CREATION_DATE": creation_date,
-      "ORIGINATOR": "",
-      "OBJECT_NAME": name,
-      "OBJECT_ID": international_designator,
-      "CENTER_NAME": "EARTH",
-      "REF_FRAME": "TEME",
-      "TIME_SYSTEM": "UTC",
-      "MEAN_ELEMENT_THEORY": "SGP4",
-      "EPOCH": epoch_str,
-      "MEAN_MOTION": Number(line2.substring(52, 63)),
-      "ECCENTRICITY": Number(line2.substring(26, 33)) * 1e-7,
-      "INCLINATION": Number(line2.substring(8, 16)),
-      "RA_OF_ASC_NODE": Number(line2.substring(17, 25)),
-      "ARG_OF_PERICENTER": Number(line2.substring(34, 42)),
-      "MEAN_ANOMALY": Number(line2.substring(43, 51)),
-      "EPHEMERIS_TYPE": Number(line1.substring(62, 63)),
-      "CLASSIFICATION_TYPE": line1.slice(7, 8),
-      "NORAD_CAT_ID": ParseCatalogNumber(line1.slice(2, 7)),
-      "ELEMENT_SET_NO": Number(line1.substring(64, 68)),
-      "REV_AT_EPOCH": Number(line2.substring(64, 68)),
-      "BSTAR": bstar,
-      "MEAN_MOTION_DOT": Number(line1.substring(34, 43)),
-      "MEAN_MOTION_DDOT": mean_motion_ddot,
-      "USER_DEFINED_TLE_LINE0": "0 " + name,
-      "USER_DEFINED_TLE_LINE1": line1,
-      "USER_DEFINED_TLE_LINE2": line2
-    }
-    return omm
+    var record = parseTleRecord(this.tle);
+    return { ...tleRecordToOmm(record, {
+      creationDate: new Date(),
+      fractionDigits: 3,
+      truncateFraction: true,
+      legacyFormatting: true
+    }) };
   }
 
   DecodeTLE = () => {
     var tle = this.tle;
-    if (tle.name) {
-      var name = tle.name;
-    } else {
-      var name = "N/A";
-    }
     var line1 = tle.first_line;
     var line2 = tle.second_line;
-    var epy = Number(line1.slice(18, 20));
-    //epoch_year should be smaller than 2057.
-    if (epy < 57) { var epoch_year = epy + 2000 } else { var epoch_year = epy + 1900 };
+    var record = parseTleRecord(tle);
     var bstar_mantissa = Number(line1.substring(53, 59)) * 1e-5;
     var bstar_exponent = Number("1e" + Number(line1.substring(59, 61)));
-    var bstar = bstar_mantissa * bstar_exponent
     var orbital_elements = {
-      name: name,
+      name: record.name || "N/A",
       line_number_1: Number(line1.slice(0, 1)),
-      catalog_no_1: ParseCatalogNumber(line1.slice(2, 7)),
-      security_classification: line1.slice(7, 8),
+      catalog_no_1: record.catalogNumber,
+      security_classification: record.classification,
       international_identification: Number(line1.slice(9, 17)),
-      epoch_year: epoch_year,
-      epoch: Number(line1.substring(20, 32)),
-      first_derivative_mean_motion: Number(line1.substring(33, 43)),
-      second_derivative_mean_motion: Number(line1.substring(44, 52)),
+      epoch_year: record.epochYear,
+      epoch: record.epochDay,
+      first_derivative_mean_motion: record.meanMotionDot,
+      second_derivative_mean_motion: record.meanMotionDdot,
       bstar_mantissa: bstar_mantissa,
       bstar_exponent: bstar_exponent,
-      bstar: bstar,
-      ephemeris_type: Number(line1.substring(62, 63)),
-      element_number: Number(line1.substring(64, 68)),
+      bstar: record.bstar,
+      ephemeris_type: record.ephemerisType,
+      element_number: record.elementSetNumber,
       check_sum_1: Number(line1.substring(68, 69)),
       line_number_2: Number(line2.slice(0, 1)),
-      catalog_no_2: ParseCatalogNumber(line2.slice(2, 7)),
-      inclination: Number(line2.substring(8, 16)),
-      right_ascension: Number(line2.substring(17, 25)),
-      eccentricity: Number(line2.substring(26, 33)) * 1e-7,
-      argument_of_perigee: Number(line2.substring(34, 42)),
-      mean_anomaly: Number(line2.substring(43, 51)),
-      mean_motion: Number(line2.substring(52, 63)),
-      rev_number_at_epoch: Number(line2.substring(64, 68)),
+      catalog_no_2: record.catalogNumber,
+      inclination: record.inclination / Constant.RAD,
+      right_ascension: record.rightAscension / Constant.RAD,
+      eccentricity: record.eccentricity,
+      argument_of_perigee: record.argumentOfPerigee / Constant.RAD,
+      mean_anomaly: record.meanAnomaly / Constant.RAD,
+      mean_motion: record.meanMotionRevPerDay,
+      rev_number_at_epoch: record.revolutionsAtEpoch,
       check_sum_2: Number(line2.substring(68, 69))
     }
     return orbital_elements
   }
 
   ParseEpoch = () => {
-    //UTC epoch Date from the OMM EPOCH string
-    var epoch_array = this.omm.EPOCH.split("T");
-    var epoch_date = epoch_array[0].split("-");
-    var epoch_time = epoch_array[1].split(":");
-    return new Date(Date.UTC(
-      Number(epoch_date[0]), Number(epoch_date[1]) - 1, Number(epoch_date[2]),
-      Number(epoch_time[0]), Number(epoch_time[1]), 0, Number(epoch_time[2]) * 1000
-    ));
+    return new Date(this._record.epochUnixMs);
   }
 
   SetSGP4 = () => {
-    var omm = this.omm;
-    var torad = Math.PI / 180;
+    var record = this._record;
     var epoch_jd = new Time(this.ParseEpoch()).jd();
     var satrec = {};
     //epoch in days since 1950 Jan 0.0; angles in radians, mean motion rad/min
     sgp4init(satrec, 'i', epoch_jd - 2433281.5,
-      omm.BSTAR, 0.0, 0.0,
-      omm.ECCENTRICITY,
-      omm.ARG_OF_PERICENTER * torad,
-      omm.INCLINATION * torad,
-      omm.MEAN_ANOMALY * torad,
-      omm.MEAN_MOTION * 2.0 * Math.PI / 1440.0,
-      omm.RA_OF_ASC_NODE * torad);
-    satrec.orbital_period = 1440.0 / omm.MEAN_MOTION;
+      record.bstar, 0.0, 0.0,
+      record.eccentricity,
+      record.argumentOfPerigee,
+      record.inclination,
+      record.meanAnomaly,
+      record.meanMotion,
+      record.rightAscension);
+    satrec.orbital_period = 1440.0 / record.meanMotionRevPerDay;
     satrec.apogee = satrec.alta * wgs72.radiusearthkm;
     satrec.perigee = satrec.altp * wgs72.radiusearthkm;
     return satrec;

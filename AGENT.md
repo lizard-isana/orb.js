@@ -88,6 +88,21 @@ corresponding explicit correction a second time.
 Satellite pass results are geometric visibility windows only. They explicitly
 leave optical visibility and sunlight uncomputed.
 
+## Structured SGP4 API
+
+The additive `@lizard-isana/orb/sgp4` subpath provides pure TLE/OMM parsing,
+opt-in checksum validation, and `createSatellite()`. Structured satellite
+states accept `Instant` and return TEME/Earth vectors in km and km/s, ready for
+the frame graph, observer, and events modules. `geodetic(instant)` uses the
+common TEME-to-ECEF transform and WGS-84 conversion.
+
+Keep the model boundary explicit: TLE/OMM values are SGP4 mean elements, B* is
+the SGP4 drag term rather than a physical ballistic coefficient, propagation
+uses WGS-72 constants, and geodesy uses WGS-84. TLE checksums are not enforced
+unless requested, but malformed fixed fields and mismatched object numbers
+must fail. Preserve `Orb.SGP4` and `Orb.Satellite` behavior separately from the
+structured subpath.
+
 ## Related Notes
 
 - `.ai/decisions/2026-04-27-full-vsop87a-api.md`

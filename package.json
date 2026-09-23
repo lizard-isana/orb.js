@@ -6,6 +6,7 @@
   "files": [
     "dist",
     "src/*.js",
+    "src/package.json",
     "src/time",
     "src/frames",
     "src/geodesy",
@@ -13,6 +14,7 @@
     "src/events",
     "src/models/earth-epv00",
     "src/observer",
+    "src/sgp4",
     "src/vocab",
     "src/vsop87a",
     "readme.md",
@@ -48,6 +50,9 @@
     "./observer": {
       "import": "./src/observer/index.js"
     },
+    "./sgp4": {
+      "import": "./src/sgp4/index.js"
+    },
     "./vocab": {
       "import": "./src/vocab/index.js"
     },
@@ -56,7 +61,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "test": "node test/run.js && node test/m1/core.mjs && node test/m2/core.mjs && node test/m3/core.mjs && node test/m4/core.mjs",
+    "test": "node test/run.js && node test/m1/core.mjs && node test/m2/core.mjs && node test/m3/core.mjs && node test/m4/core.mjs && node test/m5/core.mjs",
     "build": "rollup -c rollup.config.js",
     "bench": "node tools/bench.mjs",
     "vsop:check": "node tools/vsop-compile.mjs --check",

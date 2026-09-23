@@ -32,6 +32,7 @@ test('package: metadata and local CommonJS entry are stable', () => {
   assert.strictEqual(Orb.Instant, undefined);
   assert.strictEqual(Orb.makeState, undefined);
   assert.strictEqual(Orb.createObserver, undefined);
+  assert.strictEqual(Orb.createSatellite, undefined);
 });
 
 test('package: exact tarball supports legacy entries and optional model subpaths', () => {
@@ -58,6 +59,7 @@ test('package: exact tarball supports legacy entries and optional model subpaths
     assert.ok(files.has('dist/orb.esm.js'));
     assert.ok(files.has('dist/orb.esm.mjs'));
     assert.ok(files.has('src/vsop87a/package.json'));
+    assert.ok(files.has('src/package.json'));
     assert.ok(files.has('src/time/index.js'));
     assert.ok(files.has('src/frames/index.js'));
     assert.ok(files.has('src/geodesy/index.js'));
@@ -66,6 +68,7 @@ test('package: exact tarball supports legacy entries and optional model subpaths
     assert.ok(files.has('src/models/earth-epv00/index.js'));
     assert.ok(files.has('src/models/earth-epv00/LICENSE-ERFA'));
     assert.ok(files.has('src/observer/index.js'));
+    assert.ok(files.has('src/sgp4/index.js'));
     assert.ok(files.has('src/vocab/index.js'));
     assert.ok(![...files].some((filename) => filename.startsWith('test/')));
     assert.ok(![...files].some((filename) => filename.startsWith('.ai/')));
@@ -139,6 +142,14 @@ test('package: exact tarball supports legacy entries and optional model subpaths
         `import { createObserver, OBSERVER_DEFAULTS } from '${PACKAGE_NAME}/observer'; console.log(typeof createObserver, OBSERVER_DEFAULTS.lightTime)`
       ]),
       'function false'
+    );
+    assert.strictEqual(
+      runNode(consumer, [
+        '--input-type=module',
+        '-e',
+        `import { createSatellite, parseTle } from '${PACKAGE_NAME}/sgp4'; console.log(typeof createSatellite, typeof parseTle)`
+      ]),
+      'function function'
     );
     assert.strictEqual(
       runNode(consumer, [
