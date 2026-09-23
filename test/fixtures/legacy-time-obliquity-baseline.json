@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": "orb.js legacy Time and obliquity implementation",
+  "sourceVersion": "commit 2ca3533 before removal of the time/obliquity module cycle",
+  "procedure": "For each UTC Date, record Time.jd(), delta_t(), tt_minus_utc(), jd_tt(), gmst82(), and gast(), plus MeanObliquity(), Nutation(), and Obliquity(). Dates straddle the library's Julian/Gregorian calendar transition and the leap-second era so dependency refactoring cannot silently change the legacy numerical contract.",
+  "instant": "Per-case UTC timestamps from 1400 through 2026",
+  "timeScale": "UTC input; JD uses the legacy Julian/Gregorian transition, TT uses the legacy pre-1972 Delta-T fallback and post-1972 leap-second table",
+  "frame": "Legacy mean and apparent equator/equinox of date where applicable",
+  "center": "Earth",
+  "units": {
+    "julianDate": "day",
+    "offset": "second",
+    "obliquityAndNutation": "degree",
+    "siderealTime": "hour"
+  },
+  "accuracy": "Exact frozen compatibility baseline for a structural dependency refactor; independent ERFA and Meeus accuracy envelopes are tested separately",
+  "tolerance": {
+    "absolute": 0
+  },
+  "cases": [
+    {"iso":"1400-06-01T12:34:56.789Z","jd":2232560.024268391,"deltaT":321.09409759661537,"ttMinusUtc":321.09409759661537,"jdTt":2232560.027984758,"meanObliquity":23.517142929868918,"nutation":0.0018978611231934782,"obliquity":23.51462332121919,"gmst82":5.8164402187121595,"gast":5.816556236009449},
+    {"iso":"1582-10-04T00:00:00.000Z","jd":2299159.5,"deltaT":129.11193153623836,"ttMinusUtc":129.11193153623836,"jdTt":2299159.501494351,"meanObliquity":23.493506207945906,"nutation":0.004946067356260845,"obliquity":23.49384189045005,"gmst82":1.4733758343154477,"gast":1.4736782378385391},
+    {"iso":"1582-10-15T00:00:00.000Z","jd":2299160.5,"deltaT":129.11193153623836,"ttMinusUtc":129.11193153623836,"jdTt":2299160.501494351,"meanObliquity":23.49350585266866,"nutation":0.0049635899044375275,"obliquity":23.493823169183788,"gmst82":1.539085652826543,"gast":1.5393891277247516},
+    {"iso":"1900-06-01T00:00:00.000Z","jd":2415171.5,"deltaT":-1.9788842060785328,"ttMinusUtc":-1.9788842060785328,"jdTt":2415171.4999770964,"meanObliquity":23.452240678629487,"nutation":0.0048376979606810835,"obliquity":23.451294263443476,"gmst82":16.60110170042617,"gast":16.601397573617337},
+    {"iso":"2000-01-01T12:00:00.000Z","jd":2451545,"deltaT":63.87383281095924,"ttMinusUtc":64.184,"jdTt":2451545.0007428704,"meanObliquity":23.43929111084662,"nutation":-0.004159617171840343,"obliquity":23.43769072462608,"gmst82":18.697374558323794,"gast":18.69712013030012},
+    {"iso":"2026-07-18T06:00:00.000Z","jd":2461239.75,"deltaT":75.40815607812505,"ttMinusUtc":69.184,"jdTt":2461239.750800741,"meanObliquity":23.435839441488675,"nutation":0.001969702917764957,"obliquity":23.43799943359593,"gmst82":1.7376966672075973,"gast":1.737817146191431}
+  ]
+}

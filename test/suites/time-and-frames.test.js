@@ -7,6 +7,7 @@ const { loadReferenceFixture } = require('../helpers/reference-fixture.js');
 
 const ERFA = loadReferenceFixture('erfa-2.0.1.5.json');
 const MEEUS = loadReferenceFixture('meeus-2ed.json');
+const LEGACY_TIME = loadReferenceFixture('legacy-time-obliquity-baseline.json');
 const RAD = Math.PI / 180;
 const ARCSEC_PER_RADIAN = 180 * 3600 / Math.PI;
 
@@ -54,6 +55,22 @@ test('Time.tt_minus_utc uses the leap second table', () => {
   // pre-1972: falls back to the delta_t polynomial
   const dt1900 = new Orb.Time(new Date(Date.UTC(1900, 5, 1))).tt_minus_utc();
   assert.ok(Math.abs(dt1900) < 10, '1900: ' + dt1900);
+});
+
+test('legacy time and obliquity values survive dependency refactoring exactly', () => {
+  for (const reference of LEGACY_TIME.cases) {
+    const date = new Date(reference.iso);
+    const time = new Orb.Time(date);
+    assert.strictEqual(time.jd(), reference.jd, reference.iso + ' jd');
+    assert.strictEqual(time.delta_t(), reference.deltaT, reference.iso + ' deltaT');
+    assert.strictEqual(time.tt_minus_utc(), reference.ttMinusUtc, reference.iso + ' ttMinusUtc');
+    assert.strictEqual(time.jd_tt(), reference.jdTt, reference.iso + ' jdTt');
+    assert.strictEqual(Orb.MeanObliquity(date), reference.meanObliquity, reference.iso + ' mean obliquity');
+    assert.strictEqual(Orb.Nutation(date), reference.nutation, reference.iso + ' nutation');
+    assert.strictEqual(Orb.Obliquity(date), reference.obliquity, reference.iso + ' obliquity');
+    assert.strictEqual(time.gmst82(), reference.gmst82, reference.iso + ' gmst82');
+    assert.strictEqual(time.gast(), reference.gast, reference.iso + ' gast');
+  }
 });
 
 test('legacy obliquity and nutation stay within the ERFA residual envelope', () => {
