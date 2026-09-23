@@ -150,7 +150,7 @@ function buildMeta(instant, options, geocentric, body, refracted) {
 
 function requireInstant(instant) {
   if (!instant || typeof instant.jd !== 'function' || typeof instant.toISOString !== 'function') {
-    throw new TypeError('observer: expected an Instant');
+    throw new TypeError('observer: expected an AstroInstant');
   }
   return instant;
 }

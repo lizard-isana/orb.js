@@ -51,6 +51,7 @@ test('package: metadata and local CommonJS entry are stable', () => {
   assert.strictEqual(typeof Orb.SGP4, 'function');
   assert.strictEqual(typeof Orb.Observation, 'function');
   assert.strictEqual(Orb.Instant, undefined);
+  assert.strictEqual(Orb.AstroInstant, undefined);
   assert.strictEqual(Orb.makeState, undefined);
   assert.strictEqual(Orb.createObserver, undefined);
   assert.strictEqual(Orb.createSatellite, undefined);
@@ -195,7 +196,7 @@ test('package: exact tarball supports legacy entries and optional model subpaths
       runNode(consumer, [
         '--input-type=module',
         '-e',
-        `import { earthEpv00 } from '${PACKAGE_NAME}/models/earth-epv00'; import { Instant } from '${PACKAGE_NAME}/time'; console.log(earthEpv00.state(Instant.fromISO('2026-07-18T00:00:00Z')).frame)`
+        `import { earthEpv00 } from '${PACKAGE_NAME}/models/earth-epv00'; import { AstroInstant } from '${PACKAGE_NAME}/time'; console.log(earthEpv00.state(AstroInstant.fromISO('2026-07-18T00:00:00Z')).frame)`
       ]),
       'equatorial-j2000'
     );
@@ -219,15 +220,15 @@ test('package: exact tarball supports legacy entries and optional model subpaths
       runNode(consumer, [
         '--input-type=module',
         '-e',
-        `import { Instant } from '${PACKAGE_NAME}/time'; console.log(Instant.fromISO('2000-01-01T12:00:00Z').jd('utc'))`
+        `import * as Time from '${PACKAGE_NAME}/time'; console.log(Time.AstroInstant.fromISO('2000-01-01T12:00:00Z').jd('utc'), 'Instant' in Time)`
       ]),
-      '2451545'
+      '2451545 false'
     );
     assert.strictEqual(
       runNode(consumer, [
         '--input-type=module',
         '-e',
-        `import { makeState } from '${PACKAGE_NAME}/frames'; import { Instant } from '${PACKAGE_NAME}/time'; console.log(makeState({t:Instant.fromUnixMs(0),frame:'ecef',center:'earth',r:[1,2,3]}).r.constructor.name)`
+        `import { makeState } from '${PACKAGE_NAME}/frames'; import { AstroInstant } from '${PACKAGE_NAME}/time'; console.log(makeState({t:AstroInstant.fromUnixMs(0),frame:'ecef',center:'earth',r:[1,2,3]}).r.constructor.name)`
       ]),
       'Float64Array'
     );

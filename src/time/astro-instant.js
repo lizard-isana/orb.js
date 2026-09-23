@@ -6,7 +6,7 @@ const UNIX_EPOCH_JD = 2440587.5;
 const VALID_SCALES = new Set(['utc', 'ut1', 'tt']);
 
 function requireFinite(value, label) {
-  if (!Number.isFinite(value)) throw new TypeError(`Instant: ${label} must be finite`);
+  if (!Number.isFinite(value)) throw new TypeError(`AstroInstant: ${label} must be finite`);
   return value;
 }
 
@@ -14,7 +14,7 @@ function parseOptions(options) {
   const dut1 = options?.dut1 ?? 0;
   requireFinite(dut1, 'dut1');
   if (Math.abs(dut1) > 0.9) {
-    throw new RangeError('Instant: dut1 must be within -0.9 and +0.9 seconds');
+    throw new RangeError('AstroInstant: dut1 must be within -0.9 and +0.9 seconds');
   }
   return { dut1 };
 }
@@ -30,7 +30,7 @@ function millisecondsFromParts(jd1, jd2) {
   return (jd1 - UNIX_EPOCH_JD) * MS_PER_DAY + jd2 * MS_PER_DAY;
 }
 
-export class Instant {
+export class AstroInstant {
   constructor(jd1, jd2, utcMs, dut1 = 0) {
     this.jd1 = jd1;
     this.jd2 = jd2;
@@ -40,25 +40,25 @@ export class Instant {
   }
 
   static from(value, options) {
-    if (value instanceof Instant) return value;
-    if (value instanceof Date) return Instant.fromDate(value, options);
-    if (typeof value === 'string') return Instant.fromISO(value, options);
-    if (typeof value === 'number') return Instant.fromUnixMs(value, options);
-    throw new TypeError('Instant.from: expected an Instant, Date, ISO string, or Unix milliseconds');
+    if (value instanceof AstroInstant) return value;
+    if (value instanceof Date) return AstroInstant.fromDate(value, options);
+    if (typeof value === 'string') return AstroInstant.fromISO(value, options);
+    if (typeof value === 'number') return AstroInstant.fromUnixMs(value, options);
+    throw new TypeError('AstroInstant.from: expected an AstroInstant, Date, ISO string, or Unix milliseconds');
   }
 
   static fromDate(date, options) {
-    if (!(date instanceof Date)) throw new TypeError('Instant.fromDate: expected a Date');
-    return Instant.fromUnixMs(date.getTime(), options);
+    if (!(date instanceof Date)) throw new TypeError('AstroInstant.fromDate: expected a Date');
+    return AstroInstant.fromUnixMs(date.getTime(), options);
   }
 
   static fromISO(iso, options) {
     if (typeof iso !== 'string' || iso.trim() === '') {
-      throw new TypeError('Instant.fromISO: expected a non-empty ISO string');
+      throw new TypeError('AstroInstant.fromISO: expected a non-empty ISO string');
     }
     let value = iso.trim();
     if (/T/.test(value) && !/(?:Z|[+-]\d\d(?::?\d\d)?)$/i.test(value)) value += 'Z';
-    return Instant.fromUnixMs(Date.parse(value), options);
+    return AstroInstant.fromUnixMs(Date.parse(value), options);
   }
 
   static fromUnixMs(ms, options) {
@@ -68,17 +68,17 @@ export class Instant {
     const fraction = (ms - wholeDays * MS_PER_DAY) / MS_PER_DAY;
     const ttOffset = ttMinusUtc(ms) / SECONDS_PER_DAY;
     const [jd1, jd2] = normalizeParts(UNIX_EPOCH_JD + wholeDays, fraction + ttOffset);
-    return new Instant(jd1, jd2, ms, dut1);
+    return new AstroInstant(jd1, jd2, ms, dut1);
   }
 
   static fromJD(jd, scale = 'tt', options) {
-    return Instant.fromJD2(jd, 0, scale, options);
+    return AstroInstant.fromJD2(jd, 0, scale, options);
   }
 
   static fromJD2(jd1, jd2, scale = 'tt', options) {
     requireFinite(jd1, 'jd1');
     requireFinite(jd2, 'jd2');
-    if (!VALID_SCALES.has(scale)) throw new RangeError(`Instant.fromJD: unknown scale '${scale}'`);
+    if (!VALID_SCALES.has(scale)) throw new RangeError(`AstroInstant.fromJD: unknown scale '${scale}'`);
     const { dut1 } = parseOptions(options);
     let utcMs;
     if (scale === 'utc') {
@@ -94,9 +94,9 @@ export class Instant {
     requireFinite(utcMs, 'derived UTC milliseconds');
     if (scale === 'tt') {
       const [tt1, tt2] = normalizeParts(jd1, jd2);
-      return new Instant(tt1, tt2, utcMs, dut1);
+      return new AstroInstant(tt1, tt2, utcMs, dut1);
     }
-    return Instant.fromUnixMs(utcMs, { dut1 });
+    return AstroInstant.fromUnixMs(utcMs, { dut1 });
   }
 
   jd(scale = 'tt') {
@@ -105,7 +105,7 @@ export class Instant {
   }
 
   jd2parts(scale = 'tt') {
-    if (!VALID_SCALES.has(scale)) throw new RangeError(`Instant.jd: unknown scale '${scale}'`);
+    if (!VALID_SCALES.has(scale)) throw new RangeError(`AstroInstant.jd: unknown scale '${scale}'`);
     if (scale === 'tt') return [this.jd1, this.jd2];
     const adjustedMs = scale === 'ut1' ? this.utcMs + this.dut1 * 1000 : this.utcMs;
     const wholeDays = Math.floor(adjustedMs / MS_PER_DAY);
@@ -133,7 +133,7 @@ export class Instant {
 
   addSeconds(seconds) {
     requireFinite(seconds, 'seconds');
-    return Instant.fromUnixMs(this.utcMs + seconds * 1000, { dut1: this.dut1 });
+    return AstroInstant.fromUnixMs(this.utcMs + seconds * 1000, { dut1: this.dut1 });
   }
 
   addDays(days) {
@@ -142,7 +142,7 @@ export class Instant {
   }
 
   differenceSeconds(other) {
-    const instant = Instant.from(other);
+    const instant = AstroInstant.from(other);
     return (this.jd1 - instant.jd1 + this.jd2 - instant.jd2) * SECONDS_PER_DAY;
   }
 }

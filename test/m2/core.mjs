@@ -10,7 +10,7 @@ import {
   stumpffC,
   stumpffS
 } from '../../src/kepler/index.js';
-import { Instant } from '../../src/time/index.js';
+import { AstroInstant } from '../../src/time/index.js';
 import {
   adaptLegacyKepler,
   adaptLegacyMoon,
@@ -230,7 +230,7 @@ test('legacy Orb.Kepler stays within the frozen v3 compatibility envelope', () =
 
 test('optional EPV00 Earth matches ERFA and has an analytic velocity', () => {
   for (const reference of epv00.cases) {
-    const instant = Instant.fromISO(reference.utc);
+    const instant = AstroInstant.fromISO(reference.utc);
     const state = earthEpv00.state(instant);
     assert.strictEqual(state.frame, 'equatorial-j2000');
     assert.strictEqual(state.center, 'sun');
@@ -262,7 +262,7 @@ test('optional EPV00 Earth matches ERFA and has an analytic velocity', () => {
 });
 
 test('optional EPV00 Sun is exactly the negated geocentric Earth state', () => {
-  const instant = Instant.fromISO(epv00.cases[0].utc);
+  const instant = AstroInstant.fromISO(epv00.cases[0].utc);
   const earth = earthEpv00.state(instant);
   const sun = sunEpv00.state(instant);
   assert.strictEqual(sun.frame, earth.frame);
@@ -276,7 +276,7 @@ test('optional EPV00 Sun is exactly the negated geocentric Earth state', () => {
 });
 
 test('optional EPV00 Sun agrees with the independent Horizons sky position', () => {
-  const instant = Instant.fromISO(horizonsSun.instant);
+  const instant = AstroInstant.fromISO(horizonsSun.instant);
   const ofDate = transform(sunEpv00.state(instant), { frame: 'equatorial-of-date' });
   const range = Math.hypot(...ofDate.r);
   const rightAscension = ((Math.atan2(ofDate.r[1], ofDate.r[0]) * 180 / Math.PI) + 360) % 360;
@@ -292,7 +292,7 @@ test('optional EPV00 Sun agrees with the independent Horizons sky position', () 
 });
 
 test('legacy body adapters provide explicit structured states', () => {
-  const instant = Instant.fromISO('2026-07-18T00:00:00Z');
+  const instant = AstroInstant.fromISO('2026-07-18T00:00:00Z');
   const bodies = [
     [adaptLegacyPlanet(new Orb.Mars(), { name: 'mars' }), 'ecliptic-j2000', 'sun', false],
     [adaptLegacyMoon(new Orb.Moon()), 'ecliptic-of-date', 'earth', false],
@@ -314,7 +314,7 @@ test('legacy body adapters provide explicit structured states', () => {
     'teme',
     'earth',
     true,
-    Instant.fromISO(satellite.omm.EPOCH).addDays(1)
+    AstroInstant.fromISO(satellite.omm.EPOCH).addDays(1)
   ]);
   for (const [body, frame, center, hasVelocity, time = instant] of bodies) {
     const state = body.state(time);

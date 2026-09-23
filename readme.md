@@ -45,11 +45,11 @@ import * as Orb from '@lizard-isana/orb';
 ### Structured API
 
 ```js
-import { Instant } from '@lizard-isana/orb/time';
+import { AstroInstant } from '@lizard-isana/orb/time';
 import { createObserver } from '@lizard-isana/orb/observer';
 import { sunEpv00 } from '@lizard-isana/orb/models/earth-epv00';
 
-const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
 const tokyo = createObserver({
   latitude: 35.658 * Math.PI / 180,
   longitude: 139.741 * Math.PI / 180,
@@ -70,7 +70,7 @@ requested.
 `dist/orb.js` is the complete UMD build and exposes `window.Orb`:
 
 ```html
-<script src="https://unpkg.com/@lizard-isana/orb@3.1.0/dist/orb.js"></script>
+<script src="https://unpkg.com/@lizard-isana/orb@3.1.1/dist/orb.js"></script>
 <script>
   const moon = new Orb.Luna().radec(new Date());
 </script>
@@ -78,6 +78,21 @@ requested.
 
 Pin an exact version in production. Optional full VSOP87A coefficient modules
 are intentionally kept out of the default UMD bundle.
+
+The supported browser baseline is Chrome and Edge 92+, Firefox 90+, Safari and
+iOS Safari 15.4+, Chrome for Android 92+, and Firefox for Android 90+. orb.js
+does not ship polyfills; IE 11, EdgeHTML, Opera Mini, KaiOS 2.5, and older
+browsers are unsupported. Embedded web views are not guaranteed separately.
+
+The UMD build contains the compatible `Orb.*` API only. Structured subpaths
+such as `/time` and `/observer` are ES modules intended for a package-aware
+bundler. Native browser imports using bare package names require an import map
+or URL mapping; direct CDN ESM subpath loading is not currently a supported
+entry path.
+
+`AstroInstant` is orb.js's astronomical time class for UTC, UT1, TT, and
+two-part Julian dates. It is not `Temporal.Instant` and does not depend on the
+browser Temporal API.
 
 ## Documentation
 

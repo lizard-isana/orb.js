@@ -1,4 +1,4 @@
-import { Instant } from '../time/index.js';
+import { AstroInstant } from '../time/index.js';
 import {
   computeTleChecksum,
   normalizeOmm,
@@ -19,7 +19,7 @@ function structuredElements(record) {
     catalogNumber: record.catalogNumber,
     classification: record.classification,
     internationalDesignator: record.internationalDesignator,
-    epoch: Instant.fromUnixMs(record.epochUnixMs),
+    epoch: AstroInstant.fromUnixMs(record.epochUnixMs),
     epochYear: record.epochYear,
     epochDay: record.epochDay,
     meanMotionDot: record.meanMotionDot,

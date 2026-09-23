@@ -6,7 +6,7 @@ const ARCSECONDS_PER_TURN = 1296000;
 
 export function nutation2000B(instant) {
   if (!instant || typeof instant.julianCenturies !== 'function') {
-    throw new TypeError('nutation2000B: expected an Instant');
+    throw new TypeError('nutation2000B: expected an AstroInstant');
   }
   const centuries = instant.julianCenturies();
   const moonAnomaly = ((485868.249036 + 1717915923.2178 * centuries) % ARCSECONDS_PER_TURN) * ARCSEC;
@@ -37,7 +37,7 @@ export const nutation = nutation2000B;
 
 export function meanObliquity2006(instant) {
   if (!instant || typeof instant.julianCenturies !== 'function') {
-    throw new TypeError('meanObliquity2006: expected an Instant');
+    throw new TypeError('meanObliquity2006: expected an AstroInstant');
   }
   const t = instant.julianCenturies();
   return (84381.406

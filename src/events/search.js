@@ -18,7 +18,7 @@ function requireInstant(value, label) {
   if (!value || typeof value.addSeconds !== 'function'
       || typeof value.differenceSeconds !== 'function'
       || !Number.isFinite(value.utcMs)) {
-    throw new TypeError(`events: ${label} must be an Instant`);
+    throw new TypeError(`events: ${label} must be an AstroInstant`);
   }
   return value;
 }

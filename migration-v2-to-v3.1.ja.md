@@ -49,6 +49,10 @@ import * as Orb from '@lizard-isana/orb';
 公開ファイルは `dist/orb.js` です。CDN URL にはパッケージ名、バージョン、
 `/dist/orb.js` を含め、本番環境ではバージョンを固定してください。
 
+対応ブラウザは Chrome / Edge 92 以降、Firefox 90 以降、Safari / iOS Safari
+15.4 以降、Chrome for Android 92 以降、Firefox for Android 90 以降です。
+UMD ビルドにはポリフィルと構造化サブパス API は含まれません。
+
 旧コンポーネントファイルは次の入口へ対応します。
 
 | v2 のファイル | v3.1 の置き換え先 |
@@ -58,7 +62,7 @@ import * as Orb from '@lizard-isana/orb';
 | `orb-planetary.v2.js` | パッケージルート。完全版 VSOP 係数は任意のサブパス import |
 | `orb-satellite.v2.js` | パッケージルート、または `/sgp4` |
 | `orb-data-loader.v2.js` | 置き換えなし。`fetch`、動的 `import()`、実行環境のローダーを使用 |
-| `orb-date-handler.v2.js` | 置き換えなし。`Date`、または `/time` の `Instant` を使用 |
+| `orb-date-handler.v2.js` | 置き換えなし。`Date`、または `/time` の `AstroInstant` を使用 |
 
 v2 のコンポーネントファイルと v3.1 のビルドを混在させないでください。
 
@@ -121,14 +125,14 @@ API ではありません。
 ## 3. 必要に応じて構造化 API を採用する
 
 構造化 API は追加の ES module サブパスです。従来 API の複数の天文慣習が混在した
-単位ではなく、`Instant`、ラジアン、km、km/s、明示的な状態メタデータを使います。
+単位ではなく、`AstroInstant`、ラジアン、km、km/s、明示的な状態メタデータを使います。
 
 ```js
-import { Instant } from '@lizard-isana/orb/time';
+import { AstroInstant } from '@lizard-isana/orb/time';
 import { createObserver } from '@lizard-isana/orb/observer';
 import { sunEpv00 } from '@lizard-isana/orb/models/earth-epv00';
 
-const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
 const tokyo = createObserver({
   latitude: 35.658 * Math.PI / 180,
   longitude: 139.741 * Math.PI / 180,
@@ -159,14 +163,14 @@ const apparent = tokyo.observe(sunEpv00, instant, {
 ### 構造化 SGP4
 
 ```js
-import { Instant } from '@lizard-isana/orb/time';
+import { AstroInstant } from '@lizard-isana/orb/time';
 import { createSatellite } from '@lizard-isana/orb/sgp4';
 
 const satellite = createSatellite({
   line1: '1 25544U 98067A   20014.52632156  .00016717  00000-0  10270-3 0  9015',
   line2: '2 25544  51.6423  33.7380 0004871 130.9389 229.2183 15.49556564  8038'
 });
-const state = satellite.state(Instant.fromISO('2020-01-14T12:37:54Z'));
+const state = satellite.state(AstroInstant.fromISO('2020-01-14T12:37:54Z'));
 // TEME、地球中心、km・km/s
 ```
 

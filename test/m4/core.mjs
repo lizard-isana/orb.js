@@ -17,7 +17,7 @@ import {
 } from '../../src/frames/index.js';
 import { sunEpv00 } from '../../src/models/earth-epv00/index.js';
 import { createObserver } from '../../src/observer/index.js';
-import { Instant } from '../../src/time/index.js';
+import { AstroInstant } from '../../src/time/index.js';
 
 const require = createRequire(import.meta.url);
 const Orb = require('../../dist/orb.js');
@@ -45,7 +45,7 @@ function secondsBetween(left, right) {
 }
 
 test('bounded search refines crossings and maxima without Date arithmetic', () => {
-  const from = Instant.fromUnixMs(0);
+  const from = AstroInstant.fromUnixMs(0);
   const to = from.addSeconds(10);
   const roots = findCrossings(
     (instant) => instant.differenceSeconds(from) - 5,
@@ -81,8 +81,8 @@ test('rise, transit, and set default to geometric center events', () => {
   const events = riseSetTransit(
     tokyo,
     sunEpv00,
-    Instant.fromISO('2026-07-17T15:00:00Z'),
-    Instant.fromISO('2026-07-18T15:00:00Z')
+    AstroInstant.fromISO('2026-07-17T15:00:00Z'),
+    AstroInstant.fromISO('2026-07-18T15:00:00Z')
   );
   assert.deepStrictEqual(events.map((event) => event.type), ['rise', 'transit', 'set']);
   assert.strictEqual(HORIZON_CONSTANTS.geometricCenter, 0);
@@ -99,8 +99,8 @@ test('rise, transit, and set default to geometric center events', () => {
 });
 
 test('semidiameter and atmospheric refraction remain explicit conventions', () => {
-  const from = Instant.fromISO('2026-07-17T15:00:00Z');
-  const to = Instant.fromISO('2026-07-18T15:00:00Z');
+  const from = AstroInstant.fromISO('2026-07-17T15:00:00Z');
+  const to = AstroInstant.fromISO('2026-07-18T15:00:00Z');
   const upperLimb = riseSetTransit(tokyo, sunEpv00, from, to, {
     semidiameter: HORIZON_CONSTANTS.meanSolarSemidiameter
   });
@@ -118,8 +118,8 @@ test('principal lunar phases agree with the independent USNO fixture', () => {
   const events = principalPhases(
     moon,
     sunEpv00,
-    Instant.fromISO('2026-07-01T00:00:00Z'),
-    Instant.fromISO('2026-08-01T00:00:00Z')
+    AstroInstant.fromISO('2026-07-01T00:00:00Z'),
+    AstroInstant.fromISO('2026-08-01T00:00:00Z')
   );
   assert.deepStrictEqual(events.map((event) => event.phase), phaseFixture.events.map((event) => event.phase));
   for (let index = 0; index < events.length; index += 1) {
@@ -140,8 +140,8 @@ test('fixed ISS/Tokyo passes retain ordering, thresholds, and the legacy fixture
   const passes = satellitePasses(
     tokyo,
     satellite,
-    Instant.fromISO(passFixture.instant.split(' through ')[0]),
-    Instant.fromISO(passFixture.instant.split(' through ')[1]),
+    AstroInstant.fromISO(passFixture.instant.split(' through ')[0]),
+    AstroInstant.fromISO(passFixture.instant.split(' through ')[1]),
     { minimumElevation: passFixture.minimumElevationDeg * DEG }
   );
   assert.strictEqual(passes.length, passFixture.events.length);
@@ -166,8 +166,8 @@ test('fixed ISS/Tokyo passes retain ordering, thresholds, and the legacy fixture
 });
 
 test('pass defaults are airless horizon crossings and invalid search knobs fail', () => {
-  const from = Instant.fromISO('2020-01-14T09:00:00Z');
-  const to = Instant.fromISO('2020-01-14T10:00:00Z');
+  const from = AstroInstant.fromISO('2020-01-14T09:00:00Z');
+  const to = AstroInstant.fromISO('2020-01-14T10:00:00Z');
   const passes = satellitePasses(tokyo, satellite, from, to);
   assert.strictEqual(passes.length, 1);
   assert.strictEqual(passes[0].minimumElevation, 0);

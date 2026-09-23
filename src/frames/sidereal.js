@@ -2,7 +2,7 @@ import { normalizeAngle } from './angles.js';
 
 export function gmst82(instant) {
   if (!instant || typeof instant.jd2parts !== 'function') {
-    throw new TypeError('gmst82: expected an Instant');
+    throw new TypeError('gmst82: expected an AstroInstant');
   }
   const [jd1, jd2] = instant.jd2parts('ut1');
   const centuries = (jd1 - 2451545.0 + jd2) / 36525.0;

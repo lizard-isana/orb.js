@@ -4,7 +4,7 @@ import { meanObliquity2006, nutation2000B } from './nutation.js';
 
 export function precessionAngles2006(instant) {
   if (!instant || typeof instant.julianCenturies !== 'function') {
-    throw new TypeError('precessionAngles2006: expected an Instant');
+    throw new TypeError('precessionAngles2006: expected an AstroInstant');
   }
   const t = instant.julianCenturies();
   const gamb = (-0.052928

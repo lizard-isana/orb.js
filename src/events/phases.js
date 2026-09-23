@@ -100,7 +100,7 @@ export function principalPhases(moon, sun, from, to, options = {}) {
 export function lunarAge(moon, sun, instant, options = {}) {
   requireBodies(moon, sun);
   if (!instant || typeof instant.addDays !== 'function') {
-    throw new TypeError('events: instant must be an Instant');
+    throw new TypeError('events: instant must be an AstroInstant');
   }
   const events = principalPhases(moon, sun, instant.addDays(-35), instant, options);
   const previous = events.filter((event) => event.phase === 'new').at(-1);

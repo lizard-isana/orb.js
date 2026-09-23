@@ -15,7 +15,7 @@ const SGP4_EPOCH_JD = 2433281.5;
 function requireInstant(instant) {
   if (!instant || typeof instant.jd !== 'function'
       || typeof instant.differenceSeconds !== 'function') {
-    throw new TypeError('sgp4: expected an Instant');
+    throw new TypeError('sgp4: expected an AstroInstant');
   }
   return instant;
 }

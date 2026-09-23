@@ -1,7 +1,7 @@
 import assert from 'assert';
 import fs from 'fs';
 
-import { Instant, deltaT, ttMinusUtc } from '../../src/time/index.js';
+import { AstroInstant, deltaT, ttMinusUtc } from '../../src/time/index.js';
 import * as Frames from '../../src/frames/index.js';
 import * as Geodesy from '../../src/geodesy/index.js';
 import * as Vocab from '../../src/vocab/index.js';
@@ -34,41 +34,41 @@ function vectorClose(actual, expected, tolerance, label = '') {
   }
 }
 
-test('Instant supports Date, ISO, Unix-ms, and UTC JD construction', () => {
+test('AstroInstant supports Date, ISO, Unix-ms, and UTC JD construction', () => {
   const iso = '2026-07-18T06:30:15.250Z';
   const date = new Date(iso);
   const expectedMs = date.getTime();
   const values = [
-    Instant.fromDate(date),
-    Instant.fromISO(iso),
-    Instant.fromISO('2026-07-18T06:30:15.250'),
-    Instant.fromUnixMs(expectedMs),
-    Instant.fromJD(2440587.5 + expectedMs / 86400000, 'utc')
+    AstroInstant.fromDate(date),
+    AstroInstant.fromISO(iso),
+    AstroInstant.fromISO('2026-07-18T06:30:15.250'),
+    AstroInstant.fromUnixMs(expectedMs),
+    AstroInstant.fromJD(2440587.5 + expectedMs / 86400000, 'utc')
   ];
   for (const value of values) close(value.utcMs, expectedMs, 0.05, 'utcMs');
 });
 
-test('Instant stores TT as two parts and returns explicit time scales', () => {
-  const instant = Instant.fromISO('2000-01-01T12:00:00Z', { dut1: 0.3341 });
+test('AstroInstant stores TT as two parts and returns explicit time scales', () => {
+  const instant = AstroInstant.fromISO('2000-01-01T12:00:00Z', { dut1: 0.3341 });
   close(instant.jd('utc'), 2451545.0, 1e-12, 'UTC');
   close(instant.jd('tt'), 2451545.0 + 64.184 / 86400, 1e-12, 'TT');
   close(instant.jd('ut1'), 2451545.0 + 0.3341 / 86400, 1e-12, 'UT1');
   const [major, minor] = instant.jd2parts('tt');
   assert.ok(Math.abs(minor) <= 0.5, 'normalized minor part');
-  const roundTrip = Instant.fromJD2(major, minor, 'tt', { dut1: instant.dut1 });
+  const roundTrip = AstroInstant.fromJD2(major, minor, 'tt', { dut1: instant.dut1 });
   close(roundTrip.utcMs, instant.utcMs, 0.05, 'TT round trip');
 });
 
-test('Instant arithmetic is immutable and preserves millisecond differences', () => {
-  const start = Instant.fromISO('2026-07-18T00:00:00Z');
+test('AstroInstant arithmetic is immutable and preserves millisecond differences', () => {
+  const start = AstroInstant.fromISO('2026-07-18T00:00:00Z');
   const later = start.addSeconds(0.001).addDays(2);
   assert.ok(Object.isFrozen(start));
   assert.notStrictEqual(start, later);
   close(later.differenceSeconds(start), 172800.001, 1e-8, 'difference');
   assert.strictEqual(start.toISOString(), '2026-07-18T00:00:00.000Z');
-  assert.throws(() => Instant.fromISO('not-a-date'), TypeError);
+  assert.throws(() => AstroInstant.fromISO('not-a-date'), TypeError);
   assert.throws(() => start.jd('tai'), RangeError);
-  assert.throws(() => Instant.fromUnixMs(start.utcMs, { dut1: 1 }), RangeError);
+  assert.throws(() => AstroInstant.fromUnixMs(start.utcMs, { dut1: 1 }), RangeError);
 });
 
 test('time scale helpers retain the legacy leap-second and Delta-T policy', () => {
@@ -79,7 +79,7 @@ test('time scale helpers retain the legacy leap-second and Delta-T policy', () =
 });
 
 test('GMST82 and GAST reproduce the Meeus sidereal-time example', () => {
-  const instant = Instant.fromISO(meeus.sidereal.utc);
+  const instant = AstroInstant.fromISO(meeus.sidereal.utc);
   const radiansToSiderealSeconds = 12 / Math.PI * 3600;
   close(
     Frames.gmst82(instant) * radiansToSiderealSeconds,
@@ -112,7 +112,7 @@ test('vector and matrix primitives preserve norms and invert by transpose', () =
 
 test('IAU 2000B nutation and IAU 2006 obliquity match ERFA fixtures', () => {
   for (const reference of fixture.cases) {
-    const instant = Instant.fromISO(reference.utc);
+    const instant = AstroInstant.fromISO(reference.utc);
     const value = Frames.nutation2000B(instant);
     close(value.dpsi, reference.nut00b.dpsi, fixture.tolerance.modernAngleRad, `${reference.utc} dpsi`);
     close(value.deps, reference.nut00b.deps, fixture.tolerance.modernAngleRad, `${reference.utc} deps`);
@@ -127,7 +127,7 @@ test('IAU 2000B nutation and IAU 2006 obliquity match ERFA fixtures', () => {
 
 test('IAU 2006 precession matrices match ERFA fixtures', () => {
   for (const reference of fixture.cases.filter((item) => item.pmat06Row0)) {
-    const matrix = Frames.precessionMatrix2006(Instant.fromISO(reference.utc));
+    const matrix = Frames.precessionMatrix2006(AstroInstant.fromISO(reference.utc));
     vectorClose(
       matrix.slice(0, 3),
       reference.pmat06Row0,
@@ -140,13 +140,13 @@ test('IAU 2006 precession matrices match ERFA fixtures', () => {
 test('IAU 2006/2000B combined matrices stay within the declared 2000A/B model difference', () => {
   const threeMilliarcseconds = 3 * Frames.ARCSEC / 1000;
   for (const reference of fixture.cases.filter((item) => item.pnm06aRow2)) {
-    const matrix = Frames.precessionNutationMatrix(Instant.fromISO(reference.utc));
+    const matrix = Frames.precessionNutationMatrix(AstroInstant.fromISO(reference.utc));
     vectorClose(matrix.slice(6, 9), reference.pnm06aRow2, threeMilliarcseconds, reference.utc);
   }
 });
 
 test('the frame graph round-trips positions and rotating-frame velocities', () => {
-  const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+  const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
   const original = Frames.makeState({
     t: instant,
     frame: 'ecliptic-j2000',
@@ -162,7 +162,7 @@ test('the frame graph round-trips positions and rotating-frame velocities', () =
 });
 
 test('TEME to ECEF uses GMST82 and true-of-date to ECEF uses GAST', () => {
-  const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+  const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
   const vector = [7000, 1000, 2000];
   const teme = Frames.makeState({ t: instant, frame: 'teme', center: 'earth', r: vector });
   const trueOfDate = Frames.makeState({
@@ -186,7 +186,7 @@ test('TEME to ECEF uses GMST82 and true-of-date to ECEF uses GAST', () => {
 });
 
 test('unknown frames and invalid state vectors fail explicitly', () => {
-  const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+  const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
   assert.throws(
     () => Frames.makeState({ t: instant, frame: 'unknown', center: 'earth', r: [1, 2, 3] }),
     /unknown frame/
@@ -231,7 +231,7 @@ test('observer ENU and horizontal conversions preserve position and direction', 
     longitude: 139.741 * Frames.DEG,
     height: 0.025
   };
-  const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+  const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
   const expectedEnu = Geodesy.horizontalToEnu({
     azimuth: 123 * Frames.DEG,
     elevation: 28 * Frames.DEG,

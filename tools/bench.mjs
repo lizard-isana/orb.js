@@ -11,13 +11,13 @@ import { MARS_FULL_COEF } from '../src/vsop87a/mars.js';
 import { GM, propagateKepler } from '../src/kepler/index.js';
 import { createObserver } from '../src/observer/index.js';
 import { createSatellite } from '../src/sgp4/index.js';
-import { Instant } from '../src/time/index.js';
+import { AstroInstant } from '../src/time/index.js';
 
 const DEFAULT_DURATION_MS = 300;
 const DATE = new Date('2026-07-18T12:00:00Z');
-const INSTANT = Instant.fromDate(DATE);
+const INSTANT = AstroInstant.fromDate(DATE);
 const SGP4_DATE = new Date('2020-01-14T14:00:00Z');
-const SGP4_INSTANT = Instant.fromDate(SGP4_DATE);
+const SGP4_INSTANT = AstroInstant.fromDate(SGP4_DATE);
 const TOKYO = { latitude: 35.658, longitude: 139.741, altitude: 0.025 };
 const ISS_TLE = {
   first_line: '1 25544U 98067A   20014.52632156  .00016717  00000-0  10270-3 0  9015',

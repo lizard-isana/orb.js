@@ -16,7 +16,7 @@ import {
   tleToOmm,
   validateTleChecksum
 } from '../../src/sgp4/index.js';
-import { Instant } from '../../src/time/index.js';
+import { AstroInstant } from '../../src/time/index.js';
 
 const require = createRequire(import.meta.url);
 const Orb = require('../../dist/orb.js');
@@ -153,13 +153,13 @@ test('Alpha-5 satellites propagate through the structured path', () => {
     line2: '2 E7527  51.6461 339.7757 0004871 129.9343 313.3229 15.49208144 10428'
   });
   assert.strictEqual(alpha5.elements.catalogNumber, 147527);
-  const state = alpha5.state(Instant.fromISO('2020-01-14T12:40:00Z'));
+  const state = alpha5.state(AstroInstant.fromISO('2020-01-14T12:40:00Z'));
   assert.ok([...state.r, ...state.v].every(Number.isFinite));
 });
 
 test('structured geodetic output uses the common TEME/ECEF and WGS-84 path', () => {
   const satellite = createSatellite(issTle);
-  const instant = Instant.fromISO('2020-01-14T12:40:00Z');
+  const instant = AstroInstant.fromISO('2020-01-14T12:40:00Z');
   const state = satellite.state(instant);
   const ecef = transform(state, { frame: 'ecef' });
   const expected = ecefToGeodetic(ecef.r);
@@ -177,7 +177,7 @@ test('structured satellites integrate directly with observer and pass events', (
     longitude: passFixture.site.longitudeDeg * DEG,
     height: passFixture.site.heightKm
   });
-  const instant = Instant.fromISO('2020-01-14T12:40:00Z');
+  const instant = AstroInstant.fromISO('2020-01-14T12:40:00Z');
   const observed = site.observe(satellite, instant, { meta: true });
   assert.ok(Number.isFinite(observed.azimuth));
   assert.ok(Number.isFinite(observed.elevation));
@@ -186,8 +186,8 @@ test('structured satellites integrate directly with observer and pass events', (
   const passes = satellitePasses(
     site,
     satellite,
-    Instant.fromISO('2020-01-14T00:00:00Z'),
-    Instant.fromISO('2020-01-16T00:00:00Z'),
+    AstroInstant.fromISO('2020-01-14T00:00:00Z'),
+    AstroInstant.fromISO('2020-01-16T00:00:00Z'),
     { minimumElevation: passFixture.minimumElevationDeg * DEG }
   );
   assert.strictEqual(passes.length, passFixture.events.length);
@@ -201,7 +201,7 @@ test('structured satellites integrate directly with observer and pass events', (
 test('structured propagation reports decayed-orbit errors while legacy contracts remain stable', () => {
   const structured = createSatellite(issTle);
   assert.throws(
-    () => structured.state(Instant.fromISO('2030-01-01T00:00:00Z')),
+    () => structured.state(AstroInstant.fromISO('2030-01-01T00:00:00Z')),
     /SGP4 propagation failed \(error 6\).*decayed/
   );
 

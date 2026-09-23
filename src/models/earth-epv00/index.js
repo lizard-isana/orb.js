@@ -36,7 +36,7 @@ export const EPV00_PROVENANCE = Object.freeze({
 
 function requireInstant(instant) {
   if (!instant || typeof instant.jd2parts !== 'function') {
-    throw new TypeError('earth-epv00: expected an Instant');
+    throw new TypeError('earth-epv00: expected an AstroInstant');
   }
   return instant;
 }

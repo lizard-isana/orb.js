@@ -18,7 +18,7 @@ import {
   geocentricState,
   OBSERVER_DEFAULTS
 } from '../../src/observer/index.js';
-import { Instant } from '../../src/time/index.js';
+import { AstroInstant } from '../../src/time/index.js';
 import { MARS_FULL_COEF } from '../../src/vsop87a/mars.js';
 
 const require = createRequire(import.meta.url);
@@ -69,7 +69,7 @@ test('the omitted third argument is the explicit geometric, airless default', ()
     refraction: false,
     meta: false
   });
-  const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+  const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
   const omitted = tokyo.observe(moon, instant);
   const explicit = tokyo.observe(moon, instant, { ...OBSERVER_DEFAULTS });
   assert.deepStrictEqual(omitted, explicit);
@@ -80,7 +80,7 @@ test('the omitted third argument is the explicit geometric, airless default', ()
 });
 
 test('light time and annual aberration are independently selectable', () => {
-  const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+  const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
   const geometric = geocentricState(mars, instant);
   const lightTime = geocentricState(mars, instant, { lightTime: true });
   const aberration = geocentricState(mars, instant, { aberration: true });
@@ -94,7 +94,7 @@ test('light time and annual aberration are independently selectable', () => {
 });
 
 test('diurnal parallax is common-frame vector subtraction', () => {
-  const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+  const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
   const geocentric = geocentricState(moon, instant);
   const observed = tokyo.observe(moon, instant);
   const geocentricEcef = transform(geocentric, { frame: 'ecef' });
@@ -107,7 +107,7 @@ test('diurnal parallax is common-frame vector subtraction', () => {
 });
 
 test('refraction is opt-in, weather-dependent, and reported separately', () => {
-  const instant = Instant.fromISO('2026-07-18T00:00:00Z');
+  const instant = AstroInstant.fromISO('2026-07-18T00:00:00Z');
   const geometric = tokyo.observe(sunEpv00, instant, { aberration: true });
   const refracted = tokyo.observe(sunEpv00, instant, {
     aberration: true,
@@ -123,7 +123,7 @@ test('refraction is opt-in, weather-dependent, and reported separately', () => {
 });
 
 test('structured metadata identifies values, corrections, sources, and ignored effects', () => {
-  const instant = Instant.fromISO('2026-07-18T00:00:00Z');
+  const instant = AstroInstant.fromISO('2026-07-18T00:00:00Z');
   const result = tokyo.observe(sunEpv00, instant, { aberration: true, meta: true });
   assert.strictEqual(result.meta.quantities.azimuth.quantity, 'azimuth');
   assert.strictEqual(result.meta.quantities.azimuth.unit, 'radian');
@@ -149,7 +149,7 @@ test('Horizons Moon, Sun, and Mars topocentric fixtures meet M3 tolerances', () 
   for (const [name, rows] of Object.entries(horizons.bodies)) {
     const tolerance = horizons.tolerance.bodies[name];
     for (const expected of rows) {
-      const actual = tokyo.observe(bodies[name], Instant.fromISO(expected.utc), options[name]);
+      const actual = tokyo.observe(bodies[name], AstroInstant.fromISO(expected.utc), options[name]);
       const expectedRightAscension = expected.raDeg * DEG;
       const expectedDeclination = expected.decDeg * DEG;
       const expectedAzimuth = expected.azDeg * DEG;
@@ -184,7 +184,7 @@ test('Horizons Moon, Sun, and Mars topocentric fixtures meet M3 tolerances', () 
 });
 
 test('invalid model and option combinations fail explicitly', () => {
-  const instant = Instant.fromISO('2026-07-18T00:00:00Z');
+  const instant = AstroInstant.fromISO('2026-07-18T00:00:00Z');
   assert.throws(() => tokyo.observe(moon, instant, { frameModel: 'iau1976-1980' }), /frameModel/);
   assert.throws(() => tokyo.observe(moon, instant, { lightTime: 'yes' }), /lightTime/);
   assert.throws(() => tokyo.observe(moon, instant, { aberration: 1 }), /aberration/);

@@ -52,6 +52,10 @@ For a browser, use the complete UMD build. It still creates `window.Orb`:
 The published file is `dist/orb.js`. A CDN URL should therefore include the
 package name, version, and `/dist/orb.js`; pin the version in production.
 
+The supported browser baseline is Chrome and Edge 92+, Firefox 90+, Safari and
+iOS Safari 15.4+, Chrome for Android 92+, and Firefox for Android 90+. The UMD
+build does not include polyfills or the structured subpath APIs.
+
 The old component files map to the following entry points:
 
 | v2 file | v3.1 replacement |
@@ -61,7 +65,7 @@ The old component files map to the following entry points:
 | `orb-planetary.v2.js` | package root; full VSOP coefficient files are optional subpath imports |
 | `orb-satellite.v2.js` | package root or `/sgp4` |
 | `orb-data-loader.v2.js` | no replacement; use `fetch`, dynamic `import()`, or the host platform's loader |
-| `orb-date-handler.v2.js` | no replacement; use `Date` or `/time`'s `Instant` |
+| `orb-date-handler.v2.js` | no replacement; use `Date` or `/time`'s `AstroInstant` |
 
 Do not combine v2 component files with a v3.1 build.
 
@@ -124,16 +128,16 @@ v3.1.
 
 ## 3. Optionally adopt structured APIs
 
-Structured APIs are additive ES-module subpaths. They use `Instant`, radians,
+Structured APIs are additive ES-module subpaths. They use `AstroInstant`, radians,
 kilometers, kilometers per second, and explicit state metadata rather than the
 legacy API's mixed astronomy conventions.
 
 ```js
-import { Instant } from '@lizard-isana/orb/time';
+import { AstroInstant } from '@lizard-isana/orb/time';
 import { createObserver } from '@lizard-isana/orb/observer';
 import { sunEpv00 } from '@lizard-isana/orb/models/earth-epv00';
 
-const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
 const tokyo = createObserver({
   latitude: 35.658 * Math.PI / 180,
   longitude: 139.741 * Math.PI / 180,
@@ -165,14 +169,14 @@ motion are not implemented.
 ### Structured SGP4
 
 ```js
-import { Instant } from '@lizard-isana/orb/time';
+import { AstroInstant } from '@lizard-isana/orb/time';
 import { createSatellite } from '@lizard-isana/orb/sgp4';
 
 const satellite = createSatellite({
   line1: '1 25544U 98067A   20014.52632156  .00016717  00000-0  10270-3 0  9015',
   line2: '2 25544  51.6423  33.7380 0004871 130.9389 229.2183 15.49556564  8038'
 });
-const state = satellite.state(Instant.fromISO('2020-01-14T12:37:54Z'));
+const state = satellite.state(AstroInstant.fromISO('2020-01-14T12:37:54Z'));
 // TEME, Earth-centered, km and km/s
 ```
 

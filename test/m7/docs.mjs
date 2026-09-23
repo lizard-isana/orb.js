@@ -64,6 +64,9 @@ test('English and Japanese guides publish the same structured surface', () => {
     assert.ok(japanese.includes(`@lizard-isana/orb${subpath}`), `Japanese guide omits ${subpath}`);
   }
   for (const token of [
+    'AstroInstant',
+    'Temporal.Instant',
+    '15.4',
     "frameModel: 'iau2006-2000b'",
     'lightTime: false',
     'aberration: false',
@@ -77,6 +80,19 @@ test('English and Japanese guides publish the same structured surface', () => {
     assert.ok(english.includes(token), `English guide omits ${token}`);
     assert.ok(japanese.includes(token), `Japanese guide omits ${token}`);
   }
+});
+
+test('package metadata records the approved browser baseline', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  assert.deepStrictEqual(manifest.browserslist, [
+    'Chrome >= 92',
+    'Edge >= 92',
+    'Firefox >= 90',
+    'Safari >= 15.4',
+    'iOS >= 15.4',
+    'and_chr >= 92',
+    'and_ff >= 90'
+  ]);
 });
 
 test('v2 migration guides preserve the staged migration contract', () => {
@@ -133,11 +149,11 @@ test('documented examples execute against the exact tarball', () => {
     `]), 'legacy-ok');
 
     assert.strictEqual(runNode(consumer, ['--input-type=module', '-e', `
-      import { Instant } from '${PACKAGE_NAME}/time';
+      import { AstroInstant } from '${PACKAGE_NAME}/time';
       import { createObserver, OBSERVER_DEFAULTS } from '${PACKAGE_NAME}/observer';
       import { sunEpv00 } from '${PACKAGE_NAME}/models/earth-epv00';
       import { HORIZON_CONSTANTS, riseSetTransit } from '${PACKAGE_NAME}/events';
-      const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+      const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
       const site = createObserver({
         latitude: 35.658 * Math.PI / 180,
         longitude: 139.741 * Math.PI / 180,
@@ -153,8 +169,8 @@ test('documented examples execute against the exact tarball', () => {
       const events = riseSetTransit(
         site,
         sunEpv00,
-        Instant.fromISO('2026-07-17T15:00:00Z'),
-        Instant.fromISO('2026-07-18T15:00:00Z'),
+        AstroInstant.fromISO('2026-07-17T15:00:00Z'),
+        AstroInstant.fromISO('2026-07-18T15:00:00Z'),
         { semidiameter: HORIZON_CONSTANTS.meanSolarSemidiameter }
       );
       if (!Number.isFinite(geometric.azimuth) || !corrected.meta || events.length !== 3) {
@@ -167,12 +183,12 @@ test('documented examples execute against the exact tarball', () => {
     `]), 'observer-ok');
 
     assert.strictEqual(runNode(consumer, ['--input-type=module', '-e', `
-      import { Instant } from '${PACKAGE_NAME}/time';
+      import { AstroInstant } from '${PACKAGE_NAME}/time';
       import { makeState, transform } from '${PACKAGE_NAME}/frames';
       import { geodeticToEcef } from '${PACKAGE_NAME}/geodesy';
       import { GM, propagateKepler } from '${PACKAGE_NAME}/kepler';
       import { isFrame } from '${PACKAGE_NAME}/vocab';
-      const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+      const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
       const state = makeState({t: instant, frame: 'equatorial-j2000', center: 'earth', r: [7000,0,0], v: [0,7.5,1]});
       const ofDate = transform(state, {frame: 'equatorial-of-date'});
       const next = propagateKepler([7000,0,0], [0,7.5,1], 600, GM.earth);
@@ -182,13 +198,13 @@ test('documented examples execute against the exact tarball', () => {
     `]), 'core-ok');
 
     assert.strictEqual(runNode(consumer, ['--input-type=module', '-e', `
-      import { Instant } from '${PACKAGE_NAME}/time';
+      import { AstroInstant } from '${PACKAGE_NAME}/time';
       import { createSatellite } from '${PACKAGE_NAME}/sgp4';
       const satellite = createSatellite({
         line1: '1 25544U 98067A   20014.52632156  .00016717  00000-0  10270-3 0  9015',
         line2: '2 25544  51.6423  33.7380 0004871 130.9389 229.2183 15.49556564  8038'
       });
-      const instant = Instant.fromISO('2020-01-14T12:37:54Z');
+      const instant = AstroInstant.fromISO('2020-01-14T12:37:54Z');
       if (satellite.state(instant).frame !== 'teme' || satellite.geodetic(instant).frame !== 'geodetic-wgs84') {
         throw new Error('SGP4 example failed');
       }

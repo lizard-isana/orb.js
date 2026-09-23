@@ -19,7 +19,7 @@ const Orb = require('@lizard-isana/orb');
 import * as Orb from '@lizard-isana/orb';
 
 // Structured ES-module subpaths
-import { Instant } from '@lizard-isana/orb/time';
+import { AstroInstant } from '@lizard-isana/orb/time';
 import { createObserver } from '@lizard-isana/orb/observer';
 ```
 
@@ -27,10 +27,20 @@ For a browser, load `dist/orb.js`. The complete UMD build exposes
 `window.Orb`. Pin an exact package version when using a CDN.
 
 ```html
-<script src="https://unpkg.com/@lizard-isana/orb@3.1.0/dist/orb.js"></script>
+<script src="https://unpkg.com/@lizard-isana/orb@3.1.1/dist/orb.js"></script>
 ```
 
 Node.js 18 or later is required. The structured subpaths are ES modules.
+
+The supported browser baseline is Chrome and Edge 92+, Firefox 90+, Safari and
+iOS Safari 15.4+, Chrome for Android 92+, and Firefox for Android 90+. No
+polyfills are included. IE 11, EdgeHTML, Opera Mini, KaiOS 2.5, and older
+browsers are unsupported; embedded web views are not guaranteed separately.
+
+The UMD build exposes only the compatible `Orb.*` surface. Use a package-aware
+bundler for structured subpaths in browser applications. Native browser bare
+imports require an import map or URL mapping, and direct CDN ESM subpaths are
+not currently a supported entry path.
 
 ## Choose between compatible and structured APIs
 
@@ -40,7 +50,7 @@ documented by each result. It is the shortest upgrade path from v2 or v3.0.
 
 The structured API uses:
 
-- `Instant` instead of `Date` at calculation boundaries;
+- `AstroInstant` instead of `Date` at calculation boundaries;
 - radians for angles;
 - km, km/s, and seconds for state-vector calculations;
 - explicit `frame` and `center` tags;
@@ -164,28 +174,30 @@ one unit for every root API result.
 ### `@lizard-isana/orb/time`
 
 ```js
-import { Instant, deltaT, ttMinusUtc } from '@lizard-isana/orb/time';
+import { AstroInstant, deltaT, ttMinusUtc } from '@lizard-isana/orb/time';
 
-const instant = Instant.fromISO('2026-07-18T12:00:00Z', { dut1: 0.05 });
+const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z', { dut1: 0.05 });
 instant.jd('utc');
 instant.jd('ut1');
 instant.jd('tt');
 instant.addSeconds(30);
 ```
 
-`Instant.from` accepts an `Instant`, `Date`, ISO string, or Unix milliseconds.
+`AstroInstant.from` accepts an `AstroInstant`, `Date`, ISO string, or Unix milliseconds.
 `fromJD` and `fromJD2` accept an explicit `utc`, `ut1`, or `tt` scale. Internally
 the instant stores a two-part TT Julian date and remains immutable. `dut1`
 defaults to zero and, when supplied, must be between -0.9 and +0.9 seconds.
+`AstroInstant` is an orb.js astronomical time class, not `Temporal.Instant`,
+and it does not require the browser Temporal API.
 
 ### `@lizard-isana/orb/frames`
 
 ```js
 import { makeState, transform } from '@lizard-isana/orb/frames';
-import { Instant } from '@lizard-isana/orb/time';
+import { AstroInstant } from '@lizard-isana/orb/time';
 
 const state = makeState({
-  t: Instant.fromISO('2026-07-18T12:00:00Z'),
+  t: AstroInstant.fromISO('2026-07-18T12:00:00Z'),
   frame: 'equatorial-j2000',
   center: 'earth',
   r: [7000, 0, 0],
@@ -241,11 +253,11 @@ accuracy statement. It is optional and does not replace the root API's legacy
 Earth/Sun models.
 
 ```js
-import { Instant } from '@lizard-isana/orb/time';
+import { AstroInstant } from '@lizard-isana/orb/time';
 import { createObserver } from '@lizard-isana/orb/observer';
 import { sunEpv00 } from '@lizard-isana/orb/models/earth-epv00';
 
-const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
 const site = createObserver({
   latitude: 35.658 * Math.PI / 180,
   longitude: 139.741 * Math.PI / 180,
@@ -288,7 +300,7 @@ not implement diurnal aberration, gravitational deflection, or polar motion.
 
 `@lizard-isana/orb/events` provides bounded searches, rise/set/transit, lunar
 elongation/phases/age, and satellite passes. All time inputs and event times are
-`Instant`; public angles are radians.
+`AstroInstant`; public angles are radians.
 
 ```js
 import { HORIZON_CONSTANTS, riseSetTransit } from '@lizard-isana/orb/events';
@@ -296,8 +308,8 @@ import { HORIZON_CONSTANTS, riseSetTransit } from '@lizard-isana/orb/events';
 const events = riseSetTransit(
   site,
   sunEpv00,
-  Instant.fromISO('2026-07-17T15:00:00Z'),
-  Instant.fromISO('2026-07-18T15:00:00Z'),
+  AstroInstant.fromISO('2026-07-17T15:00:00Z'),
+  AstroInstant.fromISO('2026-07-18T15:00:00Z'),
   { semidiameter: HORIZON_CONSTANTS.meanSolarSemidiameter }
 );
 ```
@@ -324,8 +336,8 @@ const satellite = createSatellite({
   line1: '1 25544U 98067A   20014.52632156  .00016717  00000-0  10270-3 0  9015',
   line2: '2 25544  51.6423  33.7380 0004871 130.9389 229.2183 15.49556564  8038'
 });
-const state = satellite.state(Instant.fromISO('2020-01-14T12:37:54Z'));
-const subpoint = satellite.geodetic(Instant.fromISO('2020-01-14T12:37:54Z'));
+const state = satellite.state(AstroInstant.fromISO('2020-01-14T12:37:54Z'));
+const subpoint = satellite.geodetic(AstroInstant.fromISO('2020-01-14T12:37:54Z'));
 ```
 
 `state()` returns an Earth-centered TEME state in km and km/s. `geodetic()`

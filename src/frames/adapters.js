@@ -45,7 +45,7 @@ export function adaptLegacyBody(body, {
     name,
     state(instant) {
       if (!instant || typeof instant.toDate !== 'function') {
-        throw new TypeError('adaptLegacyBody.state: expected an Instant');
+        throw new TypeError('adaptLegacyBody.state: expected an AstroInstant');
       }
       const result = body.xyz(instant.toDate());
       const position = finiteComponents(result, ['x', 'y', 'z'], 'xyz result');

@@ -18,7 +18,7 @@ const Orb = require('@lizard-isana/orb');
 import * as Orb from '@lizard-isana/orb';
 
 // 構造化 ES module サブパス
-import { Instant } from '@lizard-isana/orb/time';
+import { AstroInstant } from '@lizard-isana/orb/time';
 import { createObserver } from '@lizard-isana/orb/observer';
 ```
 
@@ -26,10 +26,20 @@ import { createObserver } from '@lizard-isana/orb/observer';
 定義します。CDN を使う場合は正確なパッケージバージョンを固定してください。
 
 ```html
-<script src="https://unpkg.com/@lizard-isana/orb@3.1.0/dist/orb.js"></script>
+<script src="https://unpkg.com/@lizard-isana/orb@3.1.1/dist/orb.js"></script>
 ```
 
 Node.js 18 以降が必要です。構造化サブパスは ES module です。
+
+対応ブラウザは Chrome / Edge 92 以降、Firefox 90 以降、Safari / iOS Safari
+15.4 以降、Chrome for Android 92 以降、Firefox for Android 90 以降です。
+ポリフィルは同梱しません。IE 11、EdgeHTML、Opera Mini、KaiOS 2.5 とそれ以前の
+ブラウザは対象外で、組み込み WebView は個別には保証しません。
+
+UMD ビルドが公開するのは互換 `Orb.*` API だけです。ブラウザで構造化サブパスを
+使う場合はパッケージを解決できるバンドラーを使用してください。ブラウザの bare
+import には import map または URL マッピングが必要で、CDN から構造化 ESM
+サブパスを直接読む経路は現時点では対応対象に含めません。
 
 ## 互換 API と構造化 API の選択
 
@@ -39,7 +49,7 @@ v3.0 からの最短のアップグレード経路です。
 
 構造化 API は次の規約を使います。
 
-- 計算境界では `Date` の代わりに `Instant`
+- 計算境界では `Date` の代わりに `AstroInstant`
 - 角度はラジアン
 - 状態ベクトル計算は km、km/s、秒
 - 明示的な `frame` と `center` タグ
@@ -161,28 +171,30 @@ const result = observation.azel(date);
 ### `@lizard-isana/orb/time`
 
 ```js
-import { Instant, deltaT, ttMinusUtc } from '@lizard-isana/orb/time';
+import { AstroInstant, deltaT, ttMinusUtc } from '@lizard-isana/orb/time';
 
-const instant = Instant.fromISO('2026-07-18T12:00:00Z', { dut1: 0.05 });
+const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z', { dut1: 0.05 });
 instant.jd('utc');
 instant.jd('ut1');
 instant.jd('tt');
 instant.addSeconds(30);
 ```
 
-`Instant.from` は `Instant`、`Date`、ISO 文字列、Unix ミリ秒を受け付けます。
+`AstroInstant.from` は `AstroInstant`、`Date`、ISO 文字列、Unix ミリ秒を受け付けます。
 `fromJD` と `fromJD2` は明示的な `utc`、`ut1`、`tt` 時刻系を受け付けます。
 内部では2分割した TT ユリウス日を保持し、オブジェクトは不変です。`dut1` の既定値は
 0 で、指定する場合は -0.9〜+0.9 秒の範囲でなければなりません。
+`AstroInstant` は orb.js 独自の天文時刻クラスであり、`Temporal.Instant` では
+ありません。ブラウザの Temporal API にも依存しません。
 
 ### `@lizard-isana/orb/frames`
 
 ```js
 import { makeState, transform } from '@lizard-isana/orb/frames';
-import { Instant } from '@lizard-isana/orb/time';
+import { AstroInstant } from '@lizard-isana/orb/time';
 
 const state = makeState({
-  t: Instant.fromISO('2026-07-18T12:00:00Z'),
+  t: AstroInstant.fromISO('2026-07-18T12:00:00Z'),
   frame: 'equatorial-j2000',
   center: 'earth',
   r: [7000, 0, 0],
@@ -236,11 +248,11 @@ const next = propagateKepler(
 API の従来 Earth/Sun モデルを置き換えません。
 
 ```js
-import { Instant } from '@lizard-isana/orb/time';
+import { AstroInstant } from '@lizard-isana/orb/time';
 import { createObserver } from '@lizard-isana/orb/observer';
 import { sunEpv00 } from '@lizard-isana/orb/models/earth-epv00';
 
-const instant = Instant.fromISO('2026-07-18T12:00:00Z');
+const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
 const site = createObserver({
   latitude: 35.658 * Math.PI / 180,
   longitude: 139.741 * Math.PI / 180,
@@ -280,7 +292,7 @@ const corrected = site.observe(sunEpv00, instant, {
 ## 構造化イベント
 
 `@lizard-isana/orb/events` は上限付き探索、出・没・南中、月の離角・主要位相・月齢、
-衛星パスを提供します。すべての時刻入力とイベント時刻は `Instant`、公開角度は
+衛星パスを提供します。すべての時刻入力とイベント時刻は `AstroInstant`、公開角度は
 ラジアンです。
 
 ```js
@@ -289,8 +301,8 @@ import { HORIZON_CONSTANTS, riseSetTransit } from '@lizard-isana/orb/events';
 const events = riseSetTransit(
   site,
   sunEpv00,
-  Instant.fromISO('2026-07-17T15:00:00Z'),
-  Instant.fromISO('2026-07-18T15:00:00Z'),
+  AstroInstant.fromISO('2026-07-17T15:00:00Z'),
+  AstroInstant.fromISO('2026-07-18T15:00:00Z'),
   { semidiameter: HORIZON_CONSTANTS.meanSolarSemidiameter }
 );
 ```
@@ -316,8 +328,8 @@ const satellite = createSatellite({
   line1: '1 25544U 98067A   20014.52632156  .00016717  00000-0  10270-3 0  9015',
   line2: '2 25544  51.6423  33.7380 0004871 130.9389 229.2183 15.49556564  8038'
 });
-const state = satellite.state(Instant.fromISO('2020-01-14T12:37:54Z'));
-const subpoint = satellite.geodetic(Instant.fromISO('2020-01-14T12:37:54Z'));
+const state = satellite.state(AstroInstant.fromISO('2020-01-14T12:37:54Z'));
+const subpoint = satellite.geodetic(AstroInstant.fromISO('2020-01-14T12:37:54Z'));
 ```
 
 `state()` は地球中心 TEME の状態を km と km/s で返します。`geodetic()` は SGP4

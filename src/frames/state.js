@@ -87,7 +87,7 @@ function copyVector(value, label, nullable = false) {
 
 export function makeState({ t, frame, center, r, v = null }) {
   if (!t || typeof t.jd !== 'function' || typeof t.jd2parts !== 'function') {
-    throw new TypeError('state.t must be an Instant');
+    throw new TypeError('state.t must be an AstroInstant');
   }
   requireFrame(frame, 'state.frame');
   if (typeof center !== 'string' || center.length === 0) {

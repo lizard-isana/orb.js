@@ -7,7 +7,7 @@ const MAX_LIGHT_TIME_ITERATIONS = 8;
 
 function requireInstant(instant) {
   if (!instant || typeof instant.jd !== 'function' || typeof instant.addSeconds !== 'function') {
-    throw new TypeError('observer: expected an Instant');
+    throw new TypeError('observer: expected an AstroInstant');
   }
   return instant;
 }
