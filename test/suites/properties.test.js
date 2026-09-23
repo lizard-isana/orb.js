@@ -83,6 +83,45 @@ test('property: ecliptic/equatorial plane conversion preserves vectors', () => {
   }
 });
 
+test('property: compatible ecliptic/equatorial round trips preserve the coordinate center', () => {
+  const date = new Date('2026-07-18T00:00:00Z');
+  const vector = {
+    x: 0.0025,
+    y: 0.0003,
+    z: -0.0002,
+    date,
+    coordinate_keywords: 'ecliptic rectangular',
+    unit_keywords: 'au'
+  };
+  for (const metadata of [
+    { center: 'earth' },
+    { center_keywords: 'earth' },
+    { origin: 'geocentric' }
+  ]) {
+    const source = { ...vector, ...metadata };
+    const equatorial = Orb.EclipticToEquatorial({ date, ecliptic: source });
+    const ecliptic = Orb.EquatorialToEcliptic({ date, equatorial });
+    const roundTrip = Orb.EclipticToEquatorial({ date, ecliptic });
+
+    for (const [key, value] of Object.entries(metadata)) {
+      assert.strictEqual(ecliptic[key], value);
+    }
+    assert.strictEqual(ecliptic.center_keywords, 'earth');
+    assert.strictEqual(roundTrip.center_keywords, 'earth');
+    assert.ok(Math.abs(roundTrip.x - equatorial.x) < 1e-15);
+    assert.ok(Math.abs(roundTrip.y - equatorial.y) < 1e-15);
+    assert.ok(Math.abs(roundTrip.z - equatorial.z) < 1e-15);
+  }
+
+  const planeRotation = Orb.ConvertRectangularPlane({
+    position: { ...vector, center_keywords: 'earth' },
+    from_plane: 'ecliptic',
+    to_plane: 'equatorial',
+    date
+  });
+  assert.strictEqual(planeRotation.center_keywords, 'earth');
+});
+
 test('property: J2000-to-date rotation preserves vector length', () => {
   const vectors = [
     { x: 1, y: 2, z: 3 },

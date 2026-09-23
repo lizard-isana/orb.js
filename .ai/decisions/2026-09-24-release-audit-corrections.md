@@ -53,6 +53,27 @@ au Earth vector from a geocentric-km Moon vector.
   natively implements the syntax used by the source, so build-time Babel
   transpilation and its vulnerable dependency tree are not required.
 
+## Follow-up audit decisions
+
+A second independent audit of `7ae86bd` confirmed that the original eleven
+direct reproductions were fixed and found three additional composition and
+boundary failures. They are handled under the same release-correction scope:
+
+- Coordinate-plane rotations preserve `center`, `center_keywords`, and
+  `origin` markers. A geocentric vector therefore remains geocentric across
+  an ecliptic/equatorial round trip instead of being translated a second time.
+- An exact zero at an interior crossing sample is classified using the nearest
+  nonzero samples on both sides. Opposite signs are a crossing; equal signs
+  are a tangency and do not split an event interval. The existing `(from, to]`
+  endpoint rule remains unchanged.
+- Satellite-pass culmination search prefers a 15-second sampling step only
+  when it remains larger than the caller's tolerance. Otherwise it retains
+  the already validated caller step, so valid public options cannot become
+  invalid inside the implementation.
+- The English and Japanese time examples define `other` before using the two
+  duration methods, and the exact-tarball documentation test executes the same
+  relationship.
+
 ## Evidence and references
 
 - Transit follows the U.S. Naval Observatory definition of the body's center
@@ -67,7 +88,7 @@ au Earth vector from a geocentric-km Moon vector.
   one-to-nine-digit catalogue queries:
   <https://celestrak.org/NORAD/documentation/gp-data-formats.php>
 
-## Follow-up validation
+## Validation after the initial audit
 
 Focused regression suites, the full suite, Rollup build, VSOP reproducibility
 check, exact-tarball installation, generated-output review, and diff checks
@@ -80,3 +101,13 @@ Firefox and WebKit execution remain a release-validation gap: Firefox is not
 installed on the validation host and the locked macOS session prevented Safari
 automation. This is recorded rather than treating the Node `vm` and Chrome
 results as cross-engine coverage.
+
+## Validation after the follow-up audit
+
+The second-audit corrections pass the focused regressions, full suite, Rollup
+build, deterministic VSOP check, exact-tarball consumers, and diff checks on
+Node 24.14.1. No dependencies changed. A fresh `npm audit` registry query was
+not authorized for this follow-up, so the earlier zero-vulnerability result is
+not represented as a newly fetched result. The real-browser smoke was also not
+repeated after these changes; the exact release candidate still needs its
+planned browser-engine validation before broader compatibility is claimed.

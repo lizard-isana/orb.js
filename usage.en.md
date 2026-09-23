@@ -173,6 +173,8 @@ one unit for every root API result.
 `center_keywords: 'earth'`. Ecliptic-to-equatorial helpers rotate an input
 already marked with `center: 'earth'`, `center_keywords: 'earth'`, or
 `origin: 'geocentric'` without subtracting Earth's heliocentric position.
+Coordinate-plane rotations preserve these center markers so that a later
+inverse conversion retains the same origin.
 Unmarked compatible ecliptic inputs retain the historical heliocentric-input
 behavior and are translated to the Earth before rotation.
 
@@ -184,12 +186,13 @@ behavior and are translated to the Earth before rotation.
 import { AstroInstant, deltaT, ttMinusUtc } from '@lizard-isana/orb/time';
 
 const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z', { dut1: 0.05 });
+const other = instant.addSeconds(30);
 instant.jd('utc');
 instant.jd('ut1');
 instant.jd('tt');
 instant.addSeconds(30);
-instant.differenceSeconds(other);
-instant.differenceTtSeconds(other);
+other.differenceSeconds(instant);
+other.differenceTtSeconds(instant);
 ```
 
 `AstroInstant.from` accepts an `AstroInstant`, `Date`, ISO string, or Unix milliseconds.
@@ -356,10 +359,12 @@ maximum remaining time interval after refinement. Exceeding either bound or
 reaching `maxIterations` before tolerance is met throws instead of returning an
 unconverged event. Crossing searches use `(from, to]`; maxima include both
 endpoints and refine the adjacent interval even when the best coarse sample is
-an endpoint. A satellite pass must have positive duration greater than the
-search tolerance, so a rise exactly at `to` is not returned as a zero-length
-pass. A pass already above the threshold at `from` is returned with a clipped
-rise.
+an endpoint. An interior sample equal to the threshold is a crossing only when
+the nearest nonzero samples on its two sides have opposite signs; merely
+touching the threshold does not split an event interval. A satellite pass must
+have positive duration greater than the search tolerance, so a rise exactly at
+`to` is not returned as a zero-length pass. A pass already above the threshold
+at `from` is returned with a clipped rise.
 
 Pass results label elevation as `geometric` or `refracted`. They report
 `opticalVisibility` and `sunlight` as `not-computed`; a geometric pass is not a

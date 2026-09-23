@@ -14688,12 +14688,19 @@ const J2000Epoch = J2000;
 //require core.js, time.js, earth.js
 
 
+const copyCenterMetadata = (target, source = {}) => {
+  for (const key of ['center', 'center_keywords', 'origin']) {
+    if (source[key] != undefined) target[key] = source[key];
+  }
+  return target;
+};
+
 const cloneRectangular = (position = {}) => {
-  return {
+  return copyCenterMetadata({
     x: Number(position.x) || 0,
     y: Number(position.y) || 0,
     z: Number(position.z) || 0
-  };
+  }, position);
 };
 
 const normalizeEpoch = (epoch) => {
@@ -14713,13 +14720,14 @@ const geocentricEcliptic = (parameter) => {
   const date = parameter.date;
   const ecliptic = parameter.ecliptic;
   const geocentric = parameter.origin === 'geocentric'
+    || ecliptic.origin === 'geocentric'
     || ecliptic.center === 'earth'
     || (typeof ecliptic.center_keywords === 'string'
       && /earth|geocentric/i.test(ecliptic.center_keywords))
     || (typeof ecliptic.coordinate_keywords === 'string'
       && /geocentric/i.test(ecliptic.coordinate_keywords));
   if (geocentric) {
-    return {
+    return copyCenterMetadata({
       x: Number(ecliptic.x),
       y: Number(ecliptic.y),
       z: Number(ecliptic.z),
@@ -14727,7 +14735,7 @@ const geocentricEcliptic = (parameter) => {
       coordinate_keywords: ecliptic.coordinate_keywords,
       center_keywords: ecliptic.center_keywords || "earth",
       unit_keywords: ecliptic.unit_keywords || ""
-    };
+    }, ecliptic);
   }
   const earth = new Earth();
   const ep = earth.xyz(date);
@@ -14757,11 +14765,11 @@ const rotateRectangularOnXAxis = (position, radians) => {
   const source = cloneRectangular(position);
   const cos = Math.cos(radians);
   const sin = Math.sin(radians);
-  return {
+  return copyCenterMetadata({
     x: source.x,
     y: (cos * source.y) - (sin * source.z),
     z: (sin * source.y) + (cos * source.z)
-  };
+  }, position);
 };
 
 // Convert an ecliptic rectangular vector referred to the equinox of J2000.0
@@ -14808,7 +14816,7 @@ const EclipticJ2000ToDate = (vector, date) => {
 
   // Mean equinox -> true equinox of date.
   const nutation = Nutation(date) * rad;
-  return {
+  return copyCenterMetadata({
     x: Math.cos(nutation) * mx - Math.sin(nutation) * my,
     y: Math.sin(nutation) * mx + Math.cos(nutation) * my,
     z: mz,
@@ -14816,7 +14824,7 @@ const EclipticJ2000ToDate = (vector, date) => {
     coordinate_keywords: "ecliptic rectangular",
     center_keywords: vector.center_keywords || "",
     unit_keywords: vector.unit_keywords || ""
-  };
+  }, vector);
 };
 
 const ConvertRectangularPlane = function ({
@@ -14958,14 +14966,14 @@ const EquatorialToEcliptic = function (parameter) {
     y: Math.cos(obliquity * rad) * equatorial.y + Math.sin(obliquity * rad) * equatorial.z,
     z: -Math.sin(obliquity * rad) * equatorial.y + Math.cos(obliquity * rad) * equatorial.z
   };
-  return {
+  return copyCenterMetadata({
     'x': ecliptic.x,
     'y': ecliptic.y,
     'z': ecliptic.z,
     'date': date,
     "coordinate_keywords": "ecliptic rectangular",
     "unit_keywords": equatorial.unit_keywords != undefined ? equatorial.unit_keywords : ""
-  }
+  }, equatorial)
 };
 
 const EclipticToEquatorial = function (parameter) {
@@ -14978,7 +14986,7 @@ const EclipticToEquatorial = function (parameter) {
   }
   const obliquity = Obliquity(parameter.date);
   const equatorial = rotateEclipticToEquatorial({ ecliptic: ecliptic, obliquity: obliquity });
-  return {
+  return copyCenterMetadata({
     'x': equatorial.x,
     'y': equatorial.y,
     'z': equatorial.z,
@@ -14986,7 +14994,7 @@ const EclipticToEquatorial = function (parameter) {
     "coordinate_keywords": "equatorial rectangular",
     "center_keywords": ecliptic.center_keywords || "earth",
     "unit_keywords": ecliptic.unit_keywords != undefined ? ecliptic.unit_keywords : ""
-  }
+  }, ecliptic)
 };
 
 const EclipticToEquatorialJ2000 = function (parameter) {
@@ -14994,7 +15002,7 @@ const EclipticToEquatorialJ2000 = function (parameter) {
   const ecliptic = geocentricEcliptic(parameter);
   const obliquity = MeanObliquity(J2000Epoch);
   const equatorial = rotateEclipticToEquatorial({ ecliptic: ecliptic, obliquity: obliquity });
-  return {
+  return copyCenterMetadata({
     'x': equatorial.x,
     'y': equatorial.y,
     'z': equatorial.z,
@@ -15002,7 +15010,7 @@ const EclipticToEquatorialJ2000 = function (parameter) {
     "coordinate_keywords": "equatorial rectangular",
     "center_keywords": ecliptic.center_keywords || "earth",
     "unit_keywords": ""
-  }
+  }, ecliptic)
 };
 
 const EclipticToEquatorialOfDate = function (parameter) {
@@ -15010,7 +15018,7 @@ const EclipticToEquatorialOfDate = function (parameter) {
   const ecliptic = EclipticJ2000ToDate(geocentricEcliptic(parameter), date);
   const obliquity = Obliquity(date);
   const rect = rotateEclipticToEquatorial({ ecliptic: ecliptic, obliquity: obliquity });
-  return {
+  return copyCenterMetadata({
     'x': rect.x,
     'y': rect.y,
     'z': rect.z,
@@ -15018,7 +15026,7 @@ const EclipticToEquatorialOfDate = function (parameter) {
     "coordinate_keywords": "equatorial rectangular",
     "center_keywords": ecliptic.center_keywords || "earth",
     "unit_keywords": ""
-  }
+  }, ecliptic)
 };
 
 //vsop.js

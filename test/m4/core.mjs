@@ -204,6 +204,13 @@ test('pass defaults are airless horizon crossings and invalid search knobs fail'
   assert.strictEqual(passes[0].elevationType, 'geometric');
   assert.ok(Math.abs(passes[0].rise.elevation) < 1e-5);
   assert.ok(Math.abs(passes[0].set.elevation) < 1e-5);
+  assert.strictEqual(
+    satellitePasses(tokyo, satellite, from, to, {
+      stepSeconds: 30,
+      toleranceSeconds: 20
+    }).length,
+    1
+  );
   assert.throws(
     () => satellitePasses(tokyo, satellite, from, to, { stepSeconds: 301 }),
     /must not exceed/
@@ -233,6 +240,63 @@ test('a pass beginning exactly at the search end is not a zero-duration pass', (
     }),
     []
   );
+});
+
+test('touching a threshold does not create a crossing or split a pass', () => {
+  const from = AstroInstant.fromUnixMs(0);
+  const to = from.addSeconds(10);
+  const elevation = (instant) => 0.001 * (instant.differenceSeconds(from) - 5) ** 2;
+  assert.deepStrictEqual(
+    findCrossings(elevation, from, to, {
+      stepSeconds: 1,
+      toleranceSeconds: 0.001
+    }),
+    []
+  );
+  const trueCrossing = findCrossings(
+    (instant) => instant.differenceSeconds(from) - 5,
+    from,
+    to,
+    { stepSeconds: 1, toleranceSeconds: 0.001 }
+  );
+  assert.strictEqual(trueCrossing.length, 1);
+  assert.strictEqual(trueCrossing[0].instant.differenceSeconds(from), 5);
+  assert.strictEqual(trueCrossing[0].direction, 1);
+
+  const tangentSite = {
+    observe(_body, instant) {
+      return { azimuth: 0, elevation: elevation(instant), range: 1 };
+    }
+  };
+  const passes = satellitePasses(tangentSite, { state() {} }, from, to, {
+    stepSeconds: 1,
+    toleranceSeconds: 0.001
+  });
+  assert.strictEqual(passes.length, 1);
+  assert.strictEqual(passes[0].rise.instant.utcMs, from.utcMs);
+  assert.strictEqual(passes[0].set.instant.utcMs, to.utcMs);
+  assert.deepStrictEqual(passes[0].clipped, { rise: true, set: true });
+});
+
+test('valid pass search options remain valid for the internal peak search', () => {
+  const from = AstroInstant.fromUnixMs(0);
+  const to = from.addSeconds(60);
+  const broadPassSite = {
+    observe(_body, instant) {
+      const seconds = instant.differenceSeconds(from);
+      return {
+        azimuth: 0,
+        elevation: 1 - ((seconds - 30) ** 2) / 900,
+        range: 1
+      };
+    }
+  };
+  const passes = satellitePasses(broadPassSite, { state() {} }, from, to, {
+    stepSeconds: 30,
+    toleranceSeconds: 20
+  });
+  assert.strictEqual(passes.length, 1);
+  assert.ok(Math.abs(passes[0].culmination.instant.differenceSeconds(from) - 30) <= 20);
 });
 
 let failures = 0;

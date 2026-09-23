@@ -169,8 +169,9 @@ const result = observation.azel(date);
 `Luna.xyz()` は地球中心ベクトルであり、`center_keywords: 'earth'` も返します。
 黄道→赤道変換ヘルパーは、入力に `center: 'earth'`、
 `center_keywords: 'earth'`、または `origin: 'geocentric'` が明記されていれば、
-地球の太陽中心位置を減算せず座標面だけを回転します。中心が明記されない従来形式の
-黄道入力は、互換性のため太陽中心入力として扱い、地心化してから回転します。
+地球の太陽中心位置を減算せず座標面だけを回転します。座標面の回転ではこれらの中心情報を
+維持するため、続く逆変換でも同じ原点が使われます。中心が明記されない従来形式の黄道入力は、
+互換性のため太陽中心入力として扱い、地心化してから回転します。
 
 ## 構造化された時刻・座標系・測地系
 
@@ -180,12 +181,13 @@ const result = observation.azel(date);
 import { AstroInstant, deltaT, ttMinusUtc } from '@lizard-isana/orb/time';
 
 const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z', { dut1: 0.05 });
+const other = instant.addSeconds(30);
 instant.jd('utc');
 instant.jd('ut1');
 instant.jd('tt');
 instant.addSeconds(30);
-instant.differenceSeconds(other);
-instant.differenceTtSeconds(other);
+other.differenceSeconds(instant);
+other.differenceTtSeconds(instant);
 ```
 
 `AstroInstant.from` は `AstroInstant`、`Date`、ISO 文字列、Unix ミリ秒を受け付けます。
@@ -340,8 +342,10 @@ const events = riseSetTransit(
 `maxEvaluations` を受け付けます。step は粗い区間分割、tolerance は絞り込み後に許す
 時間幅です。評価回数の上限超過や、反復上限までに許容幅へ収束しない場合は、未収束値を
 正常結果にせず例外を投げます。交差探索の端点規則は `(from, to]`、最大値探索は両端を
-含みます。粗い最大サンプルが端点でも隣接区間を細かく探索します。衛星パスは探索許容幅
-より長い正の継続時間を必要とするため、`to` ちょうどの出現は長さ0のパスとして返しません。
+含みます。粗い最大サンプルが端点でも隣接区間を細かく探索します。区間内の標本が閾値と
+ちょうど等しい場合は、その両側にある最も近い非ゼロ標本の符号が異なるときだけ交差です。
+閾値に接するだけならイベント区間を分割しません。衛星パスは探索許容幅より長い正の
+継続時間を必要とするため、`to` ちょうどの出現は長さ0のパスとして返しません。
 `from` ですでに閾値より上なら、出現側をクリップしたパスとして返します。
 
 パス結果は仰角を `geometric` または `refracted` と表示します。

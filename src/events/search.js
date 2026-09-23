@@ -195,18 +195,42 @@ export function findCrossings(fn, from, to, options = {}) {
   const context = searchContext(fn, from, to, options);
   const points = sample(context);
   const crossings = [];
-  for (let index = 1; index < points.length; index += 1) {
+  for (let index = 1; index < points.length;) {
     const left = points[index - 1];
     const right = points[index];
-    const rising = left.value < 0 && right.value >= 0;
-    const falling = left.value > 0 && right.value <= 0;
-    if (!rising && !falling) continue;
+
+    if (right.value === 0) {
+      let zeroEnd = index;
+      while (zeroEnd + 1 < points.length && points[zeroEnd + 1].value === 0) {
+        zeroEnd += 1;
+      }
+      const after = points[zeroEnd + 1];
+      const rising = left.value < 0 && (!after || after.value > 0);
+      const falling = left.value > 0 && (!after || after.value < 0);
+      if (rising || falling) {
+        crossings.push(Object.freeze({
+          instant: right.instant,
+          value: right.value,
+          direction: rising ? 1 : -1
+        }));
+      }
+      index = zeroEnd + 1;
+      continue;
+    }
+
+    const rising = left.value < 0 && right.value > 0;
+    const falling = left.value > 0 && right.value < 0;
+    if (!rising && !falling) {
+      index += 1;
+      continue;
+    }
     const root = refineRoot(context, left, right);
     crossings.push(Object.freeze({
       instant: root.instant,
       value: root.value,
       direction: rising ? 1 : -1
     }));
+    index += 1;
   }
   return Object.freeze(crossings);
 }

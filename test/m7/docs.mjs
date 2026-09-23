@@ -59,6 +59,8 @@ test('public Markdown links resolve locally', () => {
 test('English and Japanese guides publish the same structured surface', () => {
   const english = fs.readFileSync(path.join(ROOT, 'usage.en.md'), 'utf8');
   const japanese = fs.readFileSync(path.join(ROOT, 'usage.ja.md'), 'utf8');
+  assert.ok(english.includes('const other = instant.addSeconds(30);'));
+  assert.ok(japanese.includes('const other = instant.addSeconds(30);'));
   for (const subpath of SUBPATHS) {
     assert.ok(english.includes(`@lizard-isana/orb${subpath}`), `English guide omits ${subpath}`);
     assert.ok(japanese.includes(`@lizard-isana/orb${subpath}`), `Japanese guide omits ${subpath}`);
@@ -157,6 +159,10 @@ test('documented examples execute against the exact tarball', () => {
       import { sunEpv00 } from '${PACKAGE_NAME}/models/earth-epv00';
       import { HORIZON_CONSTANTS, riseSetTransit } from '${PACKAGE_NAME}/events';
       const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
+      const other = instant.addSeconds(30);
+      if (other.differenceSeconds(instant) !== 30 || !Number.isFinite(other.differenceTtSeconds(instant))) {
+        throw new Error('documented time example failed');
+      }
       const leap = AstroInstant.fromISO('2016-12-31T23:59:59Z');
       if (leap.addSeconds(1).differenceSeconds(leap) !== 1) throw new Error('time arithmetic failed');
       const site = createObserver({

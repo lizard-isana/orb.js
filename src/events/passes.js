@@ -88,9 +88,12 @@ export function satellitePasses(site, satellite, from, to, options = {}) {
   }
 
   const passes = segments.map((segment) => {
+    const preferredPeakStepSeconds = Math.min(parsed.search.stepSeconds, 15);
     const peakSearch = {
       ...parsed.search,
-      stepSeconds: Math.min(parsed.search.stepSeconds, 15)
+      stepSeconds: parsed.search.toleranceSeconds < preferredPeakStepSeconds
+        ? preferredPeakStepSeconds
+        : parsed.search.stepSeconds
     };
     const peak = findMaximum(elevation, segment.start.instant, segment.end.instant, peakSearch);
     const rise = observedPoint(site, satellite, segment.start.instant, parsed.observation);
