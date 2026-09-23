@@ -47,6 +47,86 @@ test('Observation.azel accepts a plain ra/dec object', () => {
   assert.ok(Number.isFinite(a.elevation) && Math.abs(a.elevation) <= 90);
 });
 
+test('Observation.azel preserves numeric-string legacy inputs', () => {
+  const obs = new Orb.Observation({
+    observer: { latitude: '35', longitude: '139', altitude: '0' },
+    target: { ra: '6.45', dec: '-16.72' }
+  });
+  const actual = obs.azel(new Date(Date.UTC(2026, 6, 18, 12, 0, 0)));
+  assert.ok(Number.isFinite(actual.azimuth));
+  assert.ok(Number.isFinite(actual.elevation));
+});
+
+test('Observation.azel reports unsupported coordinate and unit metadata clearly', () => {
+  const date = new Date(Date.UTC(2026, 6, 18, 12, 0, 0));
+  const observe = (target) => new Orb.Observation({ observer, target }).azel(date);
+
+  assert.throws(
+    () => observe({ x: 7000, y: 0, z: 0, unit_keywords: 'km' }),
+    /coordinate_keywords must identify ecliptic, equatorial, or TEME/
+  );
+  assert.throws(
+    () => observe({
+      x: 7000,
+      y: 0,
+      z: 0,
+      coordinate_keywords: 'geographic rectangular',
+      unit_keywords: 'km'
+    }),
+    /unsupported rectangular coordinate_keywords 'geographic rectangular'/
+  );
+  assert.throws(
+    () => observe({
+      x: 7000,
+      y: 0,
+      z: 0,
+      coordinate_keywords: 'equatorial rectangular'
+    }),
+    /unit_keywords must identify km or au/
+  );
+  assert.throws(
+    () => observe({
+      x: 7000,
+      y: 0,
+      z: 0,
+      coordinate_keywords: 'equatorial rectangular',
+      unit_keywords: 'm'
+    }),
+    /unsupported rectangular unit_keywords 'm'/
+  );
+});
+
+test('Observation.azel reports malformed target shapes clearly', () => {
+  const date = new Date(Date.UTC(2026, 6, 18, 12, 0, 0));
+  const observe = (target) => new Orb.Observation({ observer, target }).azel(date);
+
+  assert.throws(() => observe({ ra: 6.45 }), /must contain both ra and dec/);
+  assert.throws(
+    () => observe({
+      x: 7000,
+      y: 0,
+      coordinate_keywords: 'equatorial rectangular',
+      unit_keywords: 'km'
+    }),
+    /rectangular target z must be finite/
+  );
+  assert.throws(
+    () => observe({
+      x: Infinity,
+      y: 0,
+      z: 0,
+      coordinate_keywords: 'equatorial rectangular',
+      unit_keywords: 'km'
+    }),
+    /rectangular target x must be finite/
+  );
+  assert.throws(() => observe({ radec: true }), /radec and xyz properties must be functions/);
+  assert.throws(
+    () => observe({}),
+    /target must provide ra\/dec, x\/y\/z, radec\(date\), or xyz\(date\)/
+  );
+});
+
 test('Observation.azel agrees between instance and xyz targets', () => {
   const date = new Date(Date.UTC(2026, 6, 18, 12, 0, 0));
   const a1 = new Orb.Observation({ observer, target: new Orb.Mars() }).azel(date);

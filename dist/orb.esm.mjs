@@ -3737,7 +3737,7 @@ function requireObject(value, label) {
   return value;
 }
 
-function finiteNumber(value, label) {
+function finiteNumber$1(value, label) {
   if (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) {
     fail("".concat(label, " must be a finite number"), TypeError);
   }
@@ -3747,7 +3747,7 @@ function finiteNumber(value, label) {
 
 function boundedNumber(value, minimum, maximum, label) {
   var maximumInclusive = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
-  var number = finiteNumber(value, label);
+  var number = finiteNumber$1(value, label);
 
   if (number < minimum || (maximumInclusive ? number > maximum : number >= maximum)) {
     var upper = maximumInclusive ? '<=' : '<';
@@ -3762,7 +3762,7 @@ function integer(value, label, fallback) {
     return fallback;
   }
 
-  var number = finiteNumber(value, label);
+  var number = finiteNumber$1(value, label);
   if (!Number.isInteger(number)) fail("".concat(label, " must be an integer"));
   return number;
 }
@@ -3897,7 +3897,7 @@ function validateTleChecksum(input) {
 
 function numericField(text, pattern, label) {
   if (!pattern.test(text)) fail("invalid ".concat(label, " field '").concat(text, "'"));
-  return finiteNumber(text, label);
+  return finiteNumber$1(text, label);
 }
 
 function parseInternationalDesignator(text) {
@@ -4080,7 +4080,7 @@ function normalizeOmm(input) {
   var rightAscensionDeg = boundedNumber(omm.RA_OF_ASC_NODE, 0, 360, 'OMM RA_OF_ASC_NODE', false);
   var argumentOfPerigeeDeg = boundedNumber(omm.ARG_OF_PERICENTER, 0, 360, 'OMM ARG_OF_PERICENTER', false);
   var meanAnomalyDeg = boundedNumber(omm.MEAN_ANOMALY, 0, 360, 'OMM MEAN_ANOMALY', false);
-  var meanMotionRevPerDay = finiteNumber(omm.MEAN_MOTION, 'OMM MEAN_MOTION');
+  var meanMotionRevPerDay = finiteNumber$1(omm.MEAN_MOTION, 'OMM MEAN_MOTION');
   if (!(meanMotionRevPerDay > 0)) fail('OMM MEAN_MOTION must be positive');
   return Object.freeze(_objectSpread2(_objectSpread2({}, omm), {}, {
     CCSDS_OMM_VERS: String(omm.CCSDS_OMM_VERS),
@@ -4102,9 +4102,9 @@ function normalizeOmm(input) {
     EPHEMERIS_TYPE: integer(omm.EPHEMERIS_TYPE, 'OMM EPHEMERIS_TYPE', 0),
     ELEMENT_SET_NO: integer(omm.ELEMENT_SET_NO, 'OMM ELEMENT_SET_NO', 0),
     REV_AT_EPOCH: integer(omm.REV_AT_EPOCH, 'OMM REV_AT_EPOCH', 0),
-    BSTAR: finiteNumber((_omm$BSTAR = omm.BSTAR) !== null && _omm$BSTAR !== void 0 ? _omm$BSTAR : 0, 'OMM BSTAR'),
-    MEAN_MOTION_DOT: finiteNumber((_omm$MEAN_MOTION_DOT = omm.MEAN_MOTION_DOT) !== null && _omm$MEAN_MOTION_DOT !== void 0 ? _omm$MEAN_MOTION_DOT : 0, 'OMM MEAN_MOTION_DOT'),
-    MEAN_MOTION_DDOT: finiteNumber((_omm$MEAN_MOTION_DDOT = omm.MEAN_MOTION_DDOT) !== null && _omm$MEAN_MOTION_DDOT !== void 0 ? _omm$MEAN_MOTION_DDOT : 0, 'OMM MEAN_MOTION_DDOT')
+    BSTAR: finiteNumber$1((_omm$BSTAR = omm.BSTAR) !== null && _omm$BSTAR !== void 0 ? _omm$BSTAR : 0, 'OMM BSTAR'),
+    MEAN_MOTION_DOT: finiteNumber$1((_omm$MEAN_MOTION_DOT = omm.MEAN_MOTION_DOT) !== null && _omm$MEAN_MOTION_DOT !== void 0 ? _omm$MEAN_MOTION_DOT : 0, 'OMM MEAN_MOTION_DOT'),
+    MEAN_MOTION_DDOT: finiteNumber$1((_omm$MEAN_MOTION_DDOT = omm.MEAN_MOTION_DDOT) !== null && _omm$MEAN_MOTION_DDOT !== void 0 ? _omm$MEAN_MOTION_DDOT : 0, 'OMM MEAN_MOTION_DDOT')
   }));
 }
 function parseOmmRecord(input) {
@@ -4516,6 +4516,57 @@ function geodeticToEcef(observer) {
   return Float64Array.of((primeVerticalRadius + height) * cosLatitude * Math.cos(longitude), (primeVerticalRadius + height) * cosLatitude * Math.sin(longitude), (primeVerticalRadius * (1 - WGS84.e2) + height) * sinLatitude);
 }
 
+var finiteNumber = function finiteNumber(value, label) {
+  var number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    throw new TypeError("Observation: ".concat(label, " must be finite"));
+  }
+
+  return number;
+};
+
+var rectangularCoordinates = function rectangularCoordinates(rect) {
+  if (!rect || _typeof(rect) !== 'object') {
+    throw new TypeError('Observation: rectangular target must be an object');
+  }
+
+  return {
+    x: finiteNumber(rect.x, 'rectangular target x'),
+    y: finiteNumber(rect.y, 'rectangular target y'),
+    z: finiteNumber(rect.z, 'rectangular target z')
+  };
+};
+
+var coordinateKind = function coordinateKind(target) {
+  if (typeof target.coordinate_keywords !== 'string' || target.coordinate_keywords.trim() === '') {
+    throw new TypeError('Observation: rectangular target coordinate_keywords must identify ecliptic, equatorial, or TEME coordinates');
+  }
+
+  if (/ecliptic/i.test(target.coordinate_keywords)) return 'ecliptic';
+  if (/teme/i.test(target.coordinate_keywords)) return 'teme';
+  if (/equatorial/i.test(target.coordinate_keywords)) return 'equatorial';
+  throw new RangeError("Observation: unsupported rectangular coordinate_keywords '".concat(target.coordinate_keywords, "'"));
+};
+
+var distanceUnit = function distanceUnit(target) {
+  var required = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+  var keywords = target && target.unit_keywords;
+
+  if (typeof keywords === 'string') {
+    if (/km/i.test(keywords)) return 'km';
+    if (/au/i.test(keywords)) return 'au';
+  }
+
+  if (!required) return undefined;
+
+  if (keywords == undefined || keywords === '') {
+    throw new TypeError('Observation: rectangular target unit_keywords must identify km or au');
+  }
+
+  throw new RangeError("Observation: unsupported rectangular unit_keywords '".concat(keywords, "'"));
+};
+
 var Observer = /*#__PURE__*/_createClass(function Observer(_position) {
   var _this = this;
 
@@ -4560,19 +4611,18 @@ var Observation = /*#__PURE__*/_createClass(function Observation(param) {
   _defineProperty(this, "RadecToHorizontal", function (time, radec) {
     var rad = Constant.RAD;
     var observer = _this2.observer;
-    var ra = Number(radec.ra);
-    var dec = Number(radec.dec);
+    var ra = finiteNumber(radec.ra, 'right ascension');
+    var dec = finiteNumber(radec.dec, 'declination');
     var distance;
 
     if (radec.distance != undefined) {
-      distance = Number(radec.distance);
+      distance = finiteNumber(radec.distance, 'distance');
     } else {
       distance = undefined;
     }
 
-    var latitude = Number(observer.latitude);
-    var longitude = Number(observer.longitude);
-    Number(observer.altitude);
+    var latitude = finiteNumber(observer.latitude, 'observer latitude');
+    var longitude = finiteNumber(observer.longitude, 'observer longitude');
     dec = dec * rad;
     var gmst = time.gast();
     var hour_angle = gmst * 15 + longitude - ra * 15;
@@ -4596,36 +4646,35 @@ var Observation = /*#__PURE__*/_createClass(function Observation(param) {
   });
 
   _defineProperty(this, "RectToHorizontal", function (time, rect) {
-    function get_distance_unit(target) {
-      if (target.unit_keywords.match(/km/)) {
-        return " km";
-      } else if (target.unit_keywords.match(/au/)) {
-        return " au";
-      } else {
-        return "";
-      }
-    } // The observer position is in km; convert the target to km when it
+    var coordinates = rectangularCoordinates(rect);
+    var kind = coordinateKind(rect);
+    var inputUnit = distanceUnit(rect, true);
+
+    if (kind === 'ecliptic') {
+      throw new RangeError('Observation.RectToHorizontal: ecliptic coordinates must be converted to equatorial coordinates first');
+    }
+
+    rect = _objectSpread2(_objectSpread2({}, rect), coordinates); // The observer position is in km; convert the target to km when it
     // comes in astronomical units so the topocentric subtraction is valid.
 
-
-    if (rect.unit_keywords != undefined && rect.unit_keywords.match(/au/)) {
+    if (inputUnit === 'au') {
       rect = {
         x: rect.x * Constant.AU,
         y: rect.y * Constant.AU,
         z: rect.z * Constant.AU,
         coordinate_keywords: rect.coordinate_keywords,
-        unit_keywords: rect.unit_keywords.replace(/au/, "km")
+        unit_keywords: 'km'
       };
     }
 
-    var distance_unit = get_distance_unit(rect);
+    var distance_unit = ' km';
     var rad = Constant.RAD;
     var observer = _this2.observer;
     var lat = observer.latitude;
     var lng = observer.longitude; //TEME vectors (SGP4) pair with mean sidereal time (GMST 1982);
     //apparent places pair with apparent sidereal time.
 
-    var is_teme = rect.coordinate_keywords != undefined && rect.coordinate_keywords.match(/teme/);
+    var is_teme = kind === 'teme';
     var st = is_teme ? time.gmst82() : time.gast();
     var obsv = new Observer(observer);
     var ob = obsv.rectangular(time, st);
@@ -4660,29 +4709,29 @@ var Observation = /*#__PURE__*/_createClass(function Observation(param) {
   });
 
   _defineProperty(this, "azel", function (date) {
-    Constant.RAD;
     var target = _this2.target;
-    _this2.observer;
-    var time = new Time(date);
 
-    function get_distance_unit(target) {
-      if (target.unit_keywords.match(/km/)) {
-        return " km";
-      } else if (target.unit_keywords.match(/au/)) {
-        return " au";
-      } else {
-        return "";
-      }
+    if (!target || _typeof(target) !== 'object') {
+      throw new TypeError('Observation.azel: target must provide ra/dec, x/y/z, radec(date), or xyz(date)');
     }
 
+    var time = new Time(date);
     var target_date, rect, horizontal, radec, distance_unit; // When the target's distance and its unit are known, go through the
     // rectangular path so the observer's geocentric position is subtracted:
     // this applies diurnal parallax (up to ~1 degree for the Moon). Targets
     // without a usable distance keep the purely angular conversion.
 
     var HorizontalFromRadec = function HorizontalFromRadec(radec_obj) {
-      if (radec_obj.distance != undefined && radec_obj.unit_keywords != undefined && radec_obj.unit_keywords.match(/km|au/)) {
-        return _this2.RectToHorizontal(time, RadecToXYZ(radec_obj));
+      if (!radec_obj || _typeof(radec_obj) !== 'object' || radec_obj.ra == undefined || radec_obj.dec == undefined) {
+        throw new TypeError('Observation: radec target must contain both ra and dec');
+      }
+
+      var unit = distanceUnit(radec_obj);
+
+      if (radec_obj.distance != undefined && unit != undefined) {
+        return _this2.RectToHorizontal(time, RadecToXYZ(_objectSpread2(_objectSpread2({}, radec_obj), {}, {
+          unit_keywords: unit
+        })));
       }
 
       return _this2.RadecToHorizontal(time, radec_obj);
@@ -4690,17 +4739,29 @@ var Observation = /*#__PURE__*/_createClass(function Observation(param) {
 
     var DistanceUnitFromRadec = function DistanceUnitFromRadec(h, radec_obj) {
       if (h.unit_keywords != undefined) {
-        return get_distance_unit(h);
+        var _unit = distanceUnit(h);
+
+        return _unit == undefined ? '' : ' ' + _unit;
       }
 
-      return radec_obj.unit_keywords != undefined ? get_distance_unit(radec_obj) : "";
+      var unit = distanceUnit(radec_obj);
+      return unit == undefined ? '' : ' ' + unit;
     };
 
-    if (target.ra != undefined && target.dec != undefined) {
+    var hasRa = target.ra != undefined;
+    var hasDec = target.dec != undefined;
+    var hasAnyXyz = target.x != undefined || target.y != undefined || target.z != undefined;
+    var hasAllXyz = target.x != undefined && target.y != undefined && target.z != undefined;
+
+    if (hasRa && hasDec) {
       horizontal = HorizontalFromRadec(target);
       distance_unit = DistanceUnitFromRadec(horizontal, target);
-    } else if (target.x != undefined && target.y != undefined && target.z != undefined) {
-      if (target.coordinate_keywords.match(/ecliptic/)) {
+    } else if (hasAllXyz) {
+      rectangularCoordinates(target);
+      var kind = coordinateKind(target);
+      distanceUnit(target, true);
+
+      if (kind === 'ecliptic') {
         if (target.date != undefined) {
           target_date = target.date;
         } else {
@@ -4716,15 +4777,23 @@ var Observation = /*#__PURE__*/_createClass(function Observation(param) {
       }
 
       horizontal = _this2.RectToHorizontal(time, rect);
-      distance_unit = get_distance_unit(horizontal);
-    } else if (target.radec != undefined) {
+      distance_unit = ' ' + distanceUnit(horizontal, true);
+    } else if (typeof target.radec === 'function') {
       radec = target.radec(date);
       horizontal = HorizontalFromRadec(radec);
       distance_unit = DistanceUnitFromRadec(horizontal, radec);
-    } else if (target.xyz != undefined) {
+    } else if (typeof target.xyz === 'function') {
       rect = target.xyz(date);
       horizontal = _this2.RectToHorizontal(time, rect);
-      distance_unit = get_distance_unit(horizontal);
+      distance_unit = ' ' + distanceUnit(horizontal, true);
+    } else if (hasRa || hasDec) {
+      throw new TypeError('Observation: radec target must contain both ra and dec');
+    } else if (hasAnyXyz) {
+      rectangularCoordinates(target);
+    } else if (target.radec != undefined || target.xyz != undefined) {
+      throw new TypeError('Observation.azel: target radec and xyz properties must be functions');
+    } else {
+      throw new TypeError('Observation.azel: target must provide ra/dec, x/y/z, radec(date), or xyz(date)');
     }
 
     return {
