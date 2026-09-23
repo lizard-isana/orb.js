@@ -1,6 +1,6 @@
 {
   "name": "@lizard-isana/orb",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "JavaScript library for astronomical calculations",
   "main": "dist/orb.js",
   "files": [
