@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "source": "orb.js v3.0.0 legacy Orb.SGP4 and Orb.Observation baseline",
+  "sourceVersion": "dist/orb.js at commit 7bb286f",
+  "procedure": "The fixed TLE was propagated with legacy Orb.SGP4. Legacy Orb.Observation azel elevation was sampled every 30 seconds, 10 degree crossings were refined by 40 bisections, and each culmination was refined by golden-section search. This fixture freezes the independent legacy observation path for structured-event regression; it is not an estimate of historical ISS truth.",
+  "instant": "2020-01-14T00:00:00Z through 2020-01-16T00:00:00Z",
+  "timeScale": "TLE epoch and event timestamps interpreted as UTC",
+  "frame": "SGP4 TEME propagated with WGS-72, then legacy GMST/WGS-84 topocentric horizontal coordinates",
+  "center": "Tokyo observer at geodetic latitude 35.658 degrees, longitude 139.741 degrees, height 0.025 km",
+  "units": {
+    "minimumElevation": "degree",
+    "maximumElevation": "degree",
+    "eventTime": "UTC ISO string"
+  },
+  "accuracy": "Regression oracle against a separately implemented legacy observation path using the same SGP4 lineage; not an independent real-orbit accuracy claim.",
+  "tolerance": {
+    "eventTimeSeconds": 1,
+    "maximumElevationDeg": 0.001
+  },
+  "site": {
+    "latitudeDeg": 35.658,
+    "longitudeDeg": 139.741,
+    "heightKm": 0.025
+  },
+  "tle": {
+    "line1": "1 25544U 98067A   20014.52632156  .00016717  00000-0  10270-3 0  9015",
+    "line2": "2 25544  51.6423  33.7380 0004871 130.9389 229.2183 15.49556564  8038"
+  },
+  "minimumElevationDeg": 10,
+  "events": [
+    { "rise": "2020-01-14T11:13:12.294Z", "culmination": "2020-01-14T11:16:25.484Z", "set": "2020-01-14T11:19:39.277Z", "maximumElevationDeg": 45.75310427895784 },
+    { "rise": "2020-01-14T12:50:52.545Z", "culmination": "2020-01-14T12:53:21.436Z", "set": "2020-01-14T12:55:50.566Z", "maximumElevationDeg": 18.923195113443327 },
+    { "rise": "2020-01-14T17:44:59.567Z", "culmination": "2020-01-14T17:47:30.473Z", "set": "2020-01-14T17:50:00.836Z", "maximumElevationDeg": 19.36688902437595 },
+    { "rise": "2020-01-14T19:21:13.673Z", "culmination": "2020-01-14T19:24:25.202Z", "set": "2020-01-14T19:27:35.704Z", "maximumElevationDeg": 43.2525302356582 },
+    { "rise": "2020-01-15T10:25:47.708Z", "culmination": "2020-01-15T10:28:34.166Z", "set": "2020-01-15T10:31:21.034Z", "maximumElevationDeg": 24.15675081150483 },
+    { "rise": "2020-01-15T12:02:16.476Z", "culmination": "2020-01-15T12:05:14.964Z", "set": "2020-01-15T12:08:13.862Z", "maximumElevationDeg": 28.752398545799636 },
+    { "rise": "2020-01-15T16:57:33.894Z", "culmination": "2020-01-15T16:59:20.200Z", "set": "2020-01-15T17:01:06.264Z", "maximumElevationDeg": 13.526974979842803 },
+    { "rise": "2020-01-15T18:33:09.748Z", "culmination": "2020-01-15T18:36:30.464Z", "set": "2020-01-15T18:39:49.973Z", "maximumElevationDeg": 86.75643331673203 }
+  ]
+}

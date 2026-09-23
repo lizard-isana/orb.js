@@ -62,6 +62,7 @@ test('package: exact tarball supports legacy entries and optional model subpaths
     assert.ok(files.has('src/frames/index.js'));
     assert.ok(files.has('src/geodesy/index.js'));
     assert.ok(files.has('src/kepler/index.js'));
+    assert.ok(files.has('src/events/index.js'));
     assert.ok(files.has('src/models/earth-epv00/index.js'));
     assert.ok(files.has('src/models/earth-epv00/LICENSE-ERFA'));
     assert.ok(files.has('src/observer/index.js'));
@@ -106,6 +107,14 @@ test('package: exact tarball supports legacy entries and optional model subpaths
         `import { SATURN_FULL_COEF } from '${PACKAGE_NAME}/vsop87a/saturn'; console.log(Array.isArray(SATURN_FULL_COEF))`
       ]),
       'true'
+    );
+    assert.strictEqual(
+      runNode(consumer, [
+        '--input-type=module',
+        '-e',
+        `import { HORIZON_CONSTANTS, satellitePasses } from '${PACKAGE_NAME}/events'; console.log(HORIZON_CONSTANTS.geometricCenter, typeof satellitePasses)`
+      ]),
+      '0 function'
     );
     assert.strictEqual(
       runNode(consumer, [
@@ -170,6 +179,7 @@ test('package: exact tarball supports legacy entries and optional model subpaths
     assert.ok(!umdSource.includes('earthEpv00'));
     assert.ok(!umdSource.includes('erfa-epv00'));
     assert.ok(!umdSource.includes('OBSERVER_DEFAULTS'));
+    assert.ok(!umdSource.includes('satellitePasses'));
     vm.runInNewContext(umdSource, browserContext, { filename: umdPath });
     assert.strictEqual(typeof browserContext.Orb.Time, 'function');
   } finally {

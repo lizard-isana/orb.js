@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "source": "U.S. Naval Observatory Astronomical Applications Department, Dates of Primary Phases of the Moon",
+  "sourceVersion": "USNO data service queried 2026-09-23",
+  "sourceUrl": "https://aa.usno.navy.mil/api/moon/phases/year?year=2026",
+  "procedure": "The four primary phase times spanning July 2026 were transcribed from the USNO year table. Values are published to the nearest minute and were not adjusted to orb.js output.",
+  "instant": "2026-07-01T00:00:00Z through 2026-08-01T00:00:00Z",
+  "timeScale": "Universal Time as reported by USNO, represented as UTC ISO strings",
+  "frame": "USNO geocentric primary-phase definition; frame details are internal to the service",
+  "center": "Earth geocenter",
+  "units": {
+    "phaseTime": "UTC minute"
+  },
+  "accuracy": "Independent almanac reference rounded to one minute; orb.js uses its own Moon, Sun, and frame models.",
+  "tolerance": {
+    "phaseTimeSeconds": 300
+  },
+  "events": [
+    { "phase": "last-quarter", "utc": "2026-07-07T19:29:00Z" },
+    { "phase": "new", "utc": "2026-07-14T09:43:00Z" },
+    { "phase": "first-quarter", "utc": "2026-07-21T11:05:00Z" },
+    { "phase": "full", "utc": "2026-07-29T14:36:00Z" }
+  ]
+}

@@ -10,6 +10,7 @@
     "src/frames",
     "src/geodesy",
     "src/kepler",
+    "src/events",
     "src/models/earth-epv00",
     "src/observer",
     "src/vocab",
@@ -38,6 +39,9 @@
     "./kepler": {
       "import": "./src/kepler/index.js"
     },
+    "./events": {
+      "import": "./src/events/index.js"
+    },
     "./models/earth-epv00": {
       "import": "./src/models/earth-epv00/index.js"
     },
@@ -52,7 +56,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "test": "node test/run.js && node test/m1/core.mjs && node test/m2/core.mjs && node test/m3/core.mjs",
+    "test": "node test/run.js && node test/m1/core.mjs && node test/m2/core.mjs && node test/m3/core.mjs && node test/m4/core.mjs",
     "build": "rollup -c rollup.config.js",
     "bench": "node tools/bench.mjs",
     "vsop:check": "node tools/vsop-compile.mjs --check",

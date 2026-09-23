@@ -69,6 +69,25 @@ independent opt-ins. Refraction requires explicit pressure in hPa and
 temperature in degrees Celsius. Do not change this geometric, airless default
 implicitly, and do not change legacy `Observation.azel(date)` defaults.
 
+## Modern Events API
+
+The additive `@lizard-isana/orb/events` subpath builds event searches on
+`Instant` and the modern observer API. It provides bounded crossing/maximum
+searches, `riseSetTransit()`, lunar elongation/phases/age, and
+`satellitePasses()`.
+
+Event defaults follow the observer contract: geometric positions, no
+atmospheric refraction, and radians. Rise/set defaults to the body center at a
+zero-degree geometric horizon; satellite passes default to the same zero-degree
+threshold. Refraction, a nonzero horizon, an upper-limb semidiameter, and a
+minimum pass elevation are explicit options. `HORIZON_CONSTANTS` contains
+conventional values but never selects one implicitly. Do not combine a
+constant that already includes standard refraction or semidiameter with the
+corresponding explicit correction a second time.
+
+Satellite pass results are geometric visibility windows only. They explicitly
+leave optical visibility and sunlight uncomputed.
+
 ## Related Notes
 
 - `.ai/decisions/2026-04-27-full-vsop87a-api.md`
