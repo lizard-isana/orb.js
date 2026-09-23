@@ -15,10 +15,12 @@
     "range": "au",
     "legacyRange": "km"
   },
-  "accuracy": "Horizons extra-precision output is the independent reference. legacyBaseline records orb.js v3 at f598300 before modern observer work; it is a change detector, not an accuracy oracle. modernTarget is the eventual M3 model goal, while legacyEnvelope only bounds the current low-precision models.",
+  "accuracy": "Horizons extra-precision output is the independent reference. legacyBaseline records orb.js v3 at f598300 before modern observer work and the M6 WGS-84 height correction; it is a change detector, not an accuracy oracle. The M6 correction envelope records the intentional difference from that baseline. modernTarget is the eventual M3 model goal, while legacyEnvelope only bounds the current low-precision models.",
   "tolerance": {
     "baselineAngleDeg": 1e-9,
     "baselineRangeKm": 0.000001,
+    "m6ObserverCorrectionAngleDeg": 2e-8,
+    "m6ObserverCorrectionRangeKm": 0.00006,
     "bodies": {
       "moon": {
         "legacySkyArcsec": 15,

@@ -8,11 +8,37 @@ const { loadReferenceFixture } = require('../helpers/reference-fixture.js');
 
 const observer = { latitude: 35.0, longitude: 139.0, altitude: 0 };
 const HORIZONS = loadReferenceFixture('horizons-topocentric-tokyo-2026-07-18.json');
+const WGS84_OBSERVER = loadReferenceFixture('legacy-observer-wgs84.json');
 const AU_KM = 149597870.7;
 
 function angleDifference(actual, expected) {
   return ((actual - expected + 540) % 360) - 180;
 }
+
+test('Observer.rectangular applies WGS-84 ellipsoidal height correctly', () => {
+  for (const reference of WGS84_OBSERVER.cases) {
+    const actual = new Orb.Observer(reference.observer).rectangular(null, reference.siderealHours);
+    const vector = [actual.x, actual.y, actual.z];
+    for (let index = 0; index < vector.length; index++) {
+      assert.ok(
+        Math.abs(vector[index] - reference.expected[index]) < WGS84_OBSERVER.tolerance.positionKm,
+        reference.name + '[' + index + ']=' + vector[index]
+      );
+    }
+  }
+  assert.ok(
+    WGS84_OBSERVER.cases.find(({ name }) => name === 'high altitude').correctionNormKm > 3,
+    'fixture must retain the intentional pre-M6 numerical difference'
+  );
+});
+
+test('Observer.rectangular rotates longitude by explicit sidereal time', () => {
+  const actual = new Orb.Observer({ latitude: 0, longitude: 0, altitude: 0 })
+    .rectangular(null, 6);
+  assert.ok(Math.abs(actual.x) < 1e-9, 'x=' + actual.x);
+  assert.ok(Math.abs(actual.y - 6378.137) < 1e-9, 'y=' + actual.y);
+  assert.ok(Math.abs(actual.z) < 1e-9, 'z=' + actual.z);
+});
 
 test('Observation.azel accepts a plain ra/dec object', () => {
   const obs = new Orb.Observation({ observer, target: { ra: 6.45, dec: -16.72 } });
@@ -75,16 +101,19 @@ for (const [name, rows] of Object.entries(HORIZONS.bodies)) {
       const actual = observation.azel(new Date(row.utc));
       const baseline = row.legacyBaseline;
       assert.ok(
-        Math.abs(angleDifference(actual.azimuth, baseline.azDeg)) < HORIZONS.tolerance.baselineAngleDeg,
-        row.utc + ' legacy azimuth changed'
+        Math.abs(angleDifference(actual.azimuth, baseline.azDeg))
+          < HORIZONS.tolerance.m6ObserverCorrectionAngleDeg,
+        row.utc + ' legacy azimuth exceeded the M6 correction envelope'
       );
       assert.ok(
-        Math.abs(actual.elevation - baseline.elDeg) < HORIZONS.tolerance.baselineAngleDeg,
-        row.utc + ' legacy elevation changed'
+        Math.abs(actual.elevation - baseline.elDeg)
+          < HORIZONS.tolerance.m6ObserverCorrectionAngleDeg,
+        row.utc + ' legacy elevation exceeded the M6 correction envelope'
       );
       assert.ok(
-        Math.abs(actual.distance - baseline.rangeKm) < HORIZONS.tolerance.baselineRangeKm,
-        row.utc + ' legacy range changed'
+        Math.abs(actual.distance - baseline.rangeKm)
+          < HORIZONS.tolerance.m6ObserverCorrectionRangeKm,
+        row.utc + ' legacy range exceeded the M6 correction envelope'
       );
 
       const azResidual = angleDifference(actual.azimuth, row.azDeg)

@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "source": "WGS 84 geodetic-to-ECEF closed-form conversion",
+  "sourceVersion": "WGS 84 defining ellipsoid a=6378.137 km and 1/f=298.257223563",
+  "procedure": "For each geodetic latitude, longitude, and ellipsoidal height, the reference evaluates N=a/sqrt(1-e^2 sin^2(latitude)), x=(N+h) cos(latitude) cos(longitude), y=(N+h) cos(latitude) sin(longitude), and z=(N(1-e^2)+h) sin(latitude). Sidereal time is supplied as zero hours so the legacy equatorial result is aligned with ECEF. before records commit ef0ab78, whose implementation incorrectly added height to a before applying the ellipsoid scale factors.",
+  "instant": "Not time dependent; sidereal time supplied directly as 0 hours",
+  "timeScale": "No time scale; explicit sidereal angle",
+  "frame": "Earth-centered Earth-fixed axes, equivalent to legacy equatorial axes at zero sidereal angle",
+  "center": "Earth",
+  "units": {
+    "latitude": "degree",
+    "longitude": "degree east",
+    "altitude": "km above the WGS 84 ellipsoid",
+    "siderealTime": "hour",
+    "position": "km"
+  },
+  "accuracy": "Closed-form double-precision WGS 84 reference; before values are a compatibility record, not an accuracy target",
+  "tolerance": {
+    "positionKm": 1e-9
+  },
+  "cases": [
+    {
+      "name": "equator",
+      "observer": {"latitude": 0, "longitude": 0, "altitude": 0},
+      "siderealHours": 0,
+      "before": [6378.137, 0, 0],
+      "expected": [6378.137, 0, 0],
+      "correctionNormKm": 0
+    },
+    {
+      "name": "Tokyo",
+      "observer": {"latitude": 35.658, "longitude": 139.741, "altitude": 0.025},
+      "siderealHours": 0,
+      "before": [-3959.3004933827483, 3352.8630637097094, 3697.4400996962986],
+      "expected": [-3959.300475720467, 3352.863048752721, 3697.4401807636777],
+      "correctionNormKm": 0.00008430651003359164
+    },
+    {
+      "name": "high altitude",
+      "observer": {"latitude": 45, "longitude": -75, "altitude": 1000},
+      "siderealHours": 0,
+      "before": [1352.5583195191232, -5047.816368645348, 5190.899995930594],
+      "expected": [1352.2512593197573, -5046.670404380332, 5194.455190052467],
+      "correctionNormKm": 3.7479227989550785
+    },
+    {
+      "name": "north pole",
+      "observer": {"latitude": 90, "longitude": 0, "altitude": 1.5},
+      "siderealHours": 0,
+      "before": [3.919542499780205e-13, 0, 6358.2472850291815],
+      "expected": [3.9195394099138317e-13, 0, 6358.252314245179],
+      "correctionNormKm": 0.005029215997637948
+    }
+  ]
+}

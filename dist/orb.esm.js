@@ -1649,13 +1649,13 @@ Object.freeze({
 var DEFAULT_MAX_ITERATIONS = 100;
 var DEFAULT_TOLERANCE = 1e-12;
 
-function requireFinite(value, label) {
+function requireFinite$1(value, label) {
   if (!Number.isFinite(value)) throw new TypeError("".concat(label, " must be finite"));
   return value;
 }
 
 function requirePositive(value, label) {
-  requireFinite(value, label);
+  requireFinite$1(value, label);
   if (value <= 0) throw new RangeError("".concat(label, " must be greater than zero"));
   return value;
 }
@@ -1665,14 +1665,14 @@ function requireVector(value, label) {
   var vector = Float64Array.from(value);
 
   for (var index = 0; index < 3; index++) {
-    requireFinite(vector[index], "".concat(label, "[").concat(index, "]"));
+    requireFinite$1(vector[index], "".concat(label, "[").concat(index, "]"));
   }
 
   return vector;
 }
 
 function stumpffC(z) {
-  requireFinite(z, 'stumpffC: z');
+  requireFinite$1(z, 'stumpffC: z');
 
   if (Math.abs(z) <= 0.1) {
     var term = 0.5;
@@ -1692,7 +1692,7 @@ function stumpffC(z) {
   return (Math.cosh(root) - 1) / -z;
 }
 function stumpffS(z) {
-  requireFinite(z, 'stumpffS: z');
+  requireFinite$1(z, 'stumpffS: z');
 
   if (Math.abs(z) <= 0.1) {
     var term = 1 / 6;
@@ -1851,7 +1851,7 @@ function propagateKepler(r0Input, v0Input, dtSeconds, mu) {
   var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
   var r0 = requireVector(r0Input, 'propagateKepler: r0');
   var v0 = requireVector(v0Input, 'propagateKepler: v0');
-  requireFinite(dtSeconds, 'propagateKepler: dtSeconds');
+  requireFinite$1(dtSeconds, 'propagateKepler: dtSeconds');
   requirePositive(mu, 'propagateKepler: mu');
   var r0Magnitude = norm(r0);
   if (r0Magnitude === 0) throw new RangeError('propagateKepler: initial position must not be zero');
@@ -1894,12 +1894,12 @@ function elementsToState(elements, mu) {
 
   if (!elements || _typeof(elements) !== 'object') throw new TypeError('elementsToState: elements are required');
   requirePositive(mu, 'elementsToState: mu');
-  var eccentricity = requireFinite(elements.eccentricity, 'elementsToState: eccentricity');
+  var eccentricity = requireFinite$1(elements.eccentricity, 'elementsToState: eccentricity');
   if (eccentricity < 0) throw new RangeError('elementsToState: eccentricity must not be negative');
-  var inclination = requireFinite((_elements$inclination = elements.inclination) !== null && _elements$inclination !== void 0 ? _elements$inclination : 0, 'elementsToState: inclination');
-  var raan = requireFinite((_elements$raan = elements.raan) !== null && _elements$raan !== void 0 ? _elements$raan : 0, 'elementsToState: raan');
-  var argumentOfPeriapsis = requireFinite((_elements$argumentOfP = elements.argumentOfPeriapsis) !== null && _elements$argumentOfP !== void 0 ? _elements$argumentOfP : 0, 'elementsToState: argumentOfPeriapsis');
-  var trueAnomaly = requireFinite(elements.trueAnomaly, 'elementsToState: trueAnomaly');
+  var inclination = requireFinite$1((_elements$inclination = elements.inclination) !== null && _elements$inclination !== void 0 ? _elements$inclination : 0, 'elementsToState: inclination');
+  var raan = requireFinite$1((_elements$raan = elements.raan) !== null && _elements$raan !== void 0 ? _elements$raan : 0, 'elementsToState: raan');
+  var argumentOfPeriapsis = requireFinite$1((_elements$argumentOfP = elements.argumentOfPeriapsis) !== null && _elements$argumentOfP !== void 0 ? _elements$argumentOfP : 0, 'elementsToState: argumentOfPeriapsis');
+  var trueAnomaly = requireFinite$1(elements.trueAnomaly, 'elementsToState: trueAnomaly');
 
   if (inclination < 0 || inclination > Math.PI) {
     throw new RangeError('elementsToState: inclination must be within 0 and pi radians');
@@ -1914,7 +1914,7 @@ function elementsToState(elements, mu) {
       throw new RangeError('elementsToState: a parabola requires semiLatusRectum');
     }
 
-    var semiMajorAxis = requireFinite(elements.semiMajorAxis, 'elementsToState: semiMajorAxis');
+    var semiMajorAxis = requireFinite$1(elements.semiMajorAxis, 'elementsToState: semiMajorAxis');
 
     if (eccentricity < 1 && semiMajorAxis <= 0 || eccentricity > 1 && semiMajorAxis >= 0) {
       throw new RangeError('elementsToState: semiMajorAxis sign does not match eccentricity');
@@ -4329,34 +4329,78 @@ var Satellite = /*#__PURE__*/_createClass(function Satellite(orbital_elements) {
   return new SGP4(orbital_elements);
 });
 
-var Observer = /*#__PURE__*/_createClass(function Observer(position) {
+var WGS84 = Object.freeze({
+  a: 6378.137,
+  f: 1 / 298.257223563,
+  b: 6356.752314245179,
+  e2: 6.6943799901413165e-3
+});
+
+function requireFinite(value, label) {
+  if (!Number.isFinite(value)) throw new TypeError("".concat(label, " must be finite"));
+  return value;
+}
+
+function requireObserver(observer) {
+  var _observer$height;
+
+  if (!observer || _typeof(observer) !== 'object') {
+    throw new TypeError('observer must contain latitude, longitude, and optional height');
+  }
+
+  var latitude = requireFinite(observer.latitude, 'observer.latitude');
+  var longitude = requireFinite(observer.longitude, 'observer.longitude');
+  var height = requireFinite((_observer$height = observer.height) !== null && _observer$height !== void 0 ? _observer$height : 0, 'observer.height');
+
+  if (latitude < -Math.PI / 2 || latitude > Math.PI / 2) {
+    throw new RangeError('observer.latitude must be within -pi/2 and +pi/2 radians');
+  }
+
+  return {
+    latitude: latitude,
+    longitude: longitude,
+    height: height
+  };
+}
+
+function geodeticToEcef(observer) {
+  var _requireObserver = requireObserver(observer),
+      latitude = _requireObserver.latitude,
+      longitude = _requireObserver.longitude,
+      height = _requireObserver.height;
+
+  var sinLatitude = Math.sin(latitude);
+  var cosLatitude = Math.cos(latitude);
+  var primeVerticalRadius = WGS84.a / Math.sqrt(1 - WGS84.e2 * Math.pow(sinLatitude, 2));
+  return Float64Array.of((primeVerticalRadius + height) * cosLatitude * Math.cos(longitude), (primeVerticalRadius + height) * cosLatitude * Math.sin(longitude), (primeVerticalRadius * (1 - WGS84.e2) + height) * sinLatitude);
+}
+
+var Observer = /*#__PURE__*/_createClass(function Observer(_position) {
   var _this = this;
 
   _classCallCheck(this, Observer);
 
   _defineProperty(this, "rectangular", function (time, sidereal_time) {
     var rad = Constant.RAD;
-    var lat = _this.latitude;
-    var lng = _this.longitude;
+    var lat = Number(_this.latitude);
+    var lng = Number(_this.longitude);
+    var altitude = _this.altitude == undefined ? 0 : Number(_this.altitude);
     var gmst = sidereal_time != undefined ? sidereal_time : time.gast();
-    var lst = gmst * 15 + lng;
-    var a = 6378.137 + _this.altitude; //Earth's equatorial radius in WGS-84 (km)
-
-    var f = 1 / 298.257223563; //Earth's flattening in WGS-84
-
-    var sin_lat = Math.sin(lat * rad);
-    var c = 1 / Math.sqrt(1 + f * (f - 2) * sin_lat * sin_lat);
-    var s = (1 - f) * (1 - f) * c;
+    var position = geodeticToEcef({
+      latitude: lat * rad,
+      longitude: (lng + gmst * 15) * rad,
+      height: altitude
+    });
     return {
-      x: a * c * Math.cos(lat * rad) * Math.cos(lst * rad),
-      y: a * c * Math.cos(lat * rad) * Math.sin(lst * rad),
-      z: a * s * Math.sin(lat * rad)
+      x: position[0],
+      y: position[1],
+      z: position[2]
     };
   });
 
-  this.latitude = position.latitude;
-  this.longitude = position.longitude;
-  this.altitude = position.altitude;
+  this.latitude = _position.latitude;
+  this.longitude = _position.longitude;
+  this.altitude = _position.altitude;
 } //sidereal_time (hours) defaults to apparent sidereal time; pass
 //time.gmst82() to place the observer in the TEME frame instead.
 );

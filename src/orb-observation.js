@@ -3,6 +3,7 @@
 import {Constant} from './orb-core.js'
 import {Time} from './orb-time.js'
 import {EclipticToEquatorial, RadecToXYZ} from './orb-coordinates.js'
+import {geodeticToEcef} from './geodesy/index.js'
 
 export class Observer {
   constructor(position){
@@ -15,19 +16,19 @@ export class Observer {
   //time.gmst82() to place the observer in the TEME frame instead.
   rectangular = (time, sidereal_time) =>{
     const rad = Constant.RAD;
-    const lat = this.latitude;
-    const lng = this.longitude;
+    const lat = Number(this.latitude);
+    const lng = Number(this.longitude);
+    const altitude = this.altitude == undefined ? 0 : Number(this.altitude);
     const gmst = sidereal_time != undefined ? sidereal_time : time.gast();
-    const lst = gmst*15 + lng;
-    const a = 6378.137 + this.altitude;  //Earth's equatorial radius in WGS-84 (km)
-    const f = 1 / 298.257223563; //Earth's flattening in WGS-84
-    const sin_lat =Math.sin(lat*rad);
-    const c = 1/Math.sqrt(1+f*(f-2)*sin_lat*sin_lat);
-    const s = (1-f)*(1-f)*c;
+    const position = geodeticToEcef({
+      latitude: lat * rad,
+      longitude: (lng + gmst * 15) * rad,
+      height: altitude
+    });
     return {
-      x: a*c*Math.cos(lat*rad)*Math.cos(lst*rad),
-      y: a*c*Math.cos(lat*rad)*Math.sin(lst*rad),
-      z: a*s*Math.sin(lat*rad)
+      x: position[0],
+      y: position[1],
+      z: position[2]
     }
   }
 }
@@ -206,4 +207,3 @@ export class Observation {
     }
   }
 }
-
