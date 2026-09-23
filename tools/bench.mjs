@@ -6,11 +6,15 @@
 // strict CI timing gate.
 
 import * as Orb from '../dist/orb.esm.mjs';
+import { adaptLegacyMoon, DEG } from '../src/frames/index.js';
 import { MARS_FULL_COEF } from '../src/vsop87a/mars.js';
 import { GM, propagateKepler } from '../src/kepler/index.js';
+import { createObserver } from '../src/observer/index.js';
+import { Instant } from '../src/time/index.js';
 
 const DEFAULT_DURATION_MS = 300;
 const DATE = new Date('2026-07-18T12:00:00Z');
+const INSTANT = Instant.fromDate(DATE);
 const SGP4_DATE = new Date('2020-01-14T14:00:00Z');
 const TOKYO = { latitude: 35.658, longitude: 139.741, altitude: 0.025 };
 const ISS_TLE = {
@@ -71,6 +75,12 @@ const sun = new Orb.Sun();
 const marsShort = new Orb.Mars();
 const marsFull = new Orb.Mars({ vsop87a: 'full' });
 const moonObservation = new Orb.Observation({ observer: TOKYO, target: luna });
+const structuredMoon = adaptLegacyMoon(luna);
+const structuredObserver = createObserver({
+  latitude: TOKYO.latitude * DEG,
+  longitude: TOKYO.longitude * DEG,
+  height: TOKYO.altitude
+});
 const satellite = new Orb.SGP4(ISS_TLE);
 const elliptic = new Orb.Kepler({
   eccentricity: 0.1,
@@ -104,7 +114,12 @@ const cases = [
     'Kepler: elliptic propagation'
   ],
   ['SGP4: ISS TEME propagation', () => satellite.xyz(SGP4_DATE).x],
-  ['observer: Moon azimuth/elevation', () => moonObservation.azel(DATE).elevation]
+  ['observer: legacy Moon az/el', () => moonObservation.azel(DATE).elevation],
+  [
+    'observer: structured Moon az/el',
+    () => structuredObserver.observe(structuredMoon, INSTANT).elevation,
+    'observer: legacy Moon az/el'
+  ]
 ];
 
 const results = new Map();

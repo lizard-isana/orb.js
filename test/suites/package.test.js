@@ -31,6 +31,7 @@ test('package: metadata and local CommonJS entry are stable', () => {
   assert.strictEqual(typeof Orb.Observation, 'function');
   assert.strictEqual(Orb.Instant, undefined);
   assert.strictEqual(Orb.makeState, undefined);
+  assert.strictEqual(Orb.createObserver, undefined);
 });
 
 test('package: exact tarball supports legacy entries and optional model subpaths', () => {
@@ -63,6 +64,7 @@ test('package: exact tarball supports legacy entries and optional model subpaths
     assert.ok(files.has('src/kepler/index.js'));
     assert.ok(files.has('src/models/earth-epv00/index.js'));
     assert.ok(files.has('src/models/earth-epv00/LICENSE-ERFA'));
+    assert.ok(files.has('src/observer/index.js'));
     assert.ok(files.has('src/vocab/index.js'));
     assert.ok(![...files].some((filename) => filename.startsWith('test/')));
     assert.ok(![...files].some((filename) => filename.startsWith('.ai/')));
@@ -125,6 +127,14 @@ test('package: exact tarball supports legacy entries and optional model subpaths
       runNode(consumer, [
         '--input-type=module',
         '-e',
+        `import { createObserver, OBSERVER_DEFAULTS } from '${PACKAGE_NAME}/observer'; console.log(typeof createObserver, OBSERVER_DEFAULTS.lightTime)`
+      ]),
+      'function false'
+    );
+    assert.strictEqual(
+      runNode(consumer, [
+        '--input-type=module',
+        '-e',
         `import { Instant } from '${PACKAGE_NAME}/time'; console.log(Instant.fromISO('2000-01-01T12:00:00Z').jd('utc'))`
       ]),
       '2451545'
@@ -159,6 +169,7 @@ test('package: exact tarball supports legacy entries and optional model subpaths
     const browserContext = {};
     assert.ok(!umdSource.includes('earthEpv00'));
     assert.ok(!umdSource.includes('erfa-epv00'));
+    assert.ok(!umdSource.includes('OBSERVER_DEFAULTS'));
     vm.runInNewContext(umdSource, browserContext, { filename: umdPath });
     assert.strictEqual(typeof browserContext.Orb.Time, 'function');
   } finally {

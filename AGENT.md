@@ -55,6 +55,21 @@ The evaluator still supports the older nested term format:
 
 Do not reduce numeric precision in the full tables unless the accuracy impact is explicitly tested.
 
+## Modern Observer API
+
+The additive `@lizard-isana/orb/observer` subpath uses `Instant`, radians, and
+km. Create a site with `createObserver({ latitude, longitude, height })`, then
+call `site.observe(body, instant, options)` with a structured body or a legacy
+body adapter.
+
+The third argument is optional. Omitting it uses IAU 2006/2000B frame
+transforms and topocentric vector subtraction, but leaves light time, annual
+aberration, refraction, and structured metadata off. These effects are
+independent opt-ins. Refraction requires explicit pressure in hPa and
+temperature in degrees Celsius. Do not change this geometric, airless default
+implicitly, and do not change legacy `Observation.azel(date)` defaults.
+
 ## Related Notes
 
 - `.ai/decisions/2026-04-27-full-vsop87a-api.md`
+- `.ai/plans/2026-09-22-v3.1-implementation-plan-revised.md`

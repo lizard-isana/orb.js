@@ -30,7 +30,8 @@ export function adaptLegacyBody(body, {
   frame,
   center,
   positionUnit,
-  velocityUnit = null
+  velocityUnit = null,
+  provenance = null
 } = {}) {
   requireLegacyBody(body);
   if (typeof frame !== 'string' || typeof center !== 'string') {
@@ -40,7 +41,7 @@ export function adaptLegacyBody(body, {
   if (velocityUnit !== null) requireOption(velocityUnit, ['km/s', 'au/day'], 'velocity unit');
   const positionScale = positionUnit === 'au' ? AU_KM : 1;
   const velocityScale = velocityUnit === 'au/day' ? AU_KM / SECONDS_PER_DAY : 1;
-  return Object.freeze({
+  const adapter = {
     name,
     state(instant) {
       if (!instant || typeof instant.toDate !== 'function') {
@@ -61,28 +62,33 @@ export function adaptLegacyBody(body, {
         v: velocity
       });
     }
-  });
+  };
+  if (provenance !== null) adapter.provenance = provenance;
+  return Object.freeze(adapter);
 }
 
 export const adaptLegacyPlanet = (body, options = {}) => adaptLegacyBody(body, {
   name: options.name,
   frame: 'ecliptic-j2000',
   center: 'sun',
-  positionUnit: 'au'
+  positionUnit: 'au',
+  provenance: options.provenance ?? Object.freeze({ source: Object.freeze(['vsop87a']) })
 });
 
 export const adaptLegacyMoon = (body, options = {}) => adaptLegacyBody(body, {
   name: options.name ?? 'moon',
   frame: 'ecliptic-of-date',
   center: 'earth',
-  positionUnit: 'km'
+  positionUnit: 'km',
+  provenance: options.provenance ?? Object.freeze({ source: Object.freeze(['meeus-moon']) })
 });
 
 export const adaptLegacySun = (body, options = {}) => adaptLegacyBody(body, {
   name: options.name ?? 'sun',
   frame: 'equatorial-of-date',
   center: 'earth',
-  positionUnit: 'au'
+  positionUnit: 'au',
+  provenance: options.provenance ?? null
 });
 
 export const adaptLegacyKepler = (body, options = {}) => adaptLegacyBody(body, {
@@ -90,7 +96,9 @@ export const adaptLegacyKepler = (body, options = {}) => adaptLegacyBody(body, {
   frame: options.frame ?? 'ecliptic-j2000',
   center: options.center ?? 'sun',
   positionUnit: 'au',
-  velocityUnit: 'au/day'
+  velocityUnit: 'au/day',
+  provenance: options.provenance
+    ?? Object.freeze({ source: Object.freeze(['universal-kepler']) })
 });
 
 export const adaptLegacySatellite = (body, options = {}) => adaptLegacyBody(body, {
@@ -98,5 +106,6 @@ export const adaptLegacySatellite = (body, options = {}) => adaptLegacyBody(body
   frame: 'teme',
   center: 'earth',
   positionUnit: 'km',
-  velocityUnit: 'km/s'
+  velocityUnit: 'km/s',
+  provenance: options.provenance ?? Object.freeze({ source: Object.freeze(['sgp4']) })
 });

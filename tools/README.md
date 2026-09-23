@@ -21,7 +21,8 @@ machine load, and JIT state affect absolute throughput. Compare results from
 the same machine and process setup, and treat order-of-magnitude changes as a
 signal to investigate. The `relative` column compares related paths measured
 in the same run; it records the cost of full versus short Mars VSOP87A
-coefficients and structured versus legacy Kepler propagation.
+coefficients, structured versus legacy Kepler propagation, and structured
+versus legacy Moon observation.
 
 ## VSOP87A generation and verification
 
