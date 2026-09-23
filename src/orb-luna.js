@@ -127,6 +127,7 @@ export class Luna{
       obliquity: obliquity,
       "date": date,
       "coordinate_keywords": "ecliptic spherical",
+      "center_keywords": "earth",
       "unit_keywords": "degree km"
     }
   }
@@ -147,6 +148,7 @@ export class Luna{
       distance: distance,
       "date": date,
       "coordinate_keywords": "equatorial spherical",
+      "center_keywords": "earth",
       "unit_keywords": "degree hour km"
     }
   }
@@ -166,6 +168,7 @@ export class Luna{
       z: z,
       "date": date,
       "coordinate_keywords": "ecliptic rectangular",
+      "center_keywords": "earth",
       "unit_keywords": "km"
     }
   }
@@ -267,7 +270,7 @@ export class Luna{
   }
 }
 
-export class Moon{ 
+export class Moon{
   constructor(){
     return new Luna();
   }

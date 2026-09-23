@@ -13,7 +13,8 @@ import {
 import {
   adaptLegacyMoon,
   adaptLegacySatellite,
-  DEG
+  DEG,
+  gast
 } from '../../src/frames/index.js';
 import { sunEpv00 } from '../../src/models/earth-epv00/index.js';
 import { createObserver } from '../../src/observer/index.js';
@@ -75,6 +76,31 @@ test('bounded search refines crossings and maxima without Date arithmetic', () =
     () => findCrossings(() => 1, from, to, { stepSeconds: 2, toleranceSeconds: 2 }),
     /smaller/
   );
+  assert.throws(
+    () => findCrossings(
+      (instant) => instant.differenceSeconds(from) - 3,
+      from,
+      to,
+      { stepSeconds: 5, toleranceSeconds: 0.001, maxIterations: 1 }
+    ),
+    /did not converge/
+  );
+  assert.throws(
+    () => findMaximum(
+      (instant) => -((instant.differenceSeconds(from) - 4) ** 2),
+      from,
+      to,
+      { stepSeconds: 5, toleranceSeconds: 0.001, maxIterations: 1 }
+    ),
+    /did not converge/
+  );
+  const nearEndpoint = findMaximum(
+    (instant) => -((instant.differenceSeconds(from) - 0.3) ** 2),
+    from,
+    to,
+    { stepSeconds: 1, toleranceSeconds: 0.001 }
+  );
+  assert.ok(Math.abs(nearEndpoint.instant.differenceSeconds(from) - 0.3) < 0.001);
 });
 
 test('rise, transit, and set default to geometric center events', () => {
@@ -96,6 +122,10 @@ test('rise, transit, and set default to geometric center events', () => {
   }
   assert.ok(events[0].instant.utcMs < events[1].instant.utcMs);
   assert.ok(events[1].instant.utcMs < events[2].instant.utcMs);
+  const observedTransit = tokyo.observe(sunEpv00, events[1].instant);
+  const hourAngle = gast(events[1].instant) + tokyo.longitude - observedTransit.rightAscension;
+  assert.ok(Math.abs(Math.sin(hourAngle)) < 1e-5, 'transit hour angle=' + hourAngle);
+  assert.ok(Math.cos(hourAngle) > 0, 'transit must be the upper meridian crossing');
 });
 
 test('semidiameter and atmospheric refraction remain explicit conventions', () => {
@@ -181,6 +211,27 @@ test('pass defaults are airless horizon crossings and invalid search knobs fail'
   assert.throws(
     () => riseSetTransit(tokyo, sunEpv00, from, to, { stepSeconds: 21601 }),
     /must not exceed/
+  );
+});
+
+test('a pass beginning exactly at the search end is not a zero-duration pass', () => {
+  const from = AstroInstant.fromUnixMs(0);
+  const to = from.addSeconds(10);
+  const boundarySite = {
+    observe(_body, instant) {
+      return {
+        azimuth: 0,
+        elevation: (instant.utcMs - to.utcMs) / 1000,
+        range: 1
+      };
+    }
+  };
+  assert.deepStrictEqual(
+    satellitePasses(boundarySite, { state() {} }, from, to, {
+      stepSeconds: 5,
+      toleranceSeconds: 0.001
+    }),
+    []
   );
 });
 

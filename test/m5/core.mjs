@@ -124,6 +124,39 @@ test('TLE and OMM normalize to equivalent structured satellites', () => {
   );
 });
 
+test('OMM and CelesTrak GP JSON accept nine-digit catalogue numbers', () => {
+  const gp = {
+    OBJECT_NAME: 'NINE DIGIT TEST',
+    EPOCH: '2026-07-18T00:00:00.000000',
+    MEAN_MOTION: 15,
+    ECCENTRICITY: 0.001,
+    INCLINATION: 51.6,
+    RA_OF_ASC_NODE: 20,
+    ARG_OF_PERICENTER: 30,
+    MEAN_ANOMALY: 40,
+    NORAD_CAT_ID: 799500001,
+    BSTAR: 0
+  };
+  assert.strictEqual(normalizeOmm({ ...gp, CCSDS_OMM_VERS: '2.0' }).NORAD_CAT_ID, 799500001);
+  const satellite = createSatellite(gp);
+  assert.strictEqual(satellite.elements.sourceFormat, 'celestrak-gp-json');
+  assert.strictEqual(satellite.elements.catalogNumber, 799500001);
+  assert.ok([...satellite.state(satellite.elements.epoch).r].every(Number.isFinite));
+});
+
+test('structured SGP4 uses UTC-like elapsed seconds across a leap boundary', () => {
+  const tle = {
+    line1: '1 25544U 98067A   16366.99998843  .00016717  00000-0  10270-3 0  9015',
+    line2: issTle.line2
+  };
+  const structured = createSatellite(tle);
+  const legacy = new Orb.SGP4({ first_line: tle.line1, second_line: tle.line2 });
+  const instant = structured.elements.epoch.addSeconds(120);
+  const modernState = structured.state(instant);
+  const legacyState = legacy.xyz(instant.toDate());
+  assert.ok(distance(modernState.r, [legacyState.x, legacyState.y, legacyState.z]) < 1e-6);
+});
+
 test('structured near-Earth and deep-space propagation matches python-sgp4', () => {
   for (const referenceCase of sgp4Fixture.cases) {
     const satellite = createSatellite({

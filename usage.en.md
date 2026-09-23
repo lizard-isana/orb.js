@@ -169,6 +169,13 @@ Coordinate helpers include `RadecToXYZ`, `XYZtoRadec`,
 `coordinate_keywords` and `unit_keywords`; inspect them rather than assuming
 one unit for every root API result.
 
+`Luna.xyz()` is an Earth-centered vector and also carries
+`center_keywords: 'earth'`. Ecliptic-to-equatorial helpers rotate an input
+already marked with `center: 'earth'`, `center_keywords: 'earth'`, or
+`origin: 'geocentric'` without subtracting Earth's heliocentric position.
+Unmarked compatible ecliptic inputs retain the historical heliocentric-input
+behavior and are translated to the Earth before rotation.
+
 ## Structured time, frames, and geodesy
 
 ### `@lizard-isana/orb/time`
@@ -181,6 +188,8 @@ instant.jd('utc');
 instant.jd('ut1');
 instant.jd('tt');
 instant.addSeconds(30);
+instant.differenceSeconds(other);
+instant.differenceTtSeconds(other);
 ```
 
 `AstroInstant.from` accepts an `AstroInstant`, `Date`, ISO string, or Unix milliseconds.
@@ -189,6 +198,14 @@ the instant stores a two-part TT Julian date and remains immutable. `dut1`
 defaults to zero and, when supplied, must be between -0.9 and +0.9 seconds.
 `AstroInstant` is an orb.js astronomical time class, not `Temporal.Instant`,
 and it does not require the browser Temporal API.
+
+`addSeconds()` and `differenceSeconds()` use the same Unix/JavaScript `Date`
+timeline, so they are inverse duration operations even across a UTC leap-second
+boundary. JavaScript `Date` cannot represent an ISO `23:59:60` label; orb.js
+therefore does not expose that label as a distinct instant.
+`differenceTtSeconds()` is available when the difference between TT coordinate
+values, including a leap-offset step, is specifically required. `addDays()` is
+defined as exactly 86,400 of these Unix-like seconds.
 
 ### `@lizard-isana/orb/frames`
 
@@ -243,6 +260,13 @@ The structured solver uses km, km/s, seconds, radians, and km³/s². One bounded
 universal-variable path covers elliptic, parabolic, and hyperbolic motion.
 Invalid physical inputs and non-convergence throw. This is unperturbed two-body
 propagation, not an Earth satellite force model.
+
+For state/element round trips, prefer structured `stateToElements()`: it
+defines circular and equatorial singular conventions (`raan` and/or
+`argumentOfPeriapsis` become zero and the remaining angle carries the physical
+longitude). The compatible `Orb.Cartesian` constructor predates those
+conventions; its angular fields can be `NaN` for exactly circular or
+equatorial states and should not be used for those singular cases.
 
 ## Structured Earth/Sun and observer
 
@@ -321,6 +345,22 @@ published as `HORIZON_CONSTANTS`, but none is silently selected. Do not combine
 a precombined conventional horizon with the same explicit refraction or
 semidiameter correction.
 
+`transit` is the upper meridian crossing: topocentric hour angle zero. It is
+not defined as the numerical maximum of elevation, which can occur at a
+different time for a moving body. Satellite-pass `culmination` remains the
+maximum elevation inside that pass window.
+
+All search functions accept `stepSeconds`, `toleranceSeconds`, `maxIterations`,
+and `maxEvaluations`. The step controls coarse bracketing; tolerance is the
+maximum remaining time interval after refinement. Exceeding either bound or
+reaching `maxIterations` before tolerance is met throws instead of returning an
+unconverged event. Crossing searches use `(from, to]`; maxima include both
+endpoints and refine the adjacent interval even when the best coarse sample is
+an endpoint. A satellite pass must have positive duration greater than the
+search tolerance, so a rise exactly at `to` is not returned as a zero-length
+pass. A pass already above the threshold at `from` is returned with a clipped
+rise.
+
 Pass results label elevation as `geometric` or `refracted`. They report
 `opticalVisibility` and `sunlight` as `not-computed`; a geometric pass is not a
 claim that the satellite is illuminated or visible.
@@ -347,10 +387,21 @@ longitude, and height in radians/radians/km.
 TLE fields are SGP4 mean elements, not instantaneous osculating elements.
 Propagation uses WGS-72 gravity constants because the elements are fitted to
 that model; WGS-84 is used only for geodesy. `B*` is the SGP4 drag term, not a
-physical ballistic coefficient. Numeric and Alpha-5 catalog numbers are
-supported, both TLE lines must identify the same object, and malformed fields
-throw explanatory errors. Checksums are optional by default; enable them with
+physical ballistic coefficient. TLE accepts its fixed-width numeric and
+Alpha-5 catalogue forms. OMM accepts integer catalogue numbers up to nine
+digits. `createSatellite()` and `parseOmm()` also accept CelesTrak GP JSON,
+which uses OMM element keys but can omit `CCSDS_OMM_VERS`, `CENTER_NAME`,
+`REF_FRAME`, `TIME_SYSTEM`, and `MEAN_ELEMENT_THEORY`; normalization supplies
+the documented Earth/TEME/UTC/SGP4 conventions. Other incomplete OMM-like
+objects still fail validation. Both TLE lines must identify the same object,
+and malformed fields throw explanatory errors. Checksums are optional by default; enable them with
 `{ validateChecksum: true }` or call the checksum helpers directly.
+
+SGP4 elapsed minutes follow the UTC-like Julian-date convention of the
+reference implementation and therefore use the same Unix-like elapsed seconds
+as `AstroInstant.differenceSeconds()`, not a TT coordinate difference.
+The port retains the python-sgp4 MIT notice in
+`src/sgp4/LICENSE-python-sgp4`; built standalone bundles also carry the notice.
 
 SGP4 errors grow with element age and orbit conditions. Use current elements,
 retain their epoch, and validate predictions for the operational context.

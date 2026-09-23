@@ -48,13 +48,21 @@ test('Observation.azel accepts a plain ra/dec object', () => {
 });
 
 test('Observation.azel preserves numeric-string legacy inputs', () => {
+  const date = new Date(Date.UTC(2026, 6, 18, 12, 0, 0));
+  const target = new Orb.Luna().xyz(date);
   const obs = new Orb.Observation({
     observer: { latitude: '35', longitude: '139', altitude: '0' },
-    target: { ra: '6.45', dec: '-16.72' }
+    target
   });
-  const actual = obs.azel(new Date(Date.UTC(2026, 6, 18, 12, 0, 0)));
+  const numeric = new Orb.Observation({
+    observer: { latitude: 35, longitude: 139, altitude: 0 },
+    target
+  }).azel(date);
+  const actual = obs.azel(date);
   assert.ok(Number.isFinite(actual.azimuth));
   assert.ok(Number.isFinite(actual.elevation));
+  assert.ok(Math.abs(actual.azimuth - numeric.azimuth) < 1e-12);
+  assert.ok(Math.abs(actual.elevation - numeric.elevation) < 1e-12);
 });
 
 test('Observation.azel reports unsupported coordinate and unit metadata clearly', () => {

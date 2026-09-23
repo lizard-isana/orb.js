@@ -74,42 +74,42 @@ export class VSOP {
 }
 
 //Orb.Earth is defined in earth.js
-export class Mercury{ 
+export class Mercury{
   constructor(options = {}){
     return new VSOP("Mercury", options)
   }
 };
-export class Venus{ 
+export class Venus{
   constructor(options = {}){
     return new VSOP("Venus", options)
   }
 };
 
-export class Mars{ 
+export class Mars{
   constructor(options = {}){
     return new VSOP("Mars", options)
   }
 };
 
-export class Jupiter{ 
+export class Jupiter{
   constructor(options = {}){
     return new VSOP("Jupiter", options)
   }
 };
 
-export class Saturn{ 
+export class Saturn{
   constructor(options = {}){
     return new VSOP("Saturn", options)
   }
 };
 
-export class Uranus{ 
+export class Uranus{
   constructor(options = {}){
     return new VSOP("Uranus", options)
   }
 };
 
-export class Neptune{ 
+export class Neptune{
   constructor(options = {}){
     return new VSOP("Neptune", options)
   }

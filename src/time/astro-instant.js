@@ -143,6 +143,11 @@ export class AstroInstant {
 
   differenceSeconds(other) {
     const instant = AstroInstant.from(other);
+    return (this.utcMs - instant.utcMs) / 1000;
+  }
+
+  differenceTtSeconds(other) {
+    const instant = AstroInstant.from(other);
     return (this.jd1 - instant.jd1 + this.jd2 - instant.jd2) * SECONDS_PER_DAY;
   }
 }

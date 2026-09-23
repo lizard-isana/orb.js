@@ -71,6 +71,14 @@ test('AstroInstant arithmetic is immutable and preserves millisecond differences
   assert.throws(() => AstroInstant.fromUnixMs(start.utcMs, { dut1: 1 }), RangeError);
 });
 
+test('AstroInstant duration arithmetic is self-consistent across a leap-second boundary', () => {
+  const before = AstroInstant.fromISO('2016-12-31T23:59:59Z');
+  const after = before.addSeconds(1);
+  assert.strictEqual(after.toISOString(), '2017-01-01T00:00:00.000Z');
+  close(after.differenceSeconds(before), 1, 0, 'POSIX duration');
+  close(after.differenceTtSeconds(before), 2, 1e-9, 'TT coordinate difference');
+});
+
 test('time scale helpers retain the legacy leap-second and Delta-T policy', () => {
   assert.strictEqual(ttMinusUtc(Date.UTC(2026, 6, 18)), 69.184);
   assert.strictEqual(ttMinusUtc(Date.UTC(1990, 5, 1)), 57.184);

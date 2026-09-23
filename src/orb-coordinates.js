@@ -31,6 +31,23 @@ const resolveObliquityForEpoch = ({ date = null, epoch = 'of_date' } = {}) => {
 const geocentricEcliptic = (parameter) => {
   const date = parameter.date;
   const ecliptic = parameter.ecliptic;
+  const geocentric = parameter.origin === 'geocentric'
+    || ecliptic.center === 'earth'
+    || (typeof ecliptic.center_keywords === 'string'
+      && /earth|geocentric/i.test(ecliptic.center_keywords))
+    || (typeof ecliptic.coordinate_keywords === 'string'
+      && /geocentric/i.test(ecliptic.coordinate_keywords));
+  if (geocentric) {
+    return {
+      x: Number(ecliptic.x),
+      y: Number(ecliptic.y),
+      z: Number(ecliptic.z),
+      date: date,
+      coordinate_keywords: ecliptic.coordinate_keywords,
+      center_keywords: ecliptic.center_keywords || "earth",
+      unit_keywords: ecliptic.unit_keywords || ""
+    };
+  }
   const earth = new Earth();
   const ep = earth.xyz(date);
   return {
@@ -39,6 +56,7 @@ const geocentricEcliptic = (parameter) => {
     z: ecliptic.z - ep.z,
     date: date,
     coordinate_keywords: "ecliptic rectangular",
+    center_keywords: "earth",
     unit_keywords: ecliptic.unit_keywords || ""
   }
 }
@@ -115,6 +133,7 @@ export const EclipticJ2000ToDate = (vector, date) => {
     z: mz,
     date: date,
     coordinate_keywords: "ecliptic rectangular",
+    center_keywords: vector.center_keywords || "",
     unit_keywords: vector.unit_keywords || ""
   };
 }
@@ -225,6 +244,7 @@ export const XYZtoRadec = function (parameter) {
     "distance": distance,
     "date": date,
     "coordinate_keywords": "equatorial spherical",
+    "center_keywords": rect.center_keywords != undefined ? rect.center_keywords : "",
     "unit_keywords": "hours degree" + distance_unit
   };
 }
@@ -283,6 +303,7 @@ export const EclipticToEquatorial = function (parameter) {
     'z': equatorial.z,
     'date': date,
     "coordinate_keywords": "equatorial rectangular",
+    "center_keywords": ecliptic.center_keywords || "earth",
     "unit_keywords": ecliptic.unit_keywords != undefined ? ecliptic.unit_keywords : ""
   }
 }
@@ -298,6 +319,7 @@ export const EclipticToEquatorialJ2000 = function (parameter) {
     'z': equatorial.z,
     'date': date,
     "coordinate_keywords": "equatorial rectangular",
+    "center_keywords": ecliptic.center_keywords || "earth",
     "unit_keywords": ""
   }
 }
@@ -313,6 +335,7 @@ export const EclipticToEquatorialOfDate = function (parameter) {
     'z': rect.z,
     'date': date,
     "coordinate_keywords": "equatorial rectangular",
+    "center_keywords": ecliptic.center_keywords || "earth",
     "unit_keywords": ""
   }
 }

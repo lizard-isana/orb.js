@@ -51,12 +51,39 @@ export function parseCatalogNumber(value) {
   return NaN;
 }
 
-function requireCatalogNumber(value, label) {
+function requireTleCatalogNumber(value, label) {
   const number = parseCatalogNumber(value);
   if (!Number.isInteger(number) || number < 0 || number > 339999) {
     fail(`${label} is not a numeric or Alpha-5 catalogue number`);
   }
   return number;
+}
+
+function requireOmmCatalogNumber(value, label) {
+  const text = String(value === null || value === undefined ? '' : value).trim();
+  if (!/^[0-9]{1,9}$/.test(text)) {
+    fail(`${label} must be an integer catalogue number with at most 9 digits`);
+  }
+  const number = Number(text);
+  if (!Number.isSafeInteger(number)) fail(`${label} must be a safe integer catalogue number`);
+  return number;
+}
+
+const OMM_ELEMENT_KEYS = Object.freeze([
+  'EPOCH',
+  'NORAD_CAT_ID',
+  'MEAN_MOTION',
+  'ECCENTRICITY',
+  'INCLINATION',
+  'RA_OF_ASC_NODE',
+  'ARG_OF_PERICENTER',
+  'MEAN_ANOMALY'
+]);
+
+export function isOmmLike(input) {
+  return Boolean(input && typeof input === 'object' && !Array.isArray(input)
+    && (input.CCSDS_OMM_VERS !== undefined
+      || OMM_ELEMENT_KEYS.every((key) => input[key] !== undefined)));
 }
 
 export function parseImpliedDecimal(mantissa, exponent) {
@@ -187,8 +214,8 @@ export function parseTleRecord(input, options) {
   const tle = normalizeTleInput(input);
   const parsedOptions = parseTleOptions(options);
   if (parsedOptions.validateChecksum) validateTleChecksum(tle);
-  const catalogNumber1 = requireCatalogNumber(tle.line1.slice(2, 7), 'TLE line 1 catalogue number');
-  const catalogNumber2 = requireCatalogNumber(tle.line2.slice(2, 7), 'TLE line 2 catalogue number');
+  const catalogNumber1 = requireTleCatalogNumber(tle.line1.slice(2, 7), 'TLE line 1 catalogue number');
+  const catalogNumber2 = requireTleCatalogNumber(tle.line2.slice(2, 7), 'TLE line 2 catalogue number');
   if (catalogNumber1 !== catalogNumber2) {
     fail(`TLE catalogue numbers do not match (${catalogNumber1} !== ${catalogNumber2})`);
   }
@@ -307,12 +334,14 @@ function requireOmmConvention(omm, key, expected) {
 
 export function normalizeOmm(input) {
   const omm = requireObject(input, 'OMM');
-  if (omm.CCSDS_OMM_VERS === undefined) fail('OMM must provide CCSDS_OMM_VERS');
+  if (!isOmmLike(omm)) {
+    fail('OMM must provide CCSDS_OMM_VERS or the complete CelesTrak GP JSON element fields');
+  }
   requireOmmConvention(omm, 'CENTER_NAME', 'EARTH');
   requireOmmConvention(omm, 'REF_FRAME', 'TEME');
   requireOmmConvention(omm, 'TIME_SYSTEM', 'UTC');
   requireOmmConvention(omm, 'MEAN_ELEMENT_THEORY', 'SGP4');
-  const catalogNumber = requireCatalogNumber(omm.NORAD_CAT_ID, 'OMM NORAD_CAT_ID');
+  const catalogNumber = requireOmmCatalogNumber(omm.NORAD_CAT_ID, 'OMM NORAD_CAT_ID');
   parseUtcEpoch(omm.EPOCH);
   const eccentricity = boundedNumber(omm.ECCENTRICITY, 0, 1, 'OMM ECCENTRICITY', false);
   const inclinationDeg = boundedNumber(omm.INCLINATION, 0, 180, 'OMM INCLINATION');
@@ -324,7 +353,7 @@ export function normalizeOmm(input) {
 
   return Object.freeze({
     ...omm,
-    CCSDS_OMM_VERS: String(omm.CCSDS_OMM_VERS),
+    CCSDS_OMM_VERS: String(omm.CCSDS_OMM_VERS ?? '2.0'),
     OBJECT_NAME: omm.OBJECT_NAME ?? null,
     OBJECT_ID: omm.OBJECT_ID ?? null,
     CENTER_NAME: 'EARTH',
@@ -350,10 +379,13 @@ export function normalizeOmm(input) {
 }
 
 export function parseOmmRecord(input) {
+  const sourceFormat = input.CCSDS_OMM_VERS === undefined
+    ? 'celestrak-gp-json'
+    : 'omm';
   const omm = normalizeOmm(input);
   const epochUnixMs = parseUtcEpoch(omm.EPOCH);
   return Object.freeze({
-    sourceFormat: 'omm',
+    sourceFormat,
     name: omm.OBJECT_NAME,
     line1: omm.USER_DEFINED_TLE_LINE1 ?? null,
     line2: omm.USER_DEFINED_TLE_LINE2 ?? null,

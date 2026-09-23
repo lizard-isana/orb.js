@@ -44,10 +44,16 @@ test('Sun.radec agrees with ephemeris (2026-07-18)', () => {
 });
 
 test('Luna.radec returns plausible geocentric position', () => {
-  const m = new Orb.Luna().radec(new Date(Date.UTC(2026, 6, 18, 0, 0, 0)));
+  const date = new Date(Date.UTC(2026, 6, 18, 0, 0, 0));
+  const luna = new Orb.Luna();
+  const m = luna.radec(date);
   assert.ok(m.ra >= 0 && m.ra < 24);
   assert.ok(Math.abs(m.dec) <= 29);
   assert.ok(m.distance > 356000 && m.distance < 407000, 'distance=' + m.distance);
+  const converted = Orb.XYZtoRadec(luna.xyz(date));
+  assert.ok(Math.abs(converted.ra - m.ra) < 1e-9, 'RA mismatch');
+  assert.ok(Math.abs(converted.dec - m.dec) < 1e-8, 'Dec mismatch');
+  assert.ok(Math.abs(converted.distance - m.distance) < 1e-9, 'distance mismatch');
 });
 
 test('VSOP pipeline agrees with the Sun theory (equinox of date)', () => {

@@ -27,7 +27,7 @@ export class Kepler{
     this.epoch = epoch;
     if (orbital_elements.perihelion_distance) {
       orbital_elements.periapsis_distance = orbital_elements.perihelion_distance;
-    }  
+    }
   }
 
   EllipticalOrbit = (time) => {
@@ -115,19 +115,19 @@ export class Kepler{
   }
 }
 
-export class KeplerianToCartesian{ 
+export class KeplerianToCartesian{
   constructor(orbital_elements){
     return new Kepler(orbital_elements)
   }
 };
 
-export class CartesianToKeplerian  { 
+export class CartesianToKeplerian  {
   constructor(cartesian){
     return new Cartesian(cartesian)
   }
 };
 
-export class Cartesian { 
+export class Cartesian {
   constructor(cartesian){
     const rad = Constant.RAD;
     if (cartesian.gm) {

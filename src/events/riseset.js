@@ -1,4 +1,5 @@
-import { findCrossings, findLocalMaxima } from './search.js';
+import { gast } from '../frames/index.js';
+import { findCrossings } from './search.js';
 
 const ARC_MINUTE = Math.PI / (180 * 60);
 
@@ -90,11 +91,22 @@ export function riseSetTransit(site, body, from, to, options = {}) {
     }));
   }
 
-  for (const peak of findLocalMaxima(elevation, from, to, search)) {
-    const observed = site.observe(body, peak.instant, observation);
+  const hourAngle = (instant) => {
+    const observed = site.observe(body, instant, observation);
+    return gast(instant) + site.longitude - observed.rightAscension;
+  };
+  for (const crossing of findCrossings(
+    (instant) => Math.sin(hourAngle(instant)),
+    from,
+    to,
+    search
+  )) {
+    const angle = hourAngle(crossing.instant);
+    if (Math.cos(angle) <= 0) continue;
+    const observed = site.observe(body, crossing.instant, observation);
     events.push(Object.freeze({
       type: 'transit',
-      instant: peak.instant,
+      instant: crossing.instant,
       azimuth: observed.azimuth,
       elevation: observed.elevation,
       threshold,

@@ -1,5 +1,6 @@
 export {
   computeTleChecksum,
+  isOmmLike,
   normalizeOmm,
   normalizeTleInput,
   parseCatalogNumber,

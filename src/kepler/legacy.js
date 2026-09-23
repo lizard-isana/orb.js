@@ -57,11 +57,19 @@ export function legacyOrbitalPlane(elements, targetJd, gmAuDay) {
     throw new RangeError('Orb.Kepler: a positive semi-major axis or periapsis distance is required');
   }
 
-  const epochJd = finite(elements.time_of_periapsis)
-    ? Number(elements.time_of_periapsis)
-    : finite(elements.epoch)
-      ? Number(elements.epoch)
-      : Number(targetJd);
+  // An epoch/mean-anomaly pair and a periapsis-time/zero-anomaly pair are
+  // alternative representations of the same phase.  Orb.Cartesian returns
+  // both, so never combine time_of_periapsis with mean_anomaly.
+  const hasEpochMeanAnomaly = eccentricity < 1
+    && finite(elements.epoch)
+    && finite(elements.mean_anomaly);
+  const epochJd = hasEpochMeanAnomaly
+    ? Number(elements.epoch)
+    : finite(elements.time_of_periapsis)
+      ? Number(elements.time_of_periapsis)
+      : finite(elements.epoch)
+        ? Number(elements.epoch)
+        : Number(targetJd);
   const trueAnomaly = trueAnomalyAtEpoch(elements, eccentricity);
   const mu = Number(gmAuDay) * AU_KM ** 3 / SECONDS_PER_DAY ** 2;
   if (!Number.isFinite(mu) || mu <= 0) throw new RangeError('Orb.Kepler: gm must be positive and finite');

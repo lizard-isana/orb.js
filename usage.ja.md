@@ -166,6 +166,12 @@ const result = observation.azel(date);
 `coordinate_keywords` と `unit_keywords` を維持します。ルート API の全結果を
 同じ単位だと仮定せず、これらを確認してください。
 
+`Luna.xyz()` は地球中心ベクトルであり、`center_keywords: 'earth'` も返します。
+黄道→赤道変換ヘルパーは、入力に `center: 'earth'`、
+`center_keywords: 'earth'`、または `origin: 'geocentric'` が明記されていれば、
+地球の太陽中心位置を減算せず座標面だけを回転します。中心が明記されない従来形式の
+黄道入力は、互換性のため太陽中心入力として扱い、地心化してから回転します。
+
 ## 構造化された時刻・座標系・測地系
 
 ### `@lizard-isana/orb/time`
@@ -178,6 +184,8 @@ instant.jd('utc');
 instant.jd('ut1');
 instant.jd('tt');
 instant.addSeconds(30);
+instant.differenceSeconds(other);
+instant.differenceTtSeconds(other);
 ```
 
 `AstroInstant.from` は `AstroInstant`、`Date`、ISO 文字列、Unix ミリ秒を受け付けます。
@@ -186,6 +194,13 @@ instant.addSeconds(30);
 0 で、指定する場合は -0.9〜+0.9 秒の範囲でなければなりません。
 `AstroInstant` は orb.js 独自の天文時刻クラスであり、`Temporal.Instant` では
 ありません。ブラウザの Temporal API にも依存しません。
+
+`addSeconds()` と `differenceSeconds()` は同じ Unix／JavaScript `Date` の時間軸を
+使うため、UTC のうるう秒境界でも互いに逆の継続時間演算になります。JavaScript
+`Date` は ISO の `23:59:60` を独立した時刻として表現できず、orb.js もこのラベルを
+別の瞬間として公開しません。TT 座標値の差（うるう秒オフセットの段差を含む）が必要な
+場合は `differenceTtSeconds()` を使います。`addDays()` の1日は、この Unix 的な秒の
+正確な86,400秒です。
 
 ### `@lizard-isana/orb/frames`
 
@@ -239,6 +254,11 @@ const next = propagateKepler(
 運動を、上限付きの一つの universal variable 経路で扱います。物理的に不正な入力や
 非収束はエラーになります。これは摂動なしの二体伝播であり、地球衛星の力学モデルでは
 ありません。
+
+状態と軌道要素の往復には、構造化 `stateToElements()` を推奨します。円軌道・赤道軌道
+の特異点では `raan` や `argumentOfPeriapsis` を0とし、残る角に物理的な経度を持たせる
+規約を定義しています。互換 `Orb.Cartesian` はこの規約より前のAPIであり、完全な円軌道
+または赤道軌道では角度欄が `NaN` になり得るため、その特異ケースには使用しないでください。
 
 ## 構造化 Earth/Sun と observer
 
@@ -312,6 +332,18 @@ const events = riseSetTransit(
 `HORIZON_CONSTANTS` で公開しますが、いずれも暗黙には選びません。合成済みの慣用
 地平線と、同じ大気差または視半径補正を重ねて指定しないでください。
 
+`transit` は測心時角が0になる上方の子午線通過です。移動天体では時刻がずれることの
+ある仰角最大を「南中」とは定義しません。衛星パスの `culmination` は引き続き、その
+パス区間内の最大仰角です。
+
+探索関数は `stepSeconds`、`toleranceSeconds`、`maxIterations`、
+`maxEvaluations` を受け付けます。step は粗い区間分割、tolerance は絞り込み後に許す
+時間幅です。評価回数の上限超過や、反復上限までに許容幅へ収束しない場合は、未収束値を
+正常結果にせず例外を投げます。交差探索の端点規則は `(from, to]`、最大値探索は両端を
+含みます。粗い最大サンプルが端点でも隣接区間を細かく探索します。衛星パスは探索許容幅
+より長い正の継続時間を必要とするため、`to` ちょうどの出現は長さ0のパスとして返しません。
+`from` ですでに閾値より上なら、出現側をクリップしたパスとして返します。
+
 パス結果は仰角を `geometric` または `refracted` と表示します。
 `opticalVisibility` と `sunlight` は `not-computed` です。幾何学的なパスは衛星が
 照明されている、または目視できるという意味ではありません。
@@ -338,10 +370,20 @@ km で返します。
 
 TLE の値は SGP4 平均軌道要素であり、瞬時の接触軌道要素ではありません。伝播には、
 要素がそのモデルに適合されているため WGS-72 重力定数を使い、WGS-84 は測地変換に
-だけ使います。`B*` は SGP4 の抗力項であり、物理的な弾道係数ではありません。数字と
-Alpha-5 のカタログ番号に対応し、TLE 2行は同一物体を示す必要があり、不正な欄は説明的
-なエラーになります。チェックサムは既定では任意です。`{ validateChecksum: true }`
+だけ使います。`B*` は SGP4 の抗力項であり、物理的な弾道係数ではありません。TLE は
+固定幅の数字形式と Alpha-5 形式、OMM は最大9桁の整数カタログ番号に対応します。
+`createSatellite()` と `parseOmm()` は、OMM の要素名を使いつつ
+`CCSDS_OMM_VERS`、`CENTER_NAME`、`REF_FRAME`、`TIME_SYSTEM`、
+`MEAN_ELEMENT_THEORY` を省略することのある CelesTrak GP JSON も受け付け、
+Earth／TEME／UTC／SGP4 の規約を補います。それ以外の不完全な OMM 風入力は検証で
+拒否します。TLE 2行は同一物体を示す必要があり、不正な欄は説明的なエラーになります。
+チェックサムは既定では任意です。`{ validateChecksum: true }`
 で有効化するか、チェックサム関数を直接呼び出してください。
+
+SGP4 の経過分は参照実装の UTC 的なユリウス日規約に従い、TT 座標差ではなく
+`AstroInstant.differenceSeconds()` と同じ Unix 的な経過秒を使います。移植元
+python-sgp4 の MIT 通知は `src/sgp4/LICENSE-python-sgp4` に同梱し、単独配布可能な
+ビルド済みバンドルにも表示します。
 
 SGP4 の誤差は要素の経過時間と軌道条件により増大します。新しい要素を使い、その元期を
 保持し、運用状況に合わせて予測を検証してください。orb.js はすべてに共通する

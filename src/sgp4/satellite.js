@@ -2,6 +2,7 @@ import { makeState, transform } from '../frames/index.js';
 import { ecefToGeodetic } from '../geodesy/index.js';
 import { sgp4, sgp4init, wgs72 } from '../orb-sgp4-propagation.js';
 import {
+  isOmmLike,
   normalizeOmm,
   parseOmm,
   parseTle,
@@ -73,7 +74,7 @@ export function createSatellite(rawInput, options = {}) {
   if (typeof validateChecksum !== 'boolean') {
     throw new TypeError('sgp4: validateChecksum must be boolean');
   }
-  const isOmm = input.CCSDS_OMM_VERS !== undefined;
+  const isOmm = isOmmLike(input);
   if (isOmm && validateChecksum) {
     if (typeof input.USER_DEFINED_TLE_LINE1 !== 'string'
         || typeof input.USER_DEFINED_TLE_LINE2 !== 'string') {

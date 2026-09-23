@@ -68,17 +68,23 @@ export function satellitePasses(site, satellite, from, to, options = {}) {
   const crossings = findCrossings(threshold, from, to, parsed.search);
   const segments = [];
   let start = threshold(from) >= 0 ? { instant: from, clipped: true } : null;
+  const appendSegment = (segmentStart, segmentEnd) => {
+    if (segmentEnd.instant.differenceSeconds(segmentStart.instant)
+        > parsed.search.toleranceSeconds) {
+      segments.push({ start: segmentStart, end: segmentEnd });
+    }
+  };
 
   for (const crossing of crossings) {
     if (crossing.direction > 0) {
       start = { instant: crossing.instant, clipped: false };
     } else if (start) {
-      segments.push({ start, end: { instant: crossing.instant, clipped: false } });
+      appendSegment(start, { instant: crossing.instant, clipped: false });
       start = null;
     }
   }
   if (start && threshold(to) >= 0) {
-    segments.push({ start, end: { instant: to, clipped: true } });
+    appendSegment(start, { instant: to, clipped: true });
   }
 
   const passes = segments.map((segment) => {

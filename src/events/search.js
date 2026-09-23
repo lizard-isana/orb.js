@@ -148,11 +148,14 @@ function refineRoot(context, left, right) {
       fhi = fmid;
     }
   }
+  if (hi.differenceSeconds(lo) > context.options.toleranceSeconds) {
+    throw new RangeError('events: root search did not converge within maxIterations');
+  }
   const instant = lo.addSeconds(hi.differenceSeconds(lo) / 2);
   return { instant, value: context.evaluate(instant) };
 }
 
-function refineMaximum(context, left, right) {
+function refineMaximum(context, left, right, sampledCandidates = []) {
   let lo = left;
   let hi = right;
   const ratio = (Math.sqrt(5) - 1) / 2;
@@ -176,8 +179,16 @@ function refineMaximum(context, left, right) {
       f1 = context.evaluate(x1);
     }
   }
-  const instant = f1 >= f2 ? x1 : x2;
-  return { instant, value: Math.max(f1, f2) };
+  if (hi.differenceSeconds(lo) > context.options.toleranceSeconds) {
+    throw new RangeError('events: maximum search did not converge within maxIterations');
+  }
+  let best = f1 >= f2
+    ? { instant: x1, value: f1 }
+    : { instant: x2, value: f2 };
+  for (const candidate of sampledCandidates) {
+    if (candidate.value > best.value) best = candidate;
+  }
+  return best;
 }
 
 export function findCrossings(fn, from, to, options = {}) {
@@ -207,18 +218,13 @@ export function findMaximum(fn, from, to, options = {}) {
   for (let index = 1; index < points.length; index += 1) {
     if (points[index].value > points[bestIndex].value) bestIndex = index;
   }
-  if (bestIndex === 0 || bestIndex === points.length - 1) {
-    const best = points[bestIndex];
-    return Object.freeze({
-      instant: best.instant,
-      value: best.value,
-      evaluations: context.evaluations()
-    });
-  }
+  const leftIndex = Math.max(0, bestIndex - 1);
+  const rightIndex = Math.min(points.length - 1, bestIndex + 1);
   const peak = refineMaximum(
     context,
-    points[bestIndex - 1].instant,
-    points[bestIndex + 1].instant
+    points[leftIndex].instant,
+    points[rightIndex].instant,
+    points.slice(leftIndex, rightIndex + 1)
   );
   return Object.freeze({ ...peak, evaluations: context.evaluations() });
 }
@@ -233,7 +239,8 @@ export function findLocalMaxima(fn, from, to, options = {}) {
     const peak = refineMaximum(
       context,
       points[index - 1].instant,
-      points[index + 1].instant
+      points[index + 1].instant,
+      [points[index]]
     );
     maxima.push(Object.freeze({ instant: peak.instant, value: peak.value }));
   }

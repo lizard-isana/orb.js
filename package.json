@@ -64,7 +64,7 @@
   },
   "scripts": {
     "test": "node test/run.js && node test/m1/core.mjs && node test/m2/core.mjs && node test/m3/core.mjs && node test/m4/core.mjs && node test/m5/core.mjs && node test/m7/docs.mjs",
-    "build": "rollup -c rollup.config.js",
+    "build": "rollup -c rollup.config.mjs && node tools/minify.mjs",
     "bench": "node tools/bench.mjs",
     "vsop:check": "node tools/vsop-compile.mjs --check",
     "vsop:write": "node tools/vsop-compile.mjs --write"
@@ -96,10 +96,7 @@
     "and_ff >= 90"
   ],
   "devDependencies": {
-    "@babel/core": "^7.17.5",
-    "@babel/preset-env": "^7.16.11",
-    "@rollup/plugin-babel": "^5.3.1",
-    "rollup": "^2.79.1",
-    "rollup-plugin-terser": "^7.0.2"
+    "rollup": "^4.63.4",
+    "terser": "^5.51.2"
   }
 }

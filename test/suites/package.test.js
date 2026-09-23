@@ -96,6 +96,7 @@ test('package: exact tarball supports legacy entries and optional model subpaths
     assert.ok(files.has('src/models/earth-epv00/LICENSE-ERFA'));
     assert.ok(files.has('src/observer/index.js'));
     assert.ok(files.has('src/sgp4/index.js'));
+    assert.ok(files.has('src/sgp4/LICENSE-python-sgp4'));
     assert.ok(files.has('src/vocab/index.js'));
     assert.ok(files.has('readme.md'));
     assert.ok(files.has('usage.en.md'));
@@ -251,6 +252,7 @@ test('package: exact tarball supports legacy entries and optional model subpaths
 
     const umdPath = path.join(consumer, 'node_modules', '@lizard-isana', 'orb', 'dist', 'orb.min.js');
     const umdSource = fs.readFileSync(umdPath, 'utf8');
+    assert.ok(umdSource.includes('Copyright © 2012–2016 Brandon Rhodes'));
     assert.ok(Buffer.byteLength(umdSource) < 750000, 'default minified bundle unexpectedly enlarged');
     const browserContext = {};
     assert.ok(!umdSource.includes('earthEpv00'));

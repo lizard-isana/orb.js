@@ -53,9 +53,11 @@ const distanceUnit = (target, required = false) => {
 
 export class Observer {
   constructor(position){
-    this.latitude = position.latitude
-    this.longitude = position.longitude
-    this.altitude = position.altitude
+    this.latitude = finiteNumber(position.latitude, 'observer latitude')
+    this.longitude = finiteNumber(position.longitude, 'observer longitude')
+    this.altitude = position.altitude == undefined
+      ? 0
+      : finiteNumber(position.altitude, 'observer altitude')
   }
 
   //sidereal_time (hours) defaults to apparent sidereal time; pass
@@ -81,10 +83,15 @@ export class Observer {
 
 export class Observation {
   constructor(param){
-    this.observer = param.observer;
+    const observer = new Observer(param.observer);
+    this.observer = {
+      latitude: observer.latitude,
+      longitude: observer.longitude,
+      altitude: observer.altitude
+    };
     this.target = param.target;
   }
-  
+
   AtmosphericRefraction = (elevation) =>{
     const rad = Constant.RAD;
     const tmp = elevation+7.31/(elevation + 4.4)
@@ -123,7 +130,7 @@ export class Observation {
       "atmospheric_refraction":atmospheric_refraction
      }
   }
-  
+
   RectToHorizontal = (time,rect) => {
     const coordinates = rectangularCoordinates(rect);
     const kind = coordinateKind(rect);
@@ -151,8 +158,8 @@ export class Observation {
     const distance_unit = ' km';
     const rad = Constant.RAD;
     const observer = this.observer;
-    const lat = observer.latitude;
-    const lng = observer.longitude;
+    const lat = finiteNumber(observer.latitude, 'observer latitude');
+    const lng = finiteNumber(observer.longitude, 'observer longitude');
     //TEME vectors (SGP4) pair with mean sidereal time (GMST 1982);
     //apparent places pair with apparent sidereal time.
     const is_teme = kind === 'teme';

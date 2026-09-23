@@ -214,7 +214,7 @@ export class SGP4{
   }
 }
 
-export class Satellite{ 
+export class Satellite{
   constructor(orbital_elements){
     return new SGP4(orbital_elements)
   }

@@ -75,7 +75,10 @@ test('English and Japanese guides publish the same structured surface', () => {
     'WGS-72',
     'WGS-84',
     'B*',
-    'not-computed'
+    'not-computed',
+    'differenceTtSeconds',
+    'CelesTrak GP JSON',
+    'maxIterations'
   ]) {
     assert.ok(english.includes(token), `English guide omits ${token}`);
     assert.ok(japanese.includes(token), `Japanese guide omits ${token}`);
@@ -154,6 +157,8 @@ test('documented examples execute against the exact tarball', () => {
       import { sunEpv00 } from '${PACKAGE_NAME}/models/earth-epv00';
       import { HORIZON_CONSTANTS, riseSetTransit } from '${PACKAGE_NAME}/events';
       const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
+      const leap = AstroInstant.fromISO('2016-12-31T23:59:59Z');
+      if (leap.addSeconds(1).differenceSeconds(leap) !== 1) throw new Error('time arithmetic failed');
       const site = createObserver({
         latitude: 35.658 * Math.PI / 180,
         longitude: 139.741 * Math.PI / 180,

@@ -1,6 +1,7 @@
 import { AstroInstant } from '../time/index.js';
 import {
   computeTleChecksum,
+  isOmmLike,
   normalizeOmm,
   normalizeTleInput,
   parseCatalogNumber,
@@ -71,6 +72,7 @@ export function tleToOmm(input, options) {
 
 export {
   computeTleChecksum,
+  isOmmLike,
   normalizeOmm,
   normalizeTleInput,
   parseCatalogNumber,
