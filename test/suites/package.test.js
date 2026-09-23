@@ -10,6 +10,27 @@ const { test } = require('../helpers/harness.js');
 
 const ROOT = path.join(__dirname, '..', '..');
 const PACKAGE_NAME = '@lizard-isana/orb';
+const STRUCTURED_SUBPATHS = [
+  './time',
+  './frames',
+  './geodesy',
+  './kepler',
+  './events',
+  './models/earth-epv00',
+  './observer',
+  './sgp4',
+  './vocab'
+];
+const VSOP_BODIES = [
+  'earth',
+  'mercury',
+  'venus',
+  'mars',
+  'jupiter',
+  'saturn',
+  'uranus',
+  'neptune'
+];
 
 function runNode(consumer, args) {
   const result = childProcess.spawnSync(process.execPath, args, {
@@ -54,6 +75,11 @@ test('package: exact tarball supports legacy entries and optional model subpaths
     const files = new Set(packed.files.map(({ path: filename }) => filename));
 
     assert.strictEqual(packed.id, PACKAGE_NAME + '@' + metadata.version);
+    assert.deepStrictEqual(
+      STRUCTURED_SUBPATHS.filter((subpath) => metadata.exports[subpath] == undefined),
+      [],
+      'every structured subpath must be exported'
+    );
     assert.ok(files.has('dist/orb.js'));
     assert.ok(files.has('dist/orb.min.js'));
     assert.ok(files.has('dist/orb.esm.js'));
@@ -74,6 +100,15 @@ test('package: exact tarball supports legacy entries and optional model subpaths
     assert.ok(![...files].some((filename) => filename.startsWith('.ai/')));
     assert.ok(![...files].some((filename) => filename.startsWith('tools/')));
     assert.ok(![...files].some((filename) => filename.startsWith('src/data/')));
+    assert.ok(![...files].some((filename) => filename.startsWith('old/')));
+    assert.ok(![...files].some((filename) => filename.startsWith('.github/')));
+    assert.ok(![...files].some((filename) => filename.endsWith('.DS_Store')));
+    for (const subpath of STRUCTURED_SUBPATHS) {
+      assert.ok(
+        files.has(metadata.exports[subpath].import.replace(/^\.\//, '')),
+        subpath + ' target must be present in the tarball'
+      );
+    }
 
     const consumer = path.join(temporary, 'consumer');
     fs.mkdirSync(consumer);
@@ -89,6 +124,14 @@ test('package: exact tarball supports legacy entries and optional model subpaths
 
     assert.strictEqual(
       runNode(consumer, ['-e', `const Orb=require('${PACKAGE_NAME}'); console.log(typeof Orb.Time)`]),
+      'function'
+    );
+    assert.strictEqual(
+      runNode(consumer, ['-e', `const metadata=require('${PACKAGE_NAME}/package.json'); console.log(metadata.name)`]),
+      PACKAGE_NAME
+    );
+    assert.strictEqual(
+      runNode(consumer, ['-e', `const Orb=require('${PACKAGE_NAME}/dist/orb.min.js'); console.log(typeof Orb.Time)`]),
       'function'
     );
     assert.strictEqual(
@@ -110,6 +153,22 @@ test('package: exact tarball supports legacy entries and optional model subpaths
         `import { SATURN_FULL_COEF } from '${PACKAGE_NAME}/vsop87a/saturn'; console.log(Array.isArray(SATURN_FULL_COEF))`
       ]),
       'true'
+    );
+    assert.strictEqual(
+      runNode(consumer, [
+        '--input-type=module',
+        '-e',
+        `const bodies=${JSON.stringify(VSOP_BODIES)}; const modules=await Promise.all(bodies.map((body)=>import('${PACKAGE_NAME}/vsop87a/'+body+'.js'))); console.log(modules.every((module)=>Object.values(module).some(Array.isArray)))`
+      ]),
+      'true'
+    );
+    assert.strictEqual(
+      runNode(consumer, [
+        '--input-type=module',
+        '-e',
+        `import { Constant } from '${PACKAGE_NAME}/src/orb-core.js'; console.log(Constant.AU)`
+      ]),
+      '149597870.7'
     );
     assert.strictEqual(
       runNode(consumer, [
@@ -186,6 +245,7 @@ test('package: exact tarball supports legacy entries and optional model subpaths
 
     const umdPath = path.join(consumer, 'node_modules', '@lizard-isana', 'orb', 'dist', 'orb.min.js');
     const umdSource = fs.readFileSync(umdPath, 'utf8');
+    assert.ok(Buffer.byteLength(umdSource) < 750000, 'default minified bundle unexpectedly enlarged');
     const browserContext = {};
     assert.ok(!umdSource.includes('earthEpv00'));
     assert.ok(!umdSource.includes('erfa-epv00'));
