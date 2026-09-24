@@ -45,7 +45,8 @@ does not depend on newer Node syntax detection. The UMD/CommonJS entry remains
 - Promote the verified release to `latest` without rebuilding the artifact.
 - Preserve the v2 line with an explicit Git branch and Git tags rather than
   compatibility shims in v3.1.
-- Keep `v4-planning` experimental and do not publish it as `latest`.
+- Keep the former `v4-planning` work under `archive/v4-prototype` for
+  reference only, and never publish it as `latest`.
 - Moving the GitHub default branch to the v3.1 line is a separate repository
   administration step after the release is verified.
 

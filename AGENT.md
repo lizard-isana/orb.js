@@ -19,7 +19,8 @@ This repository is the general-purpose astronomical calculation library used by 
 - `v2` preserves the final v2 runtime from `v2.4.1`. Runtime code is frozen;
   documentation may point users to the pinned v2 release or the v3 migration
   guide. Any v2 code release requires a separate decision.
-- `v4-planning` remains experimental. Do not publish it as a stable release.
+- `archive/v4-prototype` preserves the abandoned `v4-planning` prototype for
+  reference only. It is not an active release line and must not be published.
 - Do not merge the v2 implementation wholesale into `v3` or `master`.
 
 See `.ai/decisions/2026-09-24-v2-v3-branch-roles.md` for the transition and

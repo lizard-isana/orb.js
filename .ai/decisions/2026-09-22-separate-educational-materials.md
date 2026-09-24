@@ -2,10 +2,11 @@
 
 ## Context
 
-The `v4-planning` branch experimented with treating the library source as a
-textbook. Source-region markers, synchronized guide excerpts, annotated-source
-generation, long-form teaching comments, and educational CI made the runtime
-repository and its implementation changes substantially more complicated.
+The branch then named `v4-planning`, now archived as `archive/v4-prototype`,
+experimented with treating the library source as a textbook. Source-region
+markers, synchronized guide excerpts, annotated-source generation, long-form
+teaching comments, and educational CI made the runtime repository and its
+implementation changes substantially more complicated.
 
 The library and educational materials also have different release cycles. A
 runtime refactor should not require broad teaching-document rewrites, and a
@@ -43,7 +44,7 @@ to discuss a specific implementation.
 ## Consequences
 
 - v3.1 does not port `tools/snippets.js`, `tools/annotate.js`, `docs/guide/`, or
-  the `//#region edu:*` convention from `v4-planning`.
+  the `//#region edu:*` convention from `archive/v4-prototype`.
 - Engineering tools such as the VSOP compiler and benchmark remain in orb.js;
   they protect reproducibility and performance rather than teaching content.
 - Source comments stay technical and self-contained, but are not required to

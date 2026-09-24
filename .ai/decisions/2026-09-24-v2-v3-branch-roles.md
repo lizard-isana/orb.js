@@ -55,7 +55,8 @@ or changes that are not part of the verified v3.1.1 artifact.
 
 ### Other long-lived lines
 
-- Keep `v4-planning` experimental and separate from published release lines.
+- Preserve the abandoned `v4-planning` prototype under
+  `archive/v4-prototype` for reference only. It is not an active release line.
 - Keep historical release tags immutable.
 - Remove merged or obsolete topic branches only after v3.1.1 is published and
   `master`, `v3`, and `v2` are verified on the remote.
