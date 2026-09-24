@@ -98,6 +98,27 @@ age boundary error:
   metadata, and legacy versus structured lunar age are tested as composed
   operations rather than isolated functions only.
 
+## Fourth audit decisions
+
+A fourth independent audit of `6b19298` confirmed the third-audit corrections
+and identified three older composition and numerical-boundary gaps:
+
+- Heliocentric ecliptic translation recognizes explicit `au` and `km` position
+  units. The Earth vector, which is produced in au, is scaled to the target
+  unit before subtraction. Missing legacy unit metadata retains the historical
+  au assumption, while an explicit unsupported unit fails clearly.
+- `Orb.Cartesian` clamps the cosine passed to `Math.acos()` to `[-1, 1]`.
+  This treats floating-point overshoot at the exact periapsis or apoapsis as a
+  numerical boundary, without changing the documented circular/equatorial
+  singular-angle convention.
+- Legacy `Observation` sends both direct rectangular targets and values
+  returned by `xyz(date)` through the same validation, unit handling, and
+  ecliptic-to-equatorial conversion path. Wrapping an otherwise identical
+  target no longer changes whether it can be observed.
+- Regression coverage composes au/km conversion with observation, exercises
+  non-singular periapsis and apoapsis element/state round trips, and compares
+  direct versus function-returned lunar coordinates.
+
 ## Evidence and references
 
 - Transit follows the U.S. Naval Observatory definition of the body's center
@@ -147,3 +168,19 @@ result; all 365 UTC-midnight samples in 2026 remain in `[0, 30)`. The updated
 classic-preflight/UMD smoke also passed in a real Chrome engine while composing
 the coordinate round trip, planet observation paths, and legacy lunar age; the
 page emitted no warning or error logs.
+
+## Validation after the fourth audit
+
+The reported Venus au/km path now agrees to approximately `2.24e-8 km` in
+position. Its legacy observation agrees exactly in azimuth and range and to
+approximately `1.78e-15` degree in elevation. The reported non-singular
+periapsis state produces finite elements and round-trips with approximately
+`3.55e-16 au` position residual; the corresponding apoapsis boundary is also
+covered. Direct lunar rectangular coordinates and the same coordinates
+returned by `xyz(date)` produce identical observation results.
+
+The focused regressions, full suite, Rollup build, deterministic VSOP check,
+exact-tarball documentation and consumer tests, and diff checks pass locally.
+The expanded classic-preflight/UMD smoke also passed in a real Chrome engine,
+including the au/km observation path, lunar `xyz(date)` wrapper, and Cartesian
+periapsis boundary. The page emitted no warning or error logs.

@@ -14736,6 +14736,18 @@
     return Obliquity(referenceDate);
   };
 
+  const heliocentricDistanceUnit = (ecliptic) => {
+    const keywords = ecliptic.unit_keywords;
+    if (keywords == undefined || keywords === '') return 'au';
+    if (typeof keywords === 'string') {
+      if (/km/i.test(keywords)) return 'km';
+      if (/au/i.test(keywords)) return 'au';
+    }
+    throw new RangeError(
+      `EclipticToEquatorial: unsupported heliocentric unit_keywords '${keywords}'`
+    );
+  };
+
   const geocentricEcliptic = (parameter) => {
     const date = parameter.date;
     const ecliptic = parameter.ecliptic;
@@ -14759,10 +14771,11 @@
     }
     const earth = new Earth();
     const ep = earth.xyz(date);
+    const earthScale = heliocentricDistanceUnit(ecliptic) === 'km' ? Const.AU : 1;
     return {
-      x: ecliptic.x - ep.x,
-      y: ecliptic.y - ep.y,
-      z: ecliptic.z - ep.z,
+      x: ecliptic.x - ep.x * earthScale,
+      y: ecliptic.y - ep.y * earthScale,
+      z: ecliptic.z - ep.z * earthScale,
       date: date,
       coordinate_keywords: "ecliptic rectangular",
       center_keywords: "earth",
@@ -16236,6 +16249,10 @@
         return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]
       }
 
+      function clampUnit(value) {
+        return Math.max(-1, Math.min(1, value))
+      }
+
       var radius = normalize(vector);
       var velocity = normalize(vectordot);
 
@@ -16255,7 +16272,9 @@
         //var p = semi_major_axis * (1 - eccentricity*eccentricity)
         var true_anomaly = Math.atan2(Math.sqrt(p / gm) * dotrv, p - radius);
       } else {
-        var true_anomaly = Math.acos((semi_major_axis * (1 - eccentricity * eccentricity) - radius) / (eccentricity * radius));
+        var true_anomaly = Math.acos(clampUnit(
+          (semi_major_axis * (1 - eccentricity * eccentricity) - radius) / (eccentricity * radius)
+        ));
       }
       var argument_of_latitude = Math.atan2(vector[2] / Math.sin(inclination), vector[0] * Math.cos(omega) + vector[1] * Math.sin(omega));
       var argument_of_periapsis = argument_of_latitude - true_anomaly;
@@ -18369,7 +18388,7 @@
         );
       }
       const time = new Time(date);
-      let target_date,rect,horizontal,radec,distance_unit;
+      let horizontal,radec,distance_unit;
 
       // When the target's distance and its unit are known, go through the
       // rectangular path so the observer's geocentric position is subtracted:
@@ -18397,6 +18416,17 @@
         const unit = distanceUnit(radec_obj);
         return unit == undefined ? '' : ' ' + unit;
       };
+      const HorizontalFromRect = (rect_obj) => {
+        rectangularCoordinates(rect_obj);
+        const kind = coordinateKind(rect_obj);
+        distanceUnit(rect_obj, true);
+        let converted = rect_obj;
+        if(kind === 'ecliptic'){
+          const targetDate = rect_obj.date != undefined ? rect_obj.date : date;
+          converted = EclipticToEquatorial({ date: targetDate, ecliptic: rect_obj });
+        }
+        return this.RectToHorizontal(time, converted);
+      };
 
       const hasRa = target.ra != undefined;
       const hasDec = target.dec != undefined;
@@ -18406,28 +18436,15 @@
         horizontal = HorizontalFromRadec(target);
         distance_unit = DistanceUnitFromRadec(horizontal, target);
       }else if(hasAllXyz){
-        rectangularCoordinates(target);
-        const kind = coordinateKind(target);
-        distanceUnit(target, true);
-        if(kind === 'ecliptic'){
-          if(target.date != undefined ){
-            target_date = target.date;
-          }else {
-            target_date = date;
-          }
-          rect = EclipticToEquatorial({"date":target_date,"ecliptic":target});
-        }else {
-          rect = target;
-        }
-        horizontal = this.RectToHorizontal(time,rect);
+        horizontal = HorizontalFromRect(target);
         distance_unit = ' ' + distanceUnit(horizontal, true);
       }else if(typeof target.radec === 'function'){
         radec = target.radec(date);
         horizontal = HorizontalFromRadec(radec);
         distance_unit = DistanceUnitFromRadec(horizontal, radec);
       }else if(typeof target.xyz === 'function'){
-        rect = target.xyz(date);
-        horizontal = this.RectToHorizontal(time,rect);
+        const rect = target.xyz(date);
+        horizontal = HorizontalFromRect(rect);
         distance_unit = ' ' + distanceUnit(horizontal, true);
       }else if(hasRa || hasDec){
         throw new TypeError('Observation: radec target must contain both ra and dec');

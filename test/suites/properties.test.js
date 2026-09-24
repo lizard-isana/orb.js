@@ -122,6 +122,35 @@ test('property: compatible ecliptic/equatorial round trips preserve the coordina
   assert.strictEqual(planeRotation.center_keywords, 'earth');
 });
 
+test('property: heliocentric ecliptic conversion is invariant between au and km', () => {
+  const date = new Date('2026-07-18T12:00:00Z');
+  const au = new Orb.Venus().xyz(date);
+  const km = {
+    ...au,
+    x: au.x * Orb.Constant.AU,
+    y: au.y * Orb.Constant.AU,
+    z: au.z * Orb.Constant.AU,
+    unit_keywords: 'km'
+  };
+  const equatorialAu = Orb.EclipticToEquatorial({ date, ecliptic: au });
+  const equatorialKm = Orb.EclipticToEquatorial({ date, ecliptic: km });
+  const residualKm = Math.hypot(
+    equatorialAu.x * Orb.Constant.AU - equatorialKm.x,
+    equatorialAu.y * Orb.Constant.AU - equatorialKm.y,
+    equatorialAu.z * Orb.Constant.AU - equatorialKm.z
+  );
+  assert.ok(residualKm < 1e-6, `position residual=${residualKm} km`);
+  assert.strictEqual(equatorialAu.unit_keywords, 'au');
+  assert.strictEqual(equatorialKm.unit_keywords, 'km');
+  assert.throws(
+    () => Orb.EclipticToEquatorial({
+      date,
+      ecliptic: { ...au, unit_keywords: 'm' }
+    }),
+    /unsupported heliocentric unit_keywords 'm'/
+  );
+});
+
 test('property: spherical and plane conversion chains preserve origin and unit metadata', () => {
   const date = new Date('2026-07-18T12:00:00Z');
   const moon = new Orb.Luna().xyz(date);

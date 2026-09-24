@@ -80,6 +80,43 @@ test('Kepler and Cartesian preserve an elliptical state on round trip', () => {
   assert.ok(residual < 1e-10, 'position residual=' + residual + ' au');
 });
 
+test('Cartesian keeps non-singular periapsis and apoapsis states finite', () => {
+  const periapsisDate = new Date(Date.UTC(2026, 6, 18, 12));
+  const epoch = new Orb.Time(periapsisDate).jd();
+  const semiMajorAxis = 5;
+  const periodDays = 2 * Math.PI * Math.sqrt(
+    semiMajorAxis ** 3 / Orb.Constant.GM
+  );
+  const orbit = new Orb.Kepler({
+    eccentricity: 0.9,
+    periapsis_distance: 0.5,
+    inclination: 70,
+    longitude_of_ascending_node: 40,
+    argument_of_periapsis: 30,
+    time_of_periapsis: epoch
+  });
+
+  for (const [name, date, expectedAnomaly] of [
+    ['periapsis', periapsisDate, 0],
+    ['apoapsis', new Date(periapsisDate.getTime() + periodDays * 86400000 / 2), 180]
+  ]) {
+    const original = orbit.xyz(date);
+    const elements = new Orb.Cartesian({
+      ...original,
+      epoch: new Orb.Time(date).jd()
+    });
+    assert.ok(Object.values(elements).filter((value) => typeof value === 'number').every(Number.isFinite));
+    assert.ok(Math.abs(elements.true_anomaly - expectedAnomaly) < 1e-8, `${name} anomaly`);
+    const restored = new Orb.Kepler(elements).xyz(date);
+    const residual = Math.hypot(
+      restored.x - original.x,
+      restored.y - original.y,
+      restored.z - original.z
+    );
+    assert.ok(residual < 1e-10, `${name} residual=${residual} au`);
+  }
+});
+
 test('Constant GM values are close to JPL', () => {
   for (const [key, value] of Object.entries(JPL_GM.expected)) {
     assert.ok(

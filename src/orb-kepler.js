@@ -164,6 +164,10 @@ export class Cartesian {
       return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]
     }
 
+    function clampUnit(value) {
+      return Math.max(-1, Math.min(1, value))
+    }
+
     var radius = normalize(vector)
     var velocity = normalize(vectordot)
 
@@ -183,7 +187,9 @@ export class Cartesian {
       //var p = semi_major_axis * (1 - eccentricity*eccentricity)
       var true_anomaly = Math.atan2(Math.sqrt(p / gm) * dotrv, p - radius)
     } else {
-      var true_anomaly = Math.acos((semi_major_axis * (1 - eccentricity * eccentricity) - radius) / (eccentricity * radius))
+      var true_anomaly = Math.acos(clampUnit(
+        (semi_major_axis * (1 - eccentricity * eccentricity) - radius) / (eccentricity * radius)
+      ))
     }
     var argument_of_latitude = Math.atan2(vector[2] / Math.sin(inclination), vector[0] * Math.cos(omega) + vector[1] * Math.sin(omega))
     var argument_of_periapsis = argument_of_latitude - true_anomaly;

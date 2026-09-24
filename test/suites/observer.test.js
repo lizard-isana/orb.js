@@ -168,6 +168,19 @@ test('Observation.azel preserves parallax across planet coordinate APIs', () => 
     assert.ok(Math.abs(result.elevation - results[0].elevation) < 1e-12);
     assert.ok(Math.abs(result.distance - results[0].distance) < 1e-6);
   }
+
+  const heliocentricAu = venus.xyz(date);
+  const heliocentricKm = {
+    ...heliocentricAu,
+    x: heliocentricAu.x * Orb.Constant.AU,
+    y: heliocentricAu.y * Orb.Constant.AU,
+    z: heliocentricAu.z * Orb.Constant.AU,
+    unit_keywords: 'km'
+  };
+  const unitResults = [observe(heliocentricAu), observe(heliocentricKm)];
+  assert.ok(Math.abs(unitResults[0].azimuth - unitResults[1].azimuth) < 1e-12);
+  assert.ok(Math.abs(unitResults[0].elevation - unitResults[1].elevation) < 1e-12);
+  assert.ok(Math.abs(unitResults[0].distance - unitResults[1].distance) < 1e-6);
 });
 
 test('Observation.azel applies diurnal parallax for the Moon', () => {
@@ -176,8 +189,15 @@ test('Observation.azel applies diurnal parallax for the Moon', () => {
   // instance (radec) path and xyz path must agree now that both are topocentric
   const m1 = new Orb.Observation({ observer, target: luna }).azel(date);
   const m2 = new Orb.Observation({ observer, target: luna.xyz(date) }).azel(date);
+  const m3 = new Orb.Observation({
+    observer,
+    target: { xyz: (targetDate) => luna.xyz(targetDate) }
+  }).azel(date);
   assert.ok(Math.abs(m1.elevation - m2.elevation) < 0.01, m1.elevation + ' vs ' + m2.elevation);
   assert.ok(Math.abs(m1.azimuth - m2.azimuth) < 0.01, m1.azimuth + ' vs ' + m2.azimuth);
+  assert.ok(Math.abs(m2.elevation - m3.elevation) < 1e-12, m2.elevation + ' vs ' + m3.elevation);
+  assert.ok(Math.abs(m2.azimuth - m3.azimuth) < 1e-12, m2.azimuth + ' vs ' + m3.azimuth);
+  assert.ok(Math.abs(m2.distance - m3.distance) < 1e-9, m2.distance + ' vs ' + m3.distance);
   // the shift from the geocentric elevation must match parallax * cos(elevation)
   const radec = luna.radec(date);
   const geo = new Orb.Observation({ observer, target: { ra: radec.ra, dec: radec.dec } }).azel(date);

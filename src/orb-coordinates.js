@@ -35,6 +35,18 @@ const resolveObliquityForEpoch = ({ date = null, epoch = 'of_date' } = {}) => {
   return Obliquity(referenceDate);
 }
 
+const heliocentricDistanceUnit = (ecliptic) => {
+  const keywords = ecliptic.unit_keywords;
+  if (keywords == undefined || keywords === '') return 'au';
+  if (typeof keywords === 'string') {
+    if (/km/i.test(keywords)) return 'km';
+    if (/au/i.test(keywords)) return 'au';
+  }
+  throw new RangeError(
+    `EclipticToEquatorial: unsupported heliocentric unit_keywords '${keywords}'`
+  );
+}
+
 const geocentricEcliptic = (parameter) => {
   const date = parameter.date;
   const ecliptic = parameter.ecliptic;
@@ -58,10 +70,11 @@ const geocentricEcliptic = (parameter) => {
   }
   const earth = new Earth();
   const ep = earth.xyz(date);
+  const earthScale = heliocentricDistanceUnit(ecliptic) === 'km' ? Const.AU : 1;
   return {
-    x: ecliptic.x - ep.x,
-    y: ecliptic.y - ep.y,
-    z: ecliptic.z - ep.z,
+    x: ecliptic.x - ep.x * earthScale,
+    y: ecliptic.y - ep.y * earthScale,
+    z: ecliptic.z - ep.z * earthScale,
     date: date,
     coordinate_keywords: "ecliptic rectangular",
     center_keywords: "earth",

@@ -200,7 +200,7 @@ export class Observation {
       );
     }
     const time = new Time(date)
-    let target_date,rect,horizontal,radec,distance_unit
+    let horizontal,radec,distance_unit
 
     // When the target's distance and its unit are known, go through the
     // rectangular path so the observer's geocentric position is subtracted:
@@ -228,6 +228,17 @@ export class Observation {
       const unit = distanceUnit(radec_obj);
       return unit == undefined ? '' : ' ' + unit;
     }
+    const HorizontalFromRect = (rect_obj) => {
+      rectangularCoordinates(rect_obj);
+      const kind = coordinateKind(rect_obj);
+      distanceUnit(rect_obj, true);
+      let converted = rect_obj;
+      if(kind === 'ecliptic'){
+        const targetDate = rect_obj.date != undefined ? rect_obj.date : date;
+        converted = EclipticToEquatorial({ date: targetDate, ecliptic: rect_obj });
+      }
+      return this.RectToHorizontal(time, converted);
+    }
 
     const hasRa = target.ra != undefined;
     const hasDec = target.dec != undefined;
@@ -237,28 +248,15 @@ export class Observation {
       horizontal = HorizontalFromRadec(target)
       distance_unit = DistanceUnitFromRadec(horizontal, target)
     }else if(hasAllXyz){
-      rectangularCoordinates(target);
-      const kind = coordinateKind(target);
-      distanceUnit(target, true);
-      if(kind === 'ecliptic'){
-        if(target.date != undefined ){
-          target_date = target.date;
-        }else{
-          target_date = date;
-        }
-        rect = EclipticToEquatorial({"date":target_date,"ecliptic":target})
-      }else{
-        rect = target
-      }
-      horizontal = this.RectToHorizontal(time,rect)
+      horizontal = HorizontalFromRect(target)
       distance_unit = ' ' + distanceUnit(horizontal, true)
     }else if(typeof target.radec === 'function'){
       radec = target.radec(date)
       horizontal = HorizontalFromRadec(radec)
       distance_unit = DistanceUnitFromRadec(horizontal, radec)
     }else if(typeof target.xyz === 'function'){
-      rect = target.xyz(date);
-      horizontal = this.RectToHorizontal(time,rect)
+      const rect = target.xyz(date);
+      horizontal = HorizontalFromRect(rect)
       distance_unit = ' ' + distanceUnit(horizontal, true)
     }else if(hasRa || hasDec){
       throw new TypeError('Observation: radec target must contain both ra and dec');
