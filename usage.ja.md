@@ -118,8 +118,8 @@ mars.xyz(date);   // 太陽中心・黄道 J2000、au
 
 `Luna.latlng(date)` は当日分点の黄経・黄緯を度で、距離を km で返します。
 `Luna.xyz(date)` は当日分点の地心黄道直交座標を km で返します。
-`Luna.parallax(date)` は地平視差を度で、`Luna.phase(date)` は計算上の新月からの
-経過日数を返します。
+`Luna.parallax(date)` は地平視差を度で、`Luna.phase(date)` は指定時刻以前で
+直近となる計算上の新月からの経過日数を返します。
 
 ### 互換 Kepler 軌道
 

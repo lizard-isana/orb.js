@@ -122,7 +122,8 @@ for the separately loaded full coefficients.
 `Luna.latlng(date)` returns ecliptic longitude and latitude of date in degrees
 and distance in km. `Luna.xyz(date)` returns geocentric ecliptic rectangular
 coordinates of date in km. `Luna.parallax(date)` returns horizontal parallax
-in degrees, and `Luna.phase(date)` returns days since the computed new moon.
+in degrees, and `Luna.phase(date)` returns days since the most recent computed
+new moon at or before the requested time.
 
 ### Compatible Kepler orbits
 

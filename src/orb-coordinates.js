@@ -196,14 +196,14 @@ export const RadecToXYZ = (parameter) => {
       unit_keywords = "au"
     }
   }
-  return {
+  return copyCenterMetadata({
     'x': xyz.x,
     'y': xyz.y,
     'z': xyz.z,
     'date': date,
     "coordinate_keywords": "equatorial rectangular",
     "unit_keywords": unit_keywords
-  }
+  }, parameter)
 }
 
 export const XYZtoRadec = function (parameter) {
@@ -246,7 +246,7 @@ export const XYZtoRadec = function (parameter) {
       distance_unit = " au"
     }
   }
-  return {
+  return copyCenterMetadata({
     "ra": ra,
     "dec": dec,
     "distance": distance,
@@ -254,7 +254,7 @@ export const XYZtoRadec = function (parameter) {
     "coordinate_keywords": "equatorial spherical",
     "center_keywords": rect.center_keywords != undefined ? rect.center_keywords : "",
     "unit_keywords": "hours degree" + distance_unit
-  };
+  }, rect);
 }
 
 export const XYZtoRadecOfDate = function (parameter) {
@@ -266,9 +266,7 @@ export const XYZtoRadecOfDate = function (parameter) {
 
   const spherical = XYZtoRadec(parameter);
   return Precession({
-    ra: spherical.ra,
-    dec: spherical.dec,
-    distance: spherical.distance,
+    ...spherical,
     from: J2000Epoch,
     to: date
   });
@@ -328,7 +326,7 @@ export const EclipticToEquatorialJ2000 = function (parameter) {
     'date': date,
     "coordinate_keywords": "equatorial rectangular",
     "center_keywords": ecliptic.center_keywords || "earth",
-    "unit_keywords": ""
+    "unit_keywords": ecliptic.unit_keywords != undefined ? ecliptic.unit_keywords : ""
   }, ecliptic)
 }
 
@@ -344,6 +342,6 @@ export const EclipticToEquatorialOfDate = function (parameter) {
     'date': date,
     "coordinate_keywords": "equatorial rectangular",
     "center_keywords": ecliptic.center_keywords || "earth",
-    "unit_keywords": ""
+    "unit_keywords": ecliptic.unit_keywords != undefined ? ecliptic.unit_keywords : ""
   }, ecliptic)
 }

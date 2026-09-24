@@ -14626,6 +14626,20 @@ const julianCentury = (date) => {
   return (time.jd() - 2451545.0) / 36525;
 };
 
+const copyCenterMetadata$1 = (target, source = {}) => {
+  for (const key of ['center', 'center_keywords', 'origin']) {
+    if (source[key] != undefined) target[key] = source[key];
+  }
+  return target;
+};
+
+const sphericalUnitKeywords = (keywords) => {
+  if (typeof keywords !== 'string') return 'hours degree';
+  if (/km/i.test(keywords)) return 'hours degree km';
+  if (/au/i.test(keywords)) return 'hours degree au';
+  return 'hours degree';
+};
+
 const Precession = (parameter) => {
   const from = parameter.from || J2000;
   const to = parameter.to || parameter.date;
@@ -14672,14 +14686,14 @@ const Precession = (parameter) => {
     precessedRa = precessedRa % 360;
   }
 
-  return {
+  return copyCenterMetadata$1({
     ra: precessedRa / 15,
     dec: Math.asin(C) / rad,
     distance: parameter.distance,
     date: to,
     coordinate_keywords: "equatorial spherical",
-    unit_keywords: "hours degree"
-  }
+    unit_keywords: sphericalUnitKeywords(parameter.unit_keywords)
+  }, parameter)
 };
 
 const J2000Epoch = J2000;
@@ -14877,14 +14891,14 @@ const RadecToXYZ = (parameter) => {
       unit_keywords = "au";
     }
   }
-  return {
+  return copyCenterMetadata({
     'x': xyz.x,
     'y': xyz.y,
     'z': xyz.z,
     'date': date,
     "coordinate_keywords": "equatorial rectangular",
     "unit_keywords": unit_keywords
-  }
+  }, parameter)
 };
 
 const XYZtoRadec = function (parameter) {
@@ -14927,7 +14941,7 @@ const XYZtoRadec = function (parameter) {
       distance_unit = " au";
     }
   }
-  return {
+  return copyCenterMetadata({
     "ra": ra,
     "dec": dec,
     "distance": distance,
@@ -14935,7 +14949,7 @@ const XYZtoRadec = function (parameter) {
     "coordinate_keywords": "equatorial spherical",
     "center_keywords": rect.center_keywords != undefined ? rect.center_keywords : "",
     "unit_keywords": "hours degree" + distance_unit
-  };
+  }, rect);
 };
 
 const XYZtoRadecOfDate = function (parameter) {
@@ -14947,9 +14961,7 @@ const XYZtoRadecOfDate = function (parameter) {
 
   const spherical = XYZtoRadec(parameter);
   return Precession({
-    ra: spherical.ra,
-    dec: spherical.dec,
-    distance: spherical.distance,
+    ...spherical,
     from: J2000Epoch,
     to: date
   });
@@ -15009,7 +15021,7 @@ const EclipticToEquatorialJ2000 = function (parameter) {
     'date': date,
     "coordinate_keywords": "equatorial rectangular",
     "center_keywords": ecliptic.center_keywords || "earth",
-    "unit_keywords": ""
+    "unit_keywords": ecliptic.unit_keywords != undefined ? ecliptic.unit_keywords : ""
   }, ecliptic)
 };
 
@@ -15025,7 +15037,7 @@ const EclipticToEquatorialOfDate = function (parameter) {
     'date': date,
     "coordinate_keywords": "equatorial rectangular",
     "center_keywords": ecliptic.center_keywords || "earth",
-    "unit_keywords": ""
+    "unit_keywords": ecliptic.unit_keywords != undefined ? ecliptic.unit_keywords : ""
   }, ecliptic)
 };
 
@@ -15222,6 +15234,85 @@ class Sun{
 //luna.js
 //require core.js, time.js, earth.js
 
+const newMoonJde = (k) => {
+  var rad = Constant.RAD;
+  var t = k / 1236.85;
+  var t2 = t * t;
+  var t3 = t * t * t;
+  var t4 = t * t * t * t;
+  var jde0 = 2451550.09766 + 29.530588861 * k + 0.00015437 * t2 - 0.000000150 * t3 + 0.00000000073 * t4;
+  var e = 1 - 0.002516 * t - 0.0000074 * t2;
+  e = RoundAngle(e);
+  //Sun's mean anomary at the time;
+  var m0 = 2.5534 + 29.10535670 * k - 0.0000014 * t2 - 0.00000011 * t3;
+  m0 = RoundAngle(m0);
+  //Moon's mean anomary at the time;
+  var m1 = 201.5643 + 385.81693528 * k + 0.0107582 * t2 + 0.00001238 * t3 - 0.000000011 * t4;
+  m1 = RoundAngle(m1);
+  //Moon's argument of latitude
+  var f = 160.7108 + 390.67050284 * k - 0.0016118 * t2 - 0.00000227 * t3 + 0.000000011 * t4;
+  f = RoundAngle(f);
+  //Longitude of the ascending node of lunar orbit
+  var omega = 124.7746 - 1.56375588 * k + 0.0020672 * t2 + 0.00000215 * t3;
+  omega = RoundAngle(omega);
+  var c1 = 0;
+  c1 = c1 - 0.40720 * Math.sin(m1 * rad);
+  c1 = c1 + 0.17241 * e * Math.sin(m0 * rad);
+  c1 = c1 + 0.01608 * Math.sin(2 * m1 * rad);
+  c1 = c1 + 0.01039 * Math.sin(2 * f * rad);
+  c1 = c1 + 0.00739 * e * Math.sin((m1 - m0) * rad);
+  c1 = c1 - 0.00514 * e * Math.sin((m1 + m0) * rad);
+  c1 = c1 + 0.00208 * e * e * Math.sin(2 * m0 * rad);
+  c1 = c1 - 0.00111 * Math.sin((m1 - 2 * f) * rad);
+  c1 = c1 - 0.00057 * Math.sin((m1 + 2 * f) * rad);
+  c1 = c1 + 0.00056 * e * Math.sin((2 * m1 + m0) * rad);
+  c1 = c1 - 0.00042 * Math.sin(3 * m1 * rad);
+  c1 = c1 + 0.00042 * e * Math.sin((m0 + 2 * f) * rad);
+  c1 = c1 + 0.00038 * e * Math.sin((m0 - 2 * f) * rad);
+  c1 = c1 - 0.00024 * e * Math.sin((2 * m1 - m0) * rad);
+  c1 = c1 - 0.00017 * Math.sin(omega * rad);
+  c1 = c1 - 0.00007 * Math.sin((m1 + 2 * m0) * rad);
+  c1 = c1 + 0.00004 * Math.sin((2 * m1 - 2 * f) * rad);
+  c1 = c1 + 0.00004 * Math.sin(3 * m0 * rad);
+  c1 = c1 + 0.00003 * Math.sin((m1 + m0 - 2 * f) * rad);
+  c1 = c1 + 0.00003 * Math.sin((2 * m1 + 2 * f) * rad);
+  c1 = c1 - 0.00003 * Math.sin((m1 + m0 + 2 * f) * rad);
+  c1 = c1 + 0.00003 * Math.sin((m1 - m0 + 2 * f) * rad);
+  c1 = c1 - 0.00002 * Math.sin((m1 - m0 - 2 * f) * rad);
+  c1 = c1 - 0.00002 * Math.sin((3 * m1 + m0) * rad);
+  c1 = c1 + 0.00002 * Math.sin(4 * m1 * rad);
+  var a1 = 299.77 + 0.107408 * k - 0.009173 * t2;
+  var a2 = 251.88 + 0.016321 * k;
+  var a3 = 251.83 + 26.651886 * k;
+  var a4 = 349.42 + 36.412478 * k;
+  var a5 = 84.66 + 18.206239 * k;
+  var a6 = 141.74 + 53.303771 * k;
+  var a7 = 207.14 + 2.453732 * k;
+  var a8 = 154.84 + 7.306860 * k;
+  var a9 = 34.52 + 27.261239 * k;
+  var a10 = 207.19 + 0.121824 * k;
+  var a11 = 291.34 + 1.844379 * k;
+  var a12 = 161.72 + 24.198154 * k;
+  var a13 = 239.56 + 25.513099 * k;
+  var a14 = 331.55 + 3.592518 * k;
+  var c2 = 0;
+  c2 = c2 + 0.000325 * Math.sin(a1 * rad);
+  c2 = c2 + 0.000165 * Math.sin(a2 * rad);
+  c2 = c2 + 0.000164 * Math.sin(a3 * rad);
+  c2 = c2 + 0.000126 * Math.sin(a4 * rad);
+  c2 = c2 + 0.000110 * Math.sin(a5 * rad);
+  c2 = c2 + 0.000062 * Math.sin(a6 * rad);
+  c2 = c2 + 0.000060 * Math.sin(a7 * rad);
+  c2 = c2 + 0.000056 * Math.sin(a8 * rad);
+  c2 = c2 + 0.000047 * Math.sin(a9 * rad);
+  c2 = c2 + 0.000042 * Math.sin(a10 * rad);
+  c2 = c2 + 0.000040 * Math.sin(a11 * rad);
+  c2 = c2 + 0.000037 * Math.sin(a12 * rad);
+  c2 = c2 + 0.000035 * Math.sin(a13 * rad);
+  c2 = c2 + 0.000023 * Math.sin(a14 * rad);
+  return jde0 + c1 + c2;
+};
+
 class Luna{
   constructor(){}
 
@@ -15398,91 +15489,20 @@ class Luna{
   }
 
   phase = (date) => {
-    var rad = Constant.RAD;
     var time = new Time(date);
-    var now = date;
     var jd = time.jd_tt();
-    var date_first = new Date(time.year, 0, 1, 0, 0, 0);
-    var date_last = new Date(time.year, 11, 31, 11, 59, 59, 999);
-    var since_new_year = (now - date_first) / (date_last - date_first);
-    var y = time.year + since_new_year;
-
-    var k = Math.floor((y - 2000) * 12.3685);
-    var t = k / 1236.85;
-    var t2 = t * t;
-    var t3 = t * t * t;
-    var t4 = t * t * t * t;
-    var jde0 = 2451550.09766 + 29.530588861 * k + 0.00015437 * t2 - 0.000000150 * t3 + 0.00000000073 * t4;
-    var e = 1 - 0.002516 * t - 0.0000074 * t2;
-    e = RoundAngle(e);
-    //Sun's mean anomary at the time;
-    var m0 = 2.5534 + 29.10535670 * k - 0.0000014 * t2 - 0.00000011 * t3;
-    m0 = RoundAngle(m0);
-    //Moon's mean anomary at the time;
-    var m1 = 201.5643 + 385.81693528 * k + 0.0107582 * t2 + 0.00001238 * t3 - 0.000000011 * t4;
-    m1 = RoundAngle(m1);
-    //Moon's argument of latitude
-    var f = 160.7108 + 390.67050284 * k - 0.0016118 * t2 - 0.00000227 * t3 + 0.000000011 * t4;
-    f = RoundAngle(f);
-    //Longitude of the ascending node of lunar orbit
-    var omega = 124.7746 - 1.56375588 * k + 0.0020672 * t2 + 0.00000215 * t3;
-    omega = RoundAngle(omega);
-    var c1 = 0;
-    c1 = c1 - 0.40720 * Math.sin(m1 * rad);
-    c1 = c1 + 0.17241 * e * Math.sin(m0 * rad);
-    c1 = c1 + 0.01608 * Math.sin(2 * m1 * rad);
-    c1 = c1 + 0.01039 * Math.sin(2 * f * rad);
-    c1 = c1 + 0.00739 * e * Math.sin((m1 - m0) * rad);
-    c1 = c1 - 0.00514 * e * Math.sin((m1 + m0) * rad);
-    c1 = c1 + 0.00208 * e * e * Math.sin(2 * m0 * rad);
-    c1 = c1 - 0.00111 * Math.sin((m1 - 2 * f) * rad);
-    c1 = c1 - 0.00057 * Math.sin((m1 + 2 * f) * rad);
-    c1 = c1 + 0.00056 * e * Math.sin((2 * m1 + m0) * rad);
-    c1 = c1 - 0.00042 * Math.sin(3 * m1 * rad);
-    c1 = c1 + 0.00042 * e * Math.sin((m0 + 2 * f) * rad);
-    c1 = c1 + 0.00038 * e * Math.sin((m0 - 2 * f) * rad);
-    c1 = c1 - 0.00024 * e * Math.sin((2 * m1 - m0) * rad);
-    c1 = c1 - 0.00017 * Math.sin(omega * rad);
-    c1 = c1 - 0.00007 * Math.sin((m1 + 2 * m0) * rad);
-    c1 = c1 + 0.00004 * Math.sin((2 * m1 - 2 * f) * rad);
-    c1 = c1 + 0.00004 * Math.sin(3 * m0 * rad);
-    c1 = c1 + 0.00003 * Math.sin((m1 + m0 - 2 * f) * rad);
-    c1 = c1 + 0.00003 * Math.sin((2 * m1 + 2 * f) * rad);
-    c1 = c1 - 0.00003 * Math.sin((m1 + m0 + 2 * f) * rad);
-    c1 = c1 + 0.00003 * Math.sin((m1 - m0 + 2 * f) * rad);
-    c1 = c1 - 0.00002 * Math.sin((m1 - m0 - 2 * f) * rad);
-    c1 = c1 - 0.00002 * Math.sin((3 * m1 + m0) * rad);
-    c1 = c1 + 0.00002 * Math.sin(4 * m1 * rad);
-    var a1 = 299.77 + 0.107408 * k - 0.009173 * t2;
-    var a2 = 251.88 + 0.016321 * k;
-    var a3 = 251.83 + 26.651886 * k;
-    var a4 = 349.42 + 36.412478 * k;
-    var a5 = 84.66 + 18.206239 * k;
-    var a6 = 141.74 + 53.303771 * k;
-    var a7 = 207.14 + 2.453732 * k;
-    var a8 = 154.84 + 7.306860 * k;
-    var a9 = 34.52 + 27.261239 * k;
-    var a10 = 207.19 + 0.121824 * k;
-    var a11 = 291.34 + 1.844379 * k;
-    var a12 = 161.72 + 24.198154 * k;
-    var a13 = 239.56 + 25.513099 * k;
-    var a14 = 331.55 + 3.592518 * k;
-    var c2 = 0;
-    c2 = c2 + 0.000325 * Math.sin(a1 * rad);
-    c2 = c2 + 0.000165 * Math.sin(a2 * rad);
-    c2 = c2 + 0.000164 * Math.sin(a3 * rad);
-    c2 = c2 + 0.000126 * Math.sin(a4 * rad);
-    c2 = c2 + 0.000110 * Math.sin(a5 * rad);
-    c2 = c2 + 0.000062 * Math.sin(a6 * rad);
-    c2 = c2 + 0.000060 * Math.sin(a7 * rad);
-    c2 = c2 + 0.000056 * Math.sin(a8 * rad);
-    c2 = c2 + 0.000047 * Math.sin(a9 * rad);
-    c2 = c2 + 0.000042 * Math.sin(a10 * rad);
-    c2 = c2 + 0.000040 * Math.sin(a11 * rad);
-    c2 = c2 + 0.000037 * Math.sin(a12 * rad);
-    c2 = c2 + 0.000035 * Math.sin(a13 * rad);
-    c2 = c2 + 0.000023 * Math.sin(a14 * rad);
-    var jde = jde0 + c1 + c2;
+    var k = Math.floor((jd - 2451550.09766) / 29.530588861);
+    var jde = newMoonJde(k);
+    while (jde > jd) {
+      k = k - 1;
+      jde = newMoonJde(k);
+    }
+    var next_jde = newMoonJde(k + 1);
+    while (next_jde <= jd) {
+      k = k + 1;
+      jde = next_jde;
+      next_jde = newMoonJde(k + 1);
+    }
     var phase_of_the_moon = jd - jde;
     return phase_of_the_moon;
   }

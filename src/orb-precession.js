@@ -7,6 +7,20 @@ const julianCentury = (date) => {
   return (time.jd() - 2451545.0) / 36525;
 }
 
+const copyCenterMetadata = (target, source = {}) => {
+  for (const key of ['center', 'center_keywords', 'origin']) {
+    if (source[key] != undefined) target[key] = source[key];
+  }
+  return target;
+}
+
+const sphericalUnitKeywords = (keywords) => {
+  if (typeof keywords !== 'string') return 'hours degree';
+  if (/km/i.test(keywords)) return 'hours degree km';
+  if (/au/i.test(keywords)) return 'hours degree au';
+  return 'hours degree';
+}
+
 export const Precession = (parameter) => {
   const from = parameter.from || J2000;
   const to = parameter.to || parameter.date;
@@ -53,14 +67,14 @@ export const Precession = (parameter) => {
     precessedRa = precessedRa % 360;
   }
 
-  return {
+  return copyCenterMetadata({
     ra: precessedRa / 15,
     dec: Math.asin(C) / rad,
     distance: parameter.distance,
     date: to,
     coordinate_keywords: "equatorial spherical",
-    unit_keywords: "hours degree"
-  }
+    unit_keywords: sphericalUnitKeywords(parameter.unit_keywords)
+  }, parameter)
 }
 
 export const J2000Epoch = J2000;

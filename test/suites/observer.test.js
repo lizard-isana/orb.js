@@ -145,6 +145,31 @@ test('Observation.azel agrees between instance and xyz targets', () => {
   assert.ok(Math.abs(a2.distance / a1.distance - 1) < 1e-4, 'distances must agree');
 });
 
+test('Observation.azel preserves parallax across planet coordinate APIs', () => {
+  const date = new Date(Date.UTC(2026, 6, 18, 12, 0, 0));
+  const venus = new Orb.Venus();
+  const compatible = venus.radec(date);
+  const ofDate = venus.radecOfDate(date);
+  const rectangular = Orb.EclipticToEquatorialOfDate({
+    date,
+    ecliptic: venus.xyz(date)
+  });
+
+  assert.match(compatible.unit_keywords, /au/);
+  assert.match(ofDate.unit_keywords, /au/);
+  assert.match(rectangular.unit_keywords, /au/);
+  assert.strictEqual(ofDate.center_keywords, 'earth');
+  assert.strictEqual(rectangular.center_keywords, 'earth');
+
+  const observe = (target) => new Orb.Observation({ observer, target }).azel(date);
+  const results = [observe(compatible), observe(ofDate), observe(rectangular)];
+  for (const result of results.slice(1)) {
+    assert.ok(Math.abs(result.azimuth - results[0].azimuth) < 1e-12);
+    assert.ok(Math.abs(result.elevation - results[0].elevation) < 1e-12);
+    assert.ok(Math.abs(result.distance - results[0].distance) < 1e-6);
+  }
+});
+
 test('Observation.azel applies diurnal parallax for the Moon', () => {
   const date = new Date(Date.UTC(2026, 6, 18, 12, 0, 0));
   const luna = new Orb.Luna();

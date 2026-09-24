@@ -16,11 +16,51 @@
   var script = document.createElement('script');
   script.src = '../dist/orb.js';
   script.onload = function () {
-    var moon = new Orb.Luna().radec(new Date('2026-07-18T00:00:00Z'));
+    var date = new Date('2026-07-18T12:00:00Z');
+    var luna = new Orb.Luna();
+    var moon = luna.radec(date);
     var rootReport = Orb.checkCompatibility();
-    var passed = rootReport.supported && Number.isFinite(moon.ra);
+    var moonKm = luna.xyz(date);
+    var moonAu = {
+      x: moonKm.x / Orb.Constant.AU,
+      y: moonKm.y / Orb.Constant.AU,
+      z: moonKm.z / Orb.Constant.AU,
+      date: date,
+      coordinate_keywords: moonKm.coordinate_keywords,
+      center_keywords: moonKm.center_keywords,
+      unit_keywords: 'au'
+    };
+    var spherical = Orb.XYZtoRadec(moonAu);
+    var equatorial = Orb.RadecToXYZ(spherical);
+    var ecliptic = Orb.EquatorialToEcliptic({ date: date, equatorial: equatorial });
+    var roundTrip = Orb.EclipticToEquatorial({ date: date, ecliptic: ecliptic });
+    var sourceDistance = Math.hypot(moonAu.x, moonAu.y, moonAu.z);
+    var roundTripDistance = Math.hypot(roundTrip.x, roundTrip.y, roundTrip.z);
+    var coordinateChainPassed = roundTrip.center_keywords === 'earth'
+      && roundTrip.unit_keywords === 'au'
+      && Math.abs(roundTripDistance - sourceDistance) < 1e-15;
+
+    var venus = new Orb.Venus();
+    var compatible = venus.radec(date);
+    var ofDate = venus.radecOfDate(date);
+    var site = { latitude: 35, longitude: 139, altitude: 0 };
+    var compatibleObservation = new Orb.Observation({ observer: site, target: compatible }).azel(date);
+    var ofDateObservation = new Orb.Observation({ observer: site, target: ofDate }).azel(date);
+    var observationChainPassed = /au/.test(ofDate.unit_keywords)
+      && Math.abs(compatibleObservation.elevation - ofDateObservation.elevation) < 1e-12;
+    var lunarAge = luna.phase(new Date('2026-07-14T00:00:00Z'));
+    var lunarAgePassed = lunarAge >= 0 && lunarAge < 30;
+
+    var passed = rootReport.supported
+      && Number.isFinite(moon.ra)
+      && coordinateChainPassed
+      && observationChainPassed
+      && lunarAgePassed;
     window.__orbCompatibilitySmoke.orbLoaded = true;
     window.__orbCompatibilitySmoke.passed = passed;
+    window.__orbCompatibilitySmoke.coordinateChainPassed = coordinateChainPassed;
+    window.__orbCompatibilitySmoke.observationChainPassed = observationChainPassed;
+    window.__orbCompatibilitySmoke.lunarAgePassed = lunarAgePassed;
     output.textContent = passed ? 'orb compatibility smoke: pass' : 'orb compatibility smoke: fail';
   };
   script.onerror = function () {

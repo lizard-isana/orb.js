@@ -122,6 +122,53 @@ test('property: compatible ecliptic/equatorial round trips preserve the coordina
   assert.strictEqual(planeRotation.center_keywords, 'earth');
 });
 
+test('property: spherical and plane conversion chains preserve origin and unit metadata', () => {
+  const date = new Date('2026-07-18T12:00:00Z');
+  const moon = new Orb.Luna().xyz(date);
+  const vector = {
+    ...moon,
+    x: moon.x / Orb.Constant.AU,
+    y: moon.y / Orb.Constant.AU,
+    z: moon.z / Orb.Constant.AU,
+    unit_keywords: 'au'
+  };
+  const distance = norm3(vector);
+
+  for (const metadata of [
+    { center: 'earth' },
+    { center_keywords: 'earth' },
+    { origin: 'geocentric' }
+  ]) {
+    const source = { ...vector, center_keywords: undefined, ...metadata };
+    const spherical = Orb.XYZtoRadec(source);
+    const equatorial = Orb.RadecToXYZ(spherical);
+    const ecliptic = Orb.EquatorialToEcliptic({ date, equatorial });
+    const roundTrip = Orb.EclipticToEquatorial({ date, ecliptic });
+
+    for (const converted of [spherical, equatorial, ecliptic, roundTrip]) {
+      for (const [key, value] of Object.entries(metadata)) {
+        assert.strictEqual(converted[key], value);
+      }
+    }
+    assert.strictEqual(spherical.unit_keywords, 'hours degree au');
+    assert.strictEqual(equatorial.unit_keywords, 'au');
+    assert.strictEqual(ecliptic.unit_keywords, 'au');
+    assert.strictEqual(roundTrip.unit_keywords, 'au');
+    assert.ok(Math.abs(norm3(roundTrip) - distance) < 1e-15);
+
+    for (const convert of [
+      Orb.EclipticToEquatorialJ2000,
+      Orb.EclipticToEquatorialOfDate
+    ]) {
+      const converted = convert({ date, ecliptic: source });
+      assert.strictEqual(converted.unit_keywords, 'au');
+      for (const [key, value] of Object.entries(metadata)) {
+        assert.strictEqual(converted[key], value);
+      }
+    }
+  }
+});
+
 test('property: J2000-to-date rotation preserves vector length', () => {
   const vectors = [
     { x: 1, y: 2, z: 3 },
@@ -170,6 +217,36 @@ test('property: precession round trip returns the original direction', () => {
       assert.ok(Math.abs(roundTrip.dec - source.dec) < 1e-12);
     }
   }
+});
+
+test('property: precession preserves distance-unit and origin metadata', () => {
+  const source = {
+    ra: 6.45,
+    dec: -16.72,
+    distance: 400000,
+    unit_keywords: 'degree hour km',
+    center: 'earth',
+    center_keywords: 'earth',
+    origin: 'geocentric'
+  };
+  const result = Orb.Precession({
+    ...source,
+    from: new Date('2000-01-01T12:00:00Z'),
+    to: new Date('2026-07-18T12:00:00Z')
+  });
+  assert.strictEqual(result.unit_keywords, 'hours degree km');
+  assert.strictEqual(result.center, source.center);
+  assert.strictEqual(result.center_keywords, source.center_keywords);
+  assert.strictEqual(result.origin, source.origin);
+
+  const fromRectangular = Orb.XYZtoRadecOfDate({
+    ...Orb.RadecToXYZ(source),
+    date: new Date('2026-07-18T12:00:00Z')
+  });
+  assert.strictEqual(fromRectangular.unit_keywords, 'hours degree km');
+  assert.strictEqual(fromRectangular.center, source.center);
+  assert.strictEqual(fromRectangular.center_keywords, source.center_keywords);
+  assert.strictEqual(fromRectangular.origin, source.origin);
 });
 
 test('property: Kepler energy and angular momentum are conserved for all conics', () => {

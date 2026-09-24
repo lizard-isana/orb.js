@@ -166,6 +166,22 @@ test('principal lunar phases agree with the independent USNO fixture', () => {
   assert.ok(age > 0.999 && age < 1.001, `age=${age}`);
 });
 
+test('legacy Luna.phase selects the preceding new moon and agrees with structured age', () => {
+  const legacyMoon = new Orb.Luna();
+  const date = new Date('2026-07-14T00:00:00Z');
+  const instant = AstroInstant.fromDate(date);
+  const legacyAge = legacyMoon.phase(date);
+  const structuredAge = lunarAge(moon, sunEpv00, instant);
+  assert.ok(legacyAge >= 0 && legacyAge < 30, `legacyAge=${legacyAge}`);
+  assert.ok(Math.abs(legacyAge - structuredAge) < 0.01, `${legacyAge} vs ${structuredAge}`);
+
+  for (let day = 0; day < 365; day += 1) {
+    const sample = new Date(Date.UTC(2026, 0, 1 + day));
+    const age = legacyMoon.phase(sample);
+    assert.ok(age >= 0 && age < 30, `${sample.toISOString()} age=${age}`);
+  }
+});
+
 test('fixed ISS/Tokyo passes retain ordering, thresholds, and the legacy fixture', () => {
   const passes = satellitePasses(
     tokyo,

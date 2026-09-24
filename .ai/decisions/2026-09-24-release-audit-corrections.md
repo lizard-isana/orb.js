@@ -74,6 +74,30 @@ boundary failures. They are handled under the same release-correction scope:
   duration methods, and the exact-tarball documentation test executes the same
   relationship.
 
+## Third audit decisions
+
+A third independent audit of `a7d3af5` confirmed the preceding corrections and
+found two remaining coordinate-metadata composition gaps plus an older lunar
+age boundary error:
+
+- Spherical/rectangular conversions preserve `center`, `center_keywords`, and
+  `origin` in both directions. Coordinate-plane conversions may therefore be
+  composed with `XYZtoRadec()` and `RadecToXYZ()` without turning an explicitly
+  geocentric vector back into an implicit heliocentric vector.
+- J2000/of-date ecliptic-to-equatorial conversions and `Precession()` preserve
+  the distance unit and origin metadata. `XYZtoRadecOfDate()` passes the full
+  spherical metadata into precession. Legacy `Observation` consequently uses
+  the same parallax path for equivalent `radec()`, `radecOfDate()`, and direct
+  rectangular planet coordinates.
+- `Luna.phase(date)` retains its existing new-moon formula but selects the
+  computed new moon whose JDE brackets the requested TT instant. It returns
+  elapsed days from the most recent computed new moon at or before the request,
+  never from a future new moon.
+- Regression coverage crosses API boundaries: spherical/rectangular/plane
+  round trips, planet coordinate conversion into observation, precession
+  metadata, and legacy versus structured lunar age are tested as composed
+  operations rather than isolated functions only.
+
 ## Evidence and references
 
 - Transit follows the U.S. Naval Observatory definition of the body's center
@@ -111,3 +135,15 @@ not authorized for this follow-up, so the earlier zero-vulnerability result is
 not represented as a newly fetched result. The real-browser smoke was also not
 repeated after these changes; the exact release candidate still needs its
 planned browser-engine validation before broader compatibility is claimed.
+
+## Validation after the third audit
+
+The reported Moon conversion chain now preserves both its `0.0025343646 au`
+range and geocentric label. Equivalent Venus coordinate APIs produce identical
+topocentric elevation to numerical precision, and direct of-date rectangular
+coordinates are accepted with their retained au unit. The reported legacy
+lunar-age case is `28.8790609` days, within `0.00038` day of the structured
+result; all 365 UTC-midnight samples in 2026 remain in `[0, 30)`. The updated
+classic-preflight/UMD smoke also passed in a real Chrome engine while composing
+the coordinate round trip, planet observation paths, and legacy lunar age; the
+page emitted no warning or error logs.
