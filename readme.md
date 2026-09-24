@@ -7,6 +7,14 @@ Keplerian propagation, SGP4/TLE and OMM satellites, observer coordinates, and
 event searches. orb.js has no runtime dependencies and provides CommonJS, ES
 module, and browser UMD builds.
 
+> **Using orb.js v2?** v3.1 keeps the familiar synchronous `Orb.*` call shapes,
+> but the package name, distribution files, browser baseline, and some
+> numerical semantics have changed. Read the
+> [v2 to v3.1 migration guide](migration-v2-to-v3.1.en.md) or
+> [日本語版](migration-v2-to-v3.1.ja.md) before upgrading. To remain on v2, pin
+> the immutable [`v2.4.1` tag](https://github.com/lizard-isana/orb.js/tree/v2.4.1)
+> and use the frozen [`v2` branch](https://github.com/lizard-isana/orb.js/tree/v2).
+
 ```sh
 npm install @lizard-isana/orb
 ```
@@ -15,8 +23,9 @@ npm install @lizard-isana/orb
 
 The package has two complementary API surfaces:
 
-- The package root preserves the synchronous `Orb.*` API used by orb.js v2 and
-  v3.0. It accepts JavaScript `Date` values and traditional astronomy units.
+- The package root preserves the main synchronous `Orb.*` call shapes used by
+  orb.js v2 and v3.0. It accepts JavaScript `Date` values and traditional
+  astronomy units.
 - ES-module subpaths provide explicit time scales, frames, centers, units,
   state vectors, observation options, and provenance metadata.
 

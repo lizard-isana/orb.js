@@ -4,6 +4,11 @@
 移行するアプリケーション向けです。それ以前の v2 には、ここに記載していない差が
 ある場合があります。
 
+移行を保留する場合は、不変の
+[`v2.4.1` タグ](https://github.com/lizard-isana/orb.js/tree/v2.4.1)に固定し、
+v2 の文書には凍結された [`v2` ブランチ](https://github.com/lizard-isana/orb.js/tree/v2)
+を使用してください。v2 の実装は通常の開発対象ではなくなりました。
+
 v3.1 は従来の同期的な `Orb.*` API を維持しながら、数値上・意味上の問題を修正して
 います。また、座標系・中心・単位・時刻系を明示する構造化 API を追加しています。
 アップグレードのために、最初から構造化 API へ全面的に書き換える必要はありません。
@@ -39,11 +44,11 @@ import * as Orb from '@lizard-isana/orb';
 ブラウザでは完全版 UMD ビルドを読み込みます。従来どおり `window.Orb` が定義されます。
 
 ```html
-<!-- v2 -->
-<script src="orb.v2.js"></script>
+<!-- v2.4.1（凍結版） -->
+<script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@v2.4.1/build/orb.v2.js"></script>
 
 <!-- v3.1 -->
-<script src="orb.js"></script>
+<script src="https://unpkg.com/@lizard-isana/orb@3.1.1/dist/orb.js"></script>
 ```
 
 公開ファイルは `dist/orb.js` です。CDN URL にはパッケージ名、バージョン、

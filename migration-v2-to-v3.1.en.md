@@ -4,6 +4,11 @@ This guide is for applications moving from the latest v2 release, `v2.4.1`,
 to `@lizard-isana/orb` v3.1. Earlier v2 releases may have additional
 differences.
 
+Applications that postpone migration should pin the immutable
+[`v2.4.1` tag](https://github.com/lizard-isana/orb.js/tree/v2.4.1) and use the
+frozen [`v2` branch](https://github.com/lizard-isana/orb.js/tree/v2) for v2
+documentation. The v2 runtime is no longer under routine development.
+
 v3.1 deliberately keeps the familiar synchronous `Orb.*` API while correcting
 several numerical and semantic problems. It also adds an optional structured
 API with explicit frames, centers, units, and time scales. You do not need to
@@ -42,11 +47,11 @@ import * as Orb from '@lizard-isana/orb';
 For a browser, use the complete UMD build. It still creates `window.Orb`:
 
 ```html
-<!-- v2 -->
-<script src="orb.v2.js"></script>
+<!-- v2.4.1, frozen -->
+<script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@v2.4.1/build/orb.v2.js"></script>
 
 <!-- v3.1 -->
-<script src="orb.js"></script>
+<script src="https://unpkg.com/@lizard-isana/orb@3.1.1/dist/orb.js"></script>
 ```
 
 The published file is `dist/orb.js`. A CDN URL should therefore include the
