@@ -29,6 +29,41 @@ import { createObserver } from '@lizard-isana/orb/observer';
 <script src="https://unpkg.com/@lizard-isana/orb@3.1.1/dist/orb.js"></script>
 ```
 
+本体を読む前に未対応環境を通知したい場合は、クラシックスクリプトの事前チェックを
+先に読み、成功した場合だけ orb.js を追加します。
+
+```html
+<div id="orb-status"></div>
+<script src="https://unpkg.com/@lizard-isana/orb@3.1.1/dist/orb-compat.min.js"></script>
+<script>
+  var report = OrbCompatibility.checkCompatibility();
+  if (!report.supported) {
+    document.getElementById('orb-status').textContent = report.message;
+  } else {
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/@lizard-isana/orb@3.1.1/dist/orb.js';
+    document.head.appendChild(script);
+  }
+</script>
+```
+
+パッケージルートと専用サブパスからも同じチェックを利用できます。
+
+```js
+import { checkCompatibility } from '@lizard-isana/orb/compatibility';
+
+const report = checkCompatibility();
+// { supported, baseline, scope, syntaxChecked, checked, missing, failed, message }
+```
+
+チェッカーは `Map`、`Set`、型付き配列ファクトリ、数値判定、数学関数、
+`Object.entries`、`Object.values`、`Array.prototype.flatMap`、
+`Array.prototype.at`、文字列パディング、ISO 日付書式など、orb.js が使う境界的な
+組み込みAPIを検査します。ユーザーエージェント判定、グローバルの変更、自動ログ出力、
+ポリフィル追加は行いません。構文判定のための動的コード生成は Content Security
+Policy と衝突し得るため、`syntaxChecked` は意図的に `false` です。構文互換性は宣言した
+ブラウザ基準と実ブラウザテストで確認します。
+
 Node.js 18 以降が必要です。構造化サブパスは ES module です。
 
 対応ブラウザは Chrome / Edge 92 以降、Firefox 90 以降、Safari / iOS Safari
@@ -36,7 +71,7 @@ Node.js 18 以降が必要です。構造化サブパスは ES module です。
 ポリフィルは同梱しません。IE 11、EdgeHTML、Opera Mini、KaiOS 2.5 とそれ以前の
 ブラウザは対象外で、組み込み WebView は個別には保証しません。
 
-UMD ビルドが公開するのは互換 `Orb.*` API だけです。ブラウザで構造化サブパスを
+UMD ビルドが公開するのは互換 `Orb.*` API と互換性診断です。ブラウザで構造化計算サブパスを
 使う場合はパッケージを解決できるバンドラーを使用してください。ブラウザの bare
 import には import map または URL マッピングが必要で、CDN から構造化 ESM
 サブパスを直接読む経路は現時点では対応対象に含めません。

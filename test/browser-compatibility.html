@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>orb.js compatibility smoke test</title>
+<pre id="result">running</pre>
+<script src="../dist/orb-compat.js"></script>
+<script>
+(function () {
+  var output = document.getElementById('result');
+  var report = OrbCompatibility.checkCompatibility();
+  window.__orbCompatibilitySmoke = { report: report, orbLoaded: false, passed: false };
+  if (!report.supported) {
+    output.textContent = report.message;
+    return;
+  }
+
+  var script = document.createElement('script');
+  script.src = '../dist/orb.js';
+  script.onload = function () {
+    var moon = new Orb.Luna().radec(new Date('2026-07-18T00:00:00Z'));
+    var rootReport = Orb.checkCompatibility();
+    var passed = rootReport.supported && Number.isFinite(moon.ra);
+    window.__orbCompatibilitySmoke.orbLoaded = true;
+    window.__orbCompatibilitySmoke.passed = passed;
+    output.textContent = passed ? 'orb compatibility smoke: pass' : 'orb compatibility smoke: fail';
+  };
+  script.onerror = function () {
+    output.textContent = 'orb compatibility smoke: bundle load failed';
+  };
+  document.head.appendChild(script);
+}());
+</script>

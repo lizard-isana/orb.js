@@ -11,6 +11,7 @@ const { test } = require('../helpers/harness.js');
 const ROOT = path.join(__dirname, '..', '..');
 const PACKAGE_NAME = '@lizard-isana/orb';
 const STRUCTURED_SUBPATHS = [
+  './compatibility',
   './time',
   './frames',
   './geodesy',
@@ -50,6 +51,8 @@ test('package: metadata and local CommonJS entry are stable', () => {
   assert.strictEqual(typeof Orb.Kepler, 'function');
   assert.strictEqual(typeof Orb.SGP4, 'function');
   assert.strictEqual(typeof Orb.Observation, 'function');
+  assert.strictEqual(typeof Orb.checkCompatibility, 'function');
+  assert.strictEqual(Orb.checkCompatibility().supported, true);
   assert.strictEqual(Orb.Instant, undefined);
   assert.strictEqual(Orb.AstroInstant, undefined);
   assert.strictEqual(Orb.makeState, undefined);
@@ -85,6 +88,10 @@ test('package: exact tarball supports legacy entries and optional model subpaths
     assert.ok(files.has('dist/orb.min.js'));
     assert.ok(files.has('dist/orb.esm.js'));
     assert.ok(files.has('dist/orb.esm.mjs'));
+    assert.ok(files.has('dist/orb-compat.js'));
+    assert.ok(files.has('dist/orb-compat.min.js'));
+    assert.ok(files.has('src/compatibility/index.js'));
+    assert.ok(files.has('src/compatibility/package.json'));
     assert.ok(files.has('src/vsop87a/package.json'));
     assert.ok(files.has('src/package.json'));
     assert.ok(files.has('src/time/index.js'));
@@ -134,6 +141,10 @@ test('package: exact tarball supports legacy entries and optional model subpaths
       'function'
     );
     assert.strictEqual(
+      runNode(consumer, ['-e', `const check=require('${PACKAGE_NAME}/compatibility'); console.log(check.checkCompatibility().supported)`]),
+      'true'
+    );
+    assert.strictEqual(
       runNode(consumer, ['-e', `const metadata=require('${PACKAGE_NAME}/package.json'); console.log(metadata.name)`]),
       PACKAGE_NAME
     );
@@ -152,6 +163,14 @@ test('package: exact tarball supports legacy entries and optional model subpaths
         `import * as Orb from '${PACKAGE_NAME}'; console.log(typeof Orb.Time)`
       ]),
       'function'
+    );
+    assert.strictEqual(
+      runNode(consumer, [
+        '--input-type=module',
+        '-e',
+        `import { checkCompatibility } from '${PACKAGE_NAME}/compatibility'; console.log(checkCompatibility().supported)`
+      ]),
+      'true'
     );
     assert.strictEqual(
       runNode(consumer, [
@@ -261,6 +280,21 @@ test('package: exact tarball supports legacy entries and optional model subpaths
     assert.ok(!umdSource.includes('satellitePasses'));
     vm.runInNewContext(umdSource, browserContext, { filename: umdPath });
     assert.strictEqual(typeof browserContext.Orb.Time, 'function');
+    assert.strictEqual(browserContext.Orb.checkCompatibility().supported, true);
+
+    const preflightPath = path.join(
+      consumer,
+      'node_modules',
+      '@lizard-isana',
+      'orb',
+      'dist',
+      'orb-compat.js'
+    );
+    const preflightContext = {};
+    vm.runInNewContext(fs.readFileSync(preflightPath, 'utf8'), preflightContext, {
+      filename: preflightPath
+    });
+    assert.strictEqual(preflightContext.OrbCompatibility.checkCompatibility().supported, true);
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }

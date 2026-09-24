@@ -26,6 +26,14 @@ real-browser tests exist.
 The structured time class is `AstroInstant`; it is not `Temporal.Instant` and
 does not depend on Temporal. Do not reintroduce an exported `Instant` alias.
 
+`dist/orb-compat.js` is the classic-script preflight that can run before the
+main UMD bundle. It exposes `OrbCompatibility.checkCompatibility()` and must
+remain free of modern syntax that could prevent an unsupported browser from
+executing the runtime checks. The same source also supplies
+`Orb.checkCompatibility()` and the `/compatibility` subpath. It detects
+required built-ins but deliberately does not use user-agent parsing, install
+polyfills, or claim to verify JavaScript syntax support.
+
 ## VSOP87A Precision API
 
 The default planet position path uses the shortened VSOP87A table in `src/orb-vsop87a.js`.
@@ -123,4 +131,5 @@ structured subpath.
 
 - `.ai/decisions/2026-04-27-full-vsop87a-api.md`
 - `.ai/decisions/2026-09-24-browser-support-and-astro-instant.md`
+- `.ai/decisions/2026-09-24-browser-compatibility-preflight.md`
 - `.ai/plans/2026-09-22-v3.1-implementation-plan-revised.md`

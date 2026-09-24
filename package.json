@@ -8,6 +8,7 @@
     "src/*.js",
     "src/package.json",
     "src/time",
+    "src/compatibility",
     "src/frames",
     "src/geodesy",
     "src/kepler",
@@ -33,6 +34,10 @@
     "./src/*": "./src/*",
     "./time": {
       "import": "./src/time/index.js"
+    },
+    "./compatibility": {
+      "import": "./src/compatibility/index.js",
+      "default": "./dist/orb-compat.js"
     },
     "./frames": {
       "import": "./src/frames/index.js"

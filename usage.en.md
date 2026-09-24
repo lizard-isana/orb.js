@@ -30,6 +30,42 @@ For a browser, load `dist/orb.js`. The complete UMD build exposes
 <script src="https://unpkg.com/@lizard-isana/orb@3.1.1/dist/orb.js"></script>
 ```
 
+To report an unsupported runtime before loading the main bundle, load the
+classic preflight first and conditionally add orb.js:
+
+```html
+<div id="orb-status"></div>
+<script src="https://unpkg.com/@lizard-isana/orb@3.1.1/dist/orb-compat.min.js"></script>
+<script>
+  var report = OrbCompatibility.checkCompatibility();
+  if (!report.supported) {
+    document.getElementById('orb-status').textContent = report.message;
+  } else {
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/@lizard-isana/orb@3.1.1/dist/orb.js';
+    document.head.appendChild(script);
+  }
+</script>
+```
+
+The same check is exported by the package root and a dedicated subpath:
+
+```js
+import { checkCompatibility } from '@lizard-isana/orb/compatibility';
+
+const report = checkCompatibility();
+// { supported, baseline, scope, syntaxChecked, checked, missing, failed, message }
+```
+
+The checker tests boundary runtime built-ins used by orb.js, including `Map`,
+`Set`, typed-array factories, number predicates, math helpers,
+`Object.entries`, `Object.values`, `Array.prototype.flatMap`,
+`Array.prototype.at`, string padding, and ISO date formatting. It performs no
+user-agent parsing, global mutation, automatic logging, or polyfilling.
+`syntaxChecked` is deliberately `false`: using runtime compilation to probe
+syntax can conflict with Content Security Policy. Browser syntax support is
+covered by the declared baseline and real-engine tests instead.
+
 Node.js 18 or later is required. The structured subpaths are ES modules.
 
 The supported browser baseline is Chrome and Edge 92+, Firefox 90+, Safari and
@@ -37,7 +73,8 @@ iOS Safari 15.4+, Chrome for Android 92+, and Firefox for Android 90+. No
 polyfills are included. IE 11, EdgeHTML, Opera Mini, KaiOS 2.5, and older
 browsers are unsupported; embedded web views are not guaranteed separately.
 
-The UMD build exposes only the compatible `Orb.*` surface. Use a package-aware
+The UMD build exposes the compatible `Orb.*` surface and the compatibility
+diagnostic. Use a package-aware
 bundler for structured subpaths in browser applications. Native browser bare
 imports require an import map or URL mapping, and direct CDN ESM subpaths are
 not currently a supported entry path.

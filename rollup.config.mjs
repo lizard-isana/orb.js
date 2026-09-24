@@ -19,27 +19,39 @@ const thirdPartyBanner = `/*!
  * THE SOFTWARE.
  */`;
 
-export default {
-  input: 'src/orb.es6.js',
-  output: [
-    {
-      file: 'dist/orb.esm.js',
-      format: 'es',
-      sourcemap: true,
-      banner: thirdPartyBanner
-    },
-    {
-      file: 'dist/orb.esm.mjs',
-      format: 'es',
-      sourcemap: true,
-      banner: thirdPartyBanner
-    },
-    {
-      name: 'Orb',
-      file: 'dist/orb.js',
+export default [
+  {
+    input: 'src/orb.es6.js',
+    output: [
+      {
+        file: 'dist/orb.esm.js',
+        format: 'es',
+        sourcemap: true,
+        banner: thirdPartyBanner
+      },
+      {
+        file: 'dist/orb.esm.mjs',
+        format: 'es',
+        sourcemap: true,
+        banner: thirdPartyBanner
+      },
+      {
+        name: 'Orb',
+        file: 'dist/orb.js',
+        format: 'umd',
+        sourcemap: true,
+        banner: thirdPartyBanner
+      }
+    ]
+  },
+  {
+    input: 'src/compatibility/index.js',
+    output: {
+      name: 'OrbCompatibility',
+      file: 'dist/orb-compat.js',
       format: 'umd',
       sourcemap: true,
-      banner: thirdPartyBanner
+      banner: '/*! orb.js browser compatibility preflight */'
     }
-  ]
-};
+  }
+];

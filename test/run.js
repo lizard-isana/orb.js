@@ -9,6 +9,7 @@ require('./suites/properties.test.js');
 require('./suites/sgp4.test.js');
 require('./suites/observer.test.js');
 require('./suites/vsop-tools.test.js');
+require('./suites/compatibility.test.js');
 require('./suites/package.test.js');
 
 finish();

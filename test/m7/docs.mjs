@@ -16,6 +16,7 @@ const DOCS = [
   'migration-v2-to-v3.1.ja.md'
 ];
 const SUBPATHS = [
+  '/compatibility',
   '/time',
   '/frames',
   '/geodesy',
@@ -67,6 +68,8 @@ test('English and Japanese guides publish the same structured surface', () => {
   }
   for (const token of [
     'AstroInstant',
+    'OrbCompatibility',
+    'syntaxChecked',
     'Temporal.Instant',
     '15.4',
     "frameModel: 'iau2006-2000b'",
@@ -155,10 +158,12 @@ test('documented examples execute against the exact tarball', () => {
 
     assert.strictEqual(runNode(consumer, ['--input-type=module', '-e', `
       import { AstroInstant } from '${PACKAGE_NAME}/time';
+      import { checkCompatibility } from '${PACKAGE_NAME}/compatibility';
       import { createObserver, OBSERVER_DEFAULTS } from '${PACKAGE_NAME}/observer';
       import { sunEpv00 } from '${PACKAGE_NAME}/models/earth-epv00';
       import { HORIZON_CONSTANTS, riseSetTransit } from '${PACKAGE_NAME}/events';
       const instant = AstroInstant.fromISO('2026-07-18T12:00:00Z');
+      if (!checkCompatibility().supported) throw new Error('compatibility example failed');
       const other = instant.addSeconds(30);
       if (other.differenceSeconds(instant) !== 30 || !Number.isFinite(other.differenceTtSeconds(instant))) {
         throw new Error('documented time example failed');

@@ -76,6 +76,28 @@ requested.
 </script>
 ```
 
+Applications that need to warn before loading the main bundle can run the
+small classic-script preflight first:
+
+```html
+<div id="orb-status"></div>
+<script src="https://unpkg.com/@lizard-isana/orb@3.1.1/dist/orb-compat.min.js"></script>
+<script>
+  var report = OrbCompatibility.checkCompatibility();
+  if (!report.supported) {
+    document.getElementById('orb-status').textContent = report.message;
+  } else {
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/@lizard-isana/orb@3.1.1/dist/orb.js';
+    document.head.appendChild(script);
+  }
+</script>
+```
+
+The report checks required runtime built-ins, not JavaScript syntax. It neither
+installs polyfills nor displays UI. After the main bundle loads, the same
+runtime report is available from `Orb.checkCompatibility()`.
+
 Pin an exact version in production. Optional full VSOP87A coefficient modules
 are intentionally kept out of the default UMD bundle.
 
@@ -84,7 +106,8 @@ iOS Safari 15.4+, Chrome for Android 92+, and Firefox for Android 90+. orb.js
 does not ship polyfills; IE 11, EdgeHTML, Opera Mini, KaiOS 2.5, and older
 browsers are unsupported. Embedded web views are not guaranteed separately.
 
-The UMD build contains the compatible `Orb.*` API only. Structured subpaths
+The UMD build contains the compatible `Orb.*` API and the compatibility
+diagnostic only. Structured calculation subpaths
 such as `/time` and `/observer` are ES modules intended for a package-aware
 bundler. Native browser imports using bare package names require an import map
 or URL mapping; direct CDN ESM subpath loading is not currently a supported
