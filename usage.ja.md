@@ -1,5 +1,9 @@
 # orb.js（v2）- JavaScript library for astronomical calculations
 
+> この文書は凍結された v2 系のものです。v2 を継続する場合は `v2.4.1` に固定し、
+> 更新する場合は先に [v2 から v3.1 への移行ガイド](https://github.com/lizard-isana/orb.js/blob/v3/migration-v2-to-v3.1.ja.md)
+> を確認してください。
+
 **orb.jsは主にブラウザ上で手軽に天体の位置計算を行うことを目的としたJavaScriptライブラリです。**  
 **※v1とv2ではメソッドや引数に大幅な修正が入っているため互換性がありません。くれぐれもご注意ください。**
 - 8惑星(VSOP87)および月・太陽位置
@@ -32,11 +36,11 @@ orb.v2.jsから太陽系内天体(惑星・太陽・月)の計算に必要な関
 
 ## CDN
 
-    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.3/build/orb.v2.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@v2.4.1/build/orb.v2.js"></script>
 
 or minified file
 
-    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@2.3/build/min/orb.v2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@v2.4.1/build/min/orb.v2.min.js"></script>
 
 
 ## Examples

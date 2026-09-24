@@ -1,5 +1,11 @@
 # orb.js（v2）- JavaScript library for astronomical calculations
 
+> **orb.js v2 is frozen at `v2.4.1`.** Development has moved to v3.1. Before
+> upgrading, read the [English migration guide](https://github.com/lizard-isana/orb.js/blob/v3/migration-v2-to-v3.1.en.md)
+> or [日本語版](https://github.com/lizard-isana/orb.js/blob/v3/migration-v2-to-v3.1.ja.md).
+> Applications that remain on v2 should pin the immutable
+> [`v2.4.1` tag](https://github.com/lizard-isana/orb.js/tree/v2.4.1).
+
 ***Please note: There is no compatibility orb.js v1 and v2.***
 
 orb.js has methods for the ...
@@ -24,11 +30,11 @@ Truncated version of orb.js. If you only need calculations for planetary objects
 
 ## CDN
 
-    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@v2.4/build/orb.v2.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@v2.4.1/build/orb.v2.js"></script>
 
 or minified file
 
-    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@v2.4/build/min/orb.v2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/lizard-isana/orb.js@v2.4.1/build/min/orb.v2.min.js"></script>
 
 ## Usage
   English: [usage.en.md](/usage.en.md)  
