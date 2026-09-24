@@ -3,6 +3,7 @@ import { createRequire } from 'module';
 
 import {
   findCrossings,
+  findLocalMaxima,
   findMaximum,
   HORIZON_CONSTANTS,
   lunarAge,
@@ -101,6 +102,34 @@ test('bounded search refines crossings and maxima without Date arithmetic', () =
     { stepSeconds: 1, toleranceSeconds: 0.001 }
   );
   assert.ok(Math.abs(nearEndpoint.instant.differenceSeconds(from) - 0.3) < 0.001);
+});
+
+test('local maxima merge adjacent equal samples and remain time ordered', () => {
+  const from = AstroInstant.fromUnixMs(0);
+  const to = from.addSeconds(10);
+  const options = { stepSeconds: 1, toleranceSeconds: 0.001 };
+  const single = findLocalMaxima(
+    (instant) => -((instant.differenceSeconds(from) - 4.5) ** 2),
+    from,
+    to,
+    options
+  );
+  assert.strictEqual(single.length, 1);
+  assert.ok(Math.abs(single[0].instant.differenceSeconds(from) - 4.5) < 0.001);
+
+  const multiple = findLocalMaxima(
+    (instant) => Math.max(
+      -((instant.differenceSeconds(from) - 2.5) ** 2),
+      -((instant.differenceSeconds(from) - 7.5) ** 2)
+    ),
+    from,
+    to,
+    options
+  );
+  assert.strictEqual(multiple.length, 2);
+  assert.ok(Math.abs(multiple[0].instant.differenceSeconds(from) - 2.5) < 0.001);
+  assert.ok(Math.abs(multiple[1].instant.differenceSeconds(from) - 7.5) < 0.001);
+  assert.ok(multiple[0].instant.utcMs < multiple[1].instant.utcMs);
 });
 
 test('rise, transit, and set default to geometric center events', () => {

@@ -198,6 +198,36 @@ test('property: spherical and plane conversion chains preserve origin and unit m
   }
 });
 
+test('property: built-in geocentric outputs survive composed coordinate conversions', () => {
+  const date = new Date('2026-07-18T12:00:00Z');
+  const epoch = new Orb.Time(date).jd();
+  const kepler = new Orb.Kepler({
+    eccentricity: 0.1,
+    periapsis_distance: 1,
+    inclination: 10,
+    longitude_of_ascending_node: 20,
+    argument_of_periapsis: 30,
+    time_of_periapsis: epoch - 30
+  });
+  const sources = [
+    new Orb.Sun().xyz(date),
+    Orb.RadecToXYZ(new Orb.Sun().radec(date)),
+    Orb.RadecToXYZ(kepler.radec(date))
+  ];
+
+  for (const source of sources) {
+    const ecliptic = Orb.EquatorialToEcliptic({ date, equatorial: source });
+    const roundTrip = Orb.EclipticToEquatorial({ date, ecliptic });
+    assert.strictEqual(source.center_keywords, 'earth');
+    assert.strictEqual(ecliptic.center_keywords, 'earth');
+    assert.strictEqual(roundTrip.center_keywords, 'earth');
+    assert.ok(Math.abs(norm3(roundTrip) - norm3(source)) < 1e-14);
+    assert.ok(Math.abs(roundTrip.x - source.x) < 1e-14);
+    assert.ok(Math.abs(roundTrip.y - source.y) < 1e-14);
+    assert.ok(Math.abs(roundTrip.z - source.z) < 1e-14);
+  }
+});
+
 test('property: J2000-to-date rotation preserves vector length', () => {
   const vectors = [
     { x: 1, y: 2, z: 3 },

@@ -15226,6 +15226,7 @@ class Sun{
       "distance": radec.distance,
       "date": date,
       "coordinate_keywords": "equatorial spherical",
+      "center_keywords": "earth",
       "unit_keywords": "degree hour au"
     }
   }
@@ -15239,6 +15240,7 @@ class Sun{
       z: xyz.z,
       "date": date,
       "coordinate_keywords": "equatorial rectangular",
+      "center_keywords": "earth",
       "unit_keywords": "au"
     }
   }
@@ -16174,6 +16176,7 @@ class Kepler{
       'distance': spherical.distance,
       "date": date,
       "coordinate_keywords": "equatorial spherical",
+      "center_keywords": spherical.center_keywords || "earth",
       "unit_keywords": "hour degree au"
     }
   }

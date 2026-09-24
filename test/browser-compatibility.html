@@ -39,6 +39,19 @@
     var coordinateChainPassed = roundTrip.center_keywords === 'earth'
       && roundTrip.unit_keywords === 'au'
       && Math.abs(roundTripDistance - sourceDistance) < 1e-15;
+    var sunPosition = new Orb.Sun().xyz(date);
+    var sunEcliptic = Orb.EquatorialToEcliptic({
+      date: date,
+      equatorial: sunPosition
+    });
+    var sunRoundTrip = Orb.EclipticToEquatorial({
+      date: date,
+      ecliptic: sunEcliptic
+    });
+    var sunOriginPassed = sunPosition.center_keywords === 'earth'
+      && sunRoundTrip.center_keywords === 'earth'
+      && Math.abs(Math.hypot(sunRoundTrip.x, sunRoundTrip.y, sunRoundTrip.z)
+        - Math.hypot(sunPosition.x, sunPosition.y, sunPosition.z)) < 1e-14;
 
     var venus = new Orb.Venus();
     var compatible = venus.radec(date);
@@ -97,6 +110,7 @@
     var passed = rootReport.supported
       && Number.isFinite(moon.ra)
       && coordinateChainPassed
+      && sunOriginPassed
       && observationChainPassed
       && unitConversionPassed
       && xyzWrapperPassed
@@ -105,6 +119,7 @@
     window.__orbCompatibilitySmoke.orbLoaded = true;
     window.__orbCompatibilitySmoke.passed = passed;
     window.__orbCompatibilitySmoke.coordinateChainPassed = coordinateChainPassed;
+    window.__orbCompatibilitySmoke.sunOriginPassed = sunOriginPassed;
     window.__orbCompatibilitySmoke.observationChainPassed = observationChainPassed;
     window.__orbCompatibilitySmoke.unitConversionPassed = unitConversionPassed;
     window.__orbCompatibilitySmoke.xyzWrapperPassed = xyzWrapperPassed;

@@ -257,16 +257,27 @@ export function findLocalMaxima(fn, from, to, options = {}) {
   const context = searchContext(fn, from, to, options);
   const points = sample(context);
   const maxima = [];
-  for (let index = 1; index < points.length - 1; index += 1) {
+  for (let index = 1; index < points.length - 1;) {
     if (points[index].value < points[index - 1].value
-        || points[index].value < points[index + 1].value) continue;
+        || points[index].value < points[index + 1].value) {
+      index += 1;
+      continue;
+    }
+    let endIndex = index;
+    while (endIndex + 1 < points.length - 1
+        && points[endIndex + 1].value === points[endIndex].value
+        && points[endIndex + 1].value >= points[endIndex + 2].value) {
+      endIndex += 1;
+    }
     const peak = refineMaximum(
       context,
       points[index - 1].instant,
-      points[index + 1].instant,
-      [points[index]]
+      points[endIndex + 1].instant,
+      points.slice(index, endIndex + 1)
     );
     maxima.push(Object.freeze({ instant: peak.instant, value: peak.value }));
+    index = endIndex + 1;
   }
+  maxima.sort((left, right) => left.instant.differenceSeconds(right.instant));
   return Object.freeze(maxima);
 }

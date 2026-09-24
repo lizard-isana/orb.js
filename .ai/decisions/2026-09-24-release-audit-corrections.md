@@ -119,6 +119,24 @@ and identified three older composition and numerical-boundary gaps:
   non-singular periapsis and apoapsis element/state round trips, and compares
   direct versus function-returned lunar coordinates.
 
+## Fifth audit decisions
+
+A fifth independent audit of `c2d2f3c` confirmed the fourth-audit corrections
+and found two older metadata and event-search gaps:
+
+- `Sun.xyz()`, `Sun.radec()`, and `Kepler.radec()` now label their already
+  geocentric results with the legacy `center_keywords: "earth"` convention.
+  Coordinate conversions can therefore distinguish them from heliocentric
+  inputs and do not subtract the Earth position a second time.
+- `findLocalMaxima()` treats adjacent equal-valued local-maximum samples as
+  one candidate bracket. It refines the combined interval once and returns
+  results in chronological order, rather than refining the two overlapping
+  intervals into duplicate, reverse-ordered results.
+- Regression coverage begins with the built-in body outputs and composes the
+  spherical/rectangular and equatorial/ecliptic APIs. Event coverage includes
+  one midpoint maximum and multiple midpoint maxima to check both deduplication
+  and ordering.
+
 ## Evidence and references
 
 - Transit follows the U.S. Naval Observatory definition of the body's center
@@ -184,3 +202,19 @@ exact-tarball documentation and consumer tests, and diff checks pass locally.
 The expanded classic-preflight/UMD smoke also passed in a real Chrome engine,
 including the au/km observation path, lunar `xyz(date)` wrapper, and Cartesian
 periapsis boundary. The page emitted no warning or error logs.
+
+## Validation after the fifth audit
+
+The reported Sun conversion chain now retains its `1.0162890891 au` distance
+with zero position residual in the reproduced case. The equivalent
+`Kepler.radec()` chain has approximately `4.58e-16 au` position residual. Both
+outputs retain `center_keywords: "earth"` through the composed conversions.
+The reported midpoint maximum now produces one result at approximately
+`4.500061` seconds, within the requested `0.001` second tolerance; a two-peak
+midpoint case produces two chronologically ordered results.
+
+The focused regressions, full suite, Rollup build, deterministic VSOP check,
+exact-tarball tests, dry-run package review, and diff checks pass locally. The
+expanded classic-preflight/UMD smoke also passed in the Codex in-app browser
+while composing the Sun coordinate round trip, and emitted no warning or error
+logs. The dry-run package remains 86 entries and is approximately `3.11 MB`.

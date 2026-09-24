@@ -15232,6 +15232,7 @@
         "distance": radec.distance,
         "date": date,
         "coordinate_keywords": "equatorial spherical",
+        "center_keywords": "earth",
         "unit_keywords": "degree hour au"
       }
     }
@@ -15245,6 +15246,7 @@
         z: xyz.z,
         "date": date,
         "coordinate_keywords": "equatorial rectangular",
+        "center_keywords": "earth",
         "unit_keywords": "au"
       }
     }
@@ -16180,6 +16182,7 @@
         'distance': spherical.distance,
         "date": date,
         "coordinate_keywords": "equatorial spherical",
+        "center_keywords": spherical.center_keywords || "earth",
         "unit_keywords": "hour degree au"
       }
     }
