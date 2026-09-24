@@ -21,6 +21,11 @@ Current implementation plans:
 - `plans/2026-09-22-v3.1-implementation-plan-revised.md` (current)
 - `plans/2026-09-22-v3.1-implementation-plan.md` (superseded initial draft)
 
+Current freeze and release tracking:
+
+- `known-issues.md` (accepted limitations and open release-validation gaps)
+- `reviews/2026-09-24-code-freeze-audit.md` (audit of implementation `112959b`)
+
 ## Guidelines
 
 - Keep stable contributor guidance in `AGENT.md`.
