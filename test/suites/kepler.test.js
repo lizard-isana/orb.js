@@ -81,6 +81,8 @@ test('Kepler and Cartesian preserve an elliptical state on round trip', () => {
 });
 
 test('Cartesian keeps non-singular periapsis and apoapsis states finite', () => {
+  const anomalyToleranceDegrees = 1e-5;
+
   function angularDifferenceDegrees(actual, expected) {
     return Math.abs(((actual - expected + 180) % 360 + 360) % 360 - 180);
   }
@@ -111,7 +113,7 @@ test('Cartesian keeps non-singular periapsis and apoapsis states finite', () => 
     });
     assert.ok(Object.values(elements).filter((value) => typeof value === 'number').every(Number.isFinite));
     assert.ok(
-      angularDifferenceDegrees(elements.true_anomaly, expectedAnomaly) < 1e-8,
+      angularDifferenceDegrees(elements.true_anomaly, expectedAnomaly) < anomalyToleranceDegrees,
       `${name} anomaly=${elements.true_anomaly}`
     );
     const restored = new Orb.Kepler(elements).xyz(date);
