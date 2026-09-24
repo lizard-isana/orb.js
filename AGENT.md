@@ -132,4 +132,5 @@ structured subpath.
 - `.ai/decisions/2026-04-27-full-vsop87a-api.md`
 - `.ai/decisions/2026-09-24-browser-support-and-astro-instant.md`
 - `.ai/decisions/2026-09-24-browser-compatibility-preflight.md`
+- `.ai/known-issues.md`
 - `.ai/plans/2026-09-22-v3.1-implementation-plan-revised.md`

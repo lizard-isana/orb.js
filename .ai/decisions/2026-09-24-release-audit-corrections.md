@@ -137,6 +137,27 @@ and found two older metadata and event-search gaps:
   one midpoint maximum and multiple midpoint maxima to check both deduplication
   and ordering.
 
+## Sixth audit and code-freeze decisions
+
+A sixth independent audit of `cd7cc41` found that `findLocalMaxima()` did not
+inspect the first and last sampled intervals. This is a public-search contract
+gap rather than an accepted sampling limitation:
+
+- Equal sampled values are handled as one run. Interior runs bracketed by
+  smaller samples are refined once.
+- A run touching either search endpoint is refined when it is larger than its
+  inward neighbor, but is returned only if refinement finds a strictly larger
+  value inside the interval. This detects an interior end-adjacent maximum
+  without inventing a local maximum for monotonic or constant functions.
+- Regression positions move in `0.1`-second increments from `0.1` through
+  `9.9` seconds. Separate increasing, decreasing, and constant cases must
+  remain empty.
+
+For code freeze, reproducible violations of documented public contracts remain
+release fixes. Limits inherent to coarse sampling, documented legacy singular
+behavior, and outstanding environment validation are tracked in
+`.ai/known-issues.md` instead of broadening the release indefinitely.
+
 ## Evidence and references
 
 - Transit follows the U.S. Naval Observatory definition of the body's center
@@ -218,3 +239,17 @@ exact-tarball tests, dry-run package review, and diff checks pass locally. The
 expanded classic-preflight/UMD smoke also passed in the Codex in-app browser
 while composing the Sun coordinate round trip, and emitted no warning or error
 logs. The dry-run package remains 86 entries and is approximately `3.11 MB`.
+
+## Validation after the sixth audit
+
+The reported `0.3`- and `9.7`-second maxima are now returned at approximately
+`0.299927` and `9.700073` seconds. Moving the peak in `0.1`-second increments
+through all 99 interior positions from `0.1` to `9.9` seconds produced exactly
+one result each; the worst timing error was approximately `0.0001334` second,
+below the requested `0.001`-second tolerance. Increasing, decreasing, and
+constant functions each returned no local maxima.
+
+The focused regressions, full suite, Rollup build, deterministic VSOP check,
+exact-tarball documentation and consumer tests, dry-run package review, and
+diff checks pass locally. The default UMD source did not change in this audit;
+the dry-run package remains 86 entries and is approximately `3.11 MB`.

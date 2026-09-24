@@ -395,14 +395,21 @@ All search functions accept `stepSeconds`, `toleranceSeconds`, `maxIterations`,
 and `maxEvaluations`. The step controls coarse bracketing; tolerance is the
 maximum remaining time interval after refinement. Exceeding either bound or
 reaching `maxIterations` before tolerance is met throws instead of returning an
-unconverged event. Crossing searches use `(from, to]`; maxima include both
-endpoints and refine the adjacent interval even when the best coarse sample is
-an endpoint. An interior sample equal to the threshold is a crossing only when
+unconverged event. Crossing searches use `(from, to]`; `findMaximum()` includes
+both endpoints and refines the adjacent interval even when the best coarse
+sample is an endpoint. An interior sample equal to the threshold is a crossing only when
 the nearest nonzero samples on its two sides have opposite signs; merely
 touching the threshold does not split an event interval. A satellite pass must
 have positive duration greater than the search tolerance, so a rise exactly at
 `to` is not returned as a zero-length pass. A pass already above the threshold
 at `from` is returned with a clipped rise.
+
+`findLocalMaxima()` returns interior local maxima, including maxima inside the
+first and last sampled intervals, but does not treat a monotonic interval's
+endpoint as a local maximum. Event discovery is sample-based: multiple
+crossings or maxima contained within one coarse step can remain unresolved.
+Choose `stepSeconds` shorter than the narrowest event feature that must be
+detected.
 
 Pass results label elevation as `geometric` or `refracted`. They report
 `opticalVisibility` and `sunlight` as `not-computed`; a geometric pass is not a

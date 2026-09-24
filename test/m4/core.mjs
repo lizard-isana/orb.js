@@ -132,6 +132,35 @@ test('local maxima merge adjacent equal samples and remain time ordered', () => 
   assert.ok(multiple[0].instant.utcMs < multiple[1].instant.utcMs);
 });
 
+test('local maxima refine end-adjacent intervals without inventing endpoint peaks', () => {
+  const from = AstroInstant.fromUnixMs(0);
+  const to = from.addSeconds(10);
+  const options = { stepSeconds: 1, toleranceSeconds: 0.001 };
+
+  for (let index = 1; index < 100; index += 1) {
+    const expected = index / 10;
+    const maxima = findLocalMaxima(
+      (instant) => -((instant.differenceSeconds(from) - expected) ** 2),
+      from,
+      to,
+      options
+    );
+    assert.strictEqual(maxima.length, 1, `peak ${expected}`);
+    assert.ok(
+      Math.abs(maxima[0].instant.differenceSeconds(from) - expected) < 0.001,
+      `peak ${expected} at ${maxima[0].instant.differenceSeconds(from)}`
+    );
+  }
+
+  for (const fn of [
+    (instant) => instant.differenceSeconds(from),
+    (instant) => -instant.differenceSeconds(from),
+    () => 1
+  ]) {
+    assert.deepStrictEqual(findLocalMaxima(fn, from, to, options), []);
+  }
+});
+
 test('rise, transit, and set default to geometric center events', () => {
   const events = riseSetTransit(
     tokyo,

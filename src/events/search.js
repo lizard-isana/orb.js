@@ -257,25 +257,49 @@ export function findLocalMaxima(fn, from, to, options = {}) {
   const context = searchContext(fn, from, to, options);
   const points = sample(context);
   const maxima = [];
-  for (let index = 1; index < points.length - 1;) {
-    if (points[index].value < points[index - 1].value
-        || points[index].value < points[index + 1].value) {
-      index += 1;
-      continue;
-    }
+  for (let index = 0; index < points.length;) {
     let endIndex = index;
-    while (endIndex + 1 < points.length - 1
-        && points[endIndex + 1].value === points[endIndex].value
-        && points[endIndex + 1].value >= points[endIndex + 2].value) {
+    while (endIndex + 1 < points.length
+        && points[endIndex + 1].value === points[index].value) {
       endIndex += 1;
     }
-    const peak = refineMaximum(
-      context,
-      points[index - 1].instant,
-      points[endIndex + 1].instant,
-      points.slice(index, endIndex + 1)
-    );
-    maxima.push(Object.freeze({ instant: peak.instant, value: peak.value }));
+
+    const leftIndex = index - 1;
+    const rightIndex = endIndex + 1;
+    const hasLeft = leftIndex >= 0;
+    const hasRight = rightIndex < points.length;
+    let bracketLeft;
+    let bracketRight;
+    let requireImprovement = false;
+
+    if (hasLeft && hasRight
+        && points[index].value > points[leftIndex].value
+        && points[index].value > points[rightIndex].value) {
+      bracketLeft = leftIndex;
+      bracketRight = rightIndex;
+    } else if (!hasLeft && hasRight
+        && points[index].value > points[rightIndex].value) {
+      bracketLeft = index;
+      bracketRight = rightIndex;
+      requireImprovement = true;
+    } else if (hasLeft && !hasRight
+        && points[index].value > points[leftIndex].value) {
+      bracketLeft = leftIndex;
+      bracketRight = endIndex;
+      requireImprovement = true;
+    }
+
+    if (bracketLeft != undefined) {
+      const peak = refineMaximum(
+        context,
+        points[bracketLeft].instant,
+        points[bracketRight].instant,
+        points.slice(index, endIndex + 1)
+      );
+      if (!requireImprovement || peak.value > points[index].value) {
+        maxima.push(Object.freeze({ instant: peak.instant, value: peak.value }));
+      }
+    }
     index = endIndex + 1;
   }
   maxima.sort((left, right) => left.instant.differenceSeconds(right.instant));
