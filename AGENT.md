@@ -10,6 +10,21 @@ This repository is the general-purpose astronomical calculation library used by 
 - Do not pull optional heavy datasets into the default bundle.
 - Rebuild `dist/` with `npm run build` when source files that are part of `src/orb.es6.js` change.
 
+## Release Branches
+
+- `master` is the GitHub default and published stable line. Advance it only to
+  a release that has passed package, installation, CDN, and browser checks.
+- `v3` is the active v3 integration and maintenance line. It may lead `master`
+  between releases; their trees must match at a release checkpoint.
+- `v2` preserves the final v2 runtime from `v2.4.1`. Runtime code is frozen;
+  documentation may point users to the pinned v2 release or the v3 migration
+  guide. Any v2 code release requires a separate decision.
+- `v4-planning` remains experimental. Do not publish it as a stable release.
+- Do not merge the v2 implementation wholesale into `v3` or `master`.
+
+See `.ai/decisions/2026-09-24-v2-v3-branch-roles.md` for the transition and
+documentation rules.
+
 ## Browser Support
 
 The supported baseline is Chrome and Edge 92+, Firefox 90+, Safari and iOS

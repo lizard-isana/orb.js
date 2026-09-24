@@ -63,3 +63,12 @@ Before publishing:
 
 Use npm trusted publishing with provenance when release automation is added;
 do not store a long-lived npm token in the repository.
+
+## 2026-09-24 branch-name clarification
+
+The package and release policy above remains in force, but the repository will
+keep `master` as its public default branch rather than create `main`. The
+detailed roles of `master`, `v3`, and the frozen `v2` line are recorded in
+`2026-09-24-v2-v3-branch-roles.md`. This clarification supersedes only the
+earlier assumption that moving the v3.1 line to the default branch required a
+new branch name.
