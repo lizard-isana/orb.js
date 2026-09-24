@@ -73,3 +73,6 @@ detailed roles of `master`, `v3`, and the frozen `v2` line are recorded in
 `2026-09-24-v2-v3-branch-roles.md`. This clarification supersedes only the
 earlier assumption that moving the v3.1 line to the default branch required a
 new branch name.
+
+Parallel patch maintenance and next-minor development are governed by
+`2026-09-25-v3-parallel-maintenance.md`.

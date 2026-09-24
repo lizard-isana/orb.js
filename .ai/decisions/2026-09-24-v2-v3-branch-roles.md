@@ -12,6 +12,10 @@ The v2 and v3 histories diverged after a common ancestor. A normal content
 merge from the old `master` into v3 would therefore risk reintroducing v2 files
 or changes that are not part of the verified v3.1.1 artifact.
 
+The subsequent parallel-development policy is recorded in
+`2026-09-25-v3-parallel-maintenance.md`. It supersedes the original requirement
+that `master` and `v3` have identical trees at every release checkpoint.
+
 ## Decision
 
 ### `master`: published stable line
@@ -26,16 +30,23 @@ or changes that are not part of the verified v3.1.1 artifact.
   contents into it. Prefer a non-destructive administrative merge with an
   unchanged v3 tree over rewriting public history.
 
-### `v3`: active v3 integration and maintenance line
+### `v3`: next compatible v3 integration line
 
-- Use `v3` for v3.x bug fixes, compatible additions, tests, documentation, and
-  release preparation.
-- Changes intended for a future v3.x release are integrated here first. The
-  branch may be ahead of `master` between releases.
-- At a release checkpoint, `master` and `v3` must have identical trees; keeping
-  their tips identical is preferred when the administrative history permits.
+- Use `v3` for the next backward-compatible v3 minor release, including
+  compatible additions, maintenance refactors, tests, and documentation.
+- The branch may be ahead of and differ from `master` while development is in
+  progress.
 - Do not merge the v2 implementation wholesale into `v3`. Port an individual
   fix only when it is independently applicable and tested against v3.
+
+### `release/3.1`: supported 3.1 patch line
+
+- Preserve the stable 3.1 repository state as the base for 3.1.2 and later
+  focused 3.1.x corrections.
+- Forward-port fixes shared with the next v3 minor from this line to `v3`.
+- Do not merge new `v3` feature development back into this release line.
+- See `2026-09-25-v3-parallel-maintenance.md` for the complete support and
+  release flow.
 
 ### `v2`: frozen legacy line
 
@@ -73,7 +84,9 @@ or changes that are not part of the verified v3.1.1 artifact.
 
 ## Release invariant
 
-The public branch, Git tag, npm artifact, and CDN checks must identify the same
-release tree. Moving `master`, publishing to npm `next`, promoting `latest`,
-and deleting obsolete branches remain separate, independently verified
-administrative checkpoints.
+The `master` package tree, current stable Git tag, npm `latest` artifact, and
+CDN checks must identify the same release. The next-minor `v3` branch may
+already contain additional work, while an active `release/<major>.<minor>`
+branch may supply a patch release. Moving `master`, publishing to npm `next`,
+promoting `latest`, and retiring branches remain separate, independently
+verified administrative checkpoints.

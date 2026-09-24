@@ -15,6 +15,8 @@ Current release-related decisions:
 - `decisions/2026-04-27-full-vsop87a-api.md`
 - `decisions/2026-09-22-npm-package-and-release-lines.md`
 - `decisions/2026-09-22-separate-educational-materials.md`
+- `decisions/2026-09-24-v2-v3-branch-roles.md`
+- `decisions/2026-09-25-v3-parallel-maintenance.md`
 
 Current implementation plans:
 

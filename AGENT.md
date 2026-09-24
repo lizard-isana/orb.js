@@ -14,8 +14,11 @@ This repository is the general-purpose astronomical calculation library used by 
 
 - `master` is the GitHub default and published stable line. Advance it only to
   a release that has passed package, installation, CDN, and browser checks.
-- `v3` is the active v3 integration and maintenance line. It may lead `master`
-  between releases; their trees must match at a release checkpoint.
+- `v3` is the integration line for the next backward-compatible v3 minor
+  release. It may lead and differ from `master` during development.
+- `release/3.1` is the supported 3.1.x patch line. Fixes needed by both 3.1 and
+  the next v3 minor start there and are forward-ported to `v3`; new features
+  target `v3` only.
 - `v2` preserves the final v2 runtime from `v2.4.1`. Runtime code is frozen;
   documentation may point users to the pinned v2 release or the v3 migration
   guide. Any v2 code release requires a separate decision.
@@ -23,8 +26,9 @@ This repository is the general-purpose astronomical calculation library used by 
   reference only. It is not an active release line and must not be published.
 - Do not merge the v2 implementation wholesale into `v3` or `master`.
 
-See `.ai/decisions/2026-09-24-v2-v3-branch-roles.md` for the transition and
-documentation rules.
+See `.ai/decisions/2026-09-24-v2-v3-branch-roles.md` for the stable-branch
+transition and `.ai/decisions/2026-09-25-v3-parallel-maintenance.md` for the
+current maintenance, forward-port, versioning, and release rules.
 
 ## Browser Support
 
