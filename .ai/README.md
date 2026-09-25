@@ -20,7 +20,11 @@ Current release-related decisions:
 
 Current implementation plans:
 
-- `plans/2026-09-22-v3.1-implementation-plan-revised.md` (current)
+- `plans/2026-09-25-orb-docs-project-architecture.md` (accepted architecture
+  for the separate documentation site project)
+- `plans/2026-09-25-v3.2-traceable-architecture.md` (current architecture
+  draft for the next v3 minor)
+- `plans/2026-09-22-v3.1-implementation-plan-revised.md` (completed v3.1 plan)
 - `plans/2026-09-22-v3.1-implementation-plan.md` (superseded initial draft)
 
 Current freeze and release tracking:
