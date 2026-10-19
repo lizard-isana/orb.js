@@ -154,9 +154,9 @@ The documentation repository owns:
 For the initial 3.1.1 documentation release, which predates a complete
 runtime-owned API contract, the documentation repository owns a reviewed
 bootstrap snapshot of the released package surface. Beginning with a future
-runtime contract, currently planned as part of 3.2 work, the documentation
-repository stores a normalized, version-pinned snapshot of the contract owned
-by orb.js rather than redefining it independently.
+runtime-owned contract, the documentation repository stores a normalized,
+version-pinned snapshot of the contract owned by orb.js rather than redefining
+it independently.
 
 ### 5.4 Synchronization cost is managed explicitly
 
@@ -642,8 +642,9 @@ The only initially reserved orb.js-specific tag is:
 
 It identifies a package-internal seam shared by normal and future traceable
 implementations. The accompanying prose must still explain the boundary and
-review requirement. The tag is planned for the 3.2 traceable work and is not
-retrofit into 3.1.1 merely to build the documentation site. New custom tags
+review requirement. The tag is reserved for the release-unassigned
+traceability experiment and is not retrofit into 3.1.1 merely to build the
+documentation site. New custom tags
 must use the `@orb` prefix, must not duplicate a standard tag, and require a
 demonstrated repeated use before adoption.
 
@@ -901,14 +902,15 @@ GitHub Pages-specific runtime behavior.
 - Add the stable URL to the orb.js README in the appropriate release line.
 - Record the documentation site in the orb.js release checklist.
 
-### D5 — future v3/3.2 documentation integration
+### D5 — future runtime-version documentation integration
 
 - Establish a reproducible input from an exact prerelease or `npm pack`
   artifact produced by orb.js `v3`.
 - Add draft pages for accepted 3.2 APIs without exposing them as stable.
 - Require documentation impact records for public 3.2 changes.
-- Add traceable API reference only after its own architecture and PoC are
-  accepted.
+- Treat 3.2 documentation as separate release work.
+- Add traceable API reference only after its experiment is accepted and a
+  runtime release is assigned.
 - Introduce a hosted next-version preview only if its operational need has
   been demonstrated separately.
 
@@ -987,8 +989,9 @@ previews or full versioning only at a demonstrated support need.
   not deferred D3 outputs.
 - orb.js JSDoc is a source-readability convention and possible check input,
   not a Starlight content generator.
-- Traceable source annotations and public documentation remain planned 3.2
-  work rather than a 3.1.1 documentation dependency.
+- Traceable source annotations and public documentation remain
+  release-unassigned experimental work rather than a 3.1.1 documentation
+  dependency.
 
 The exact API schema, identifier edge cases, page grouping, link-checking
 package, and Astro/Starlight upgrade policy are D0 implementation decisions.

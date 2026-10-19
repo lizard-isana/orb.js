@@ -1,21 +1,23 @@
-# orb.js v3.2 traceable architecture proposal
+# orb.js semantic traceability experiment architecture
 
 Status: Draft / architecture review
 
-Target branch: `v3`
+Target branch: unassigned; implementation must use a dedicated experiment
+branch separate from release work
 
-Target release: a backward-compatible v3 minor release, currently planned as
-3.2.0
+Target release: unassigned. The PoC determines whether a production form is
+suitable for a later backward-compatible v3 release, requires a v4 design, or
+should remain experimental.
 
 Implementation status: not started. This document defines the design and PoC
 gates; it is not implementation approval.
 
 ## 1. Context
 
-Version 3.1.1 is the current stable release. The `v3` branch is the integration
-line for the next backward-compatible v3 minor release. New 3.2 features and
-maintenance refactors belong on `v3`; focused 3.1 fixes continue separately on
-`release/3.1` and are forward-ported when applicable.
+Version 3.1.1 is the current stable release. This proposal is deliberately
+independent of the 3.2 release plan. Traceability is research work with no
+assigned package version; 3.2 planning and implementation proceed in a
+separate thread and branch.
 
 An earlier `v4-planning` prototype, now preserved as
 `archive/v4-prototype`, explored embedding educational structure, explanatory
@@ -216,9 +218,9 @@ specialization. The traceable facade owns the collector lifecycle.
 ### 5.5 Source annotation convention
 
 Shared normal/traceable seams are package-internal contracts rather than
-public user APIs. When the 3.2 implementation introduces such a seam, document
-it using JSDoc-formatted prose, the standard `@package` tag, and the single
-orb.js-specific marker:
+public user APIs. When an experimental implementation introduces such a seam,
+document it using JSDoc-formatted prose, the standard `@package` tag, and the
+single orb.js-specific marker:
 
 ```js
 /**
@@ -408,7 +410,7 @@ The initial schema should support at least:
   operation: "observer.observe",
   status: "ok",
   meta: {
-    orbVersion: "3.2.0",
+    orbVersion: "<exact-runtime-version>",
     traceVersion: "0.x"
   },
   level: "semantic",
@@ -435,7 +437,7 @@ hierarchy is represented by `parentId`; explicit `dependsOn` edges may be
 added where data dependency cannot be inferred from the hierarchy.
 
 The production schema begins at `orb-trace/1` only after the PoC has validated
-its shape. `orb-trace/0` may change freely during the feature branch.
+its shape. `orb-trace/0` may change freely during the experiment.
 
 ### 8.4 Value normalization
 
@@ -482,8 +484,8 @@ for a first semantic trace:
   horizontal conversion, and optional refraction; and
 - `vocab` and model provenance already carry part of the semantic vocabulary.
 
-Therefore v3.2 should not broadly export private helpers merely to support
-tracing. A low-level function becomes public only when it has independent
+Therefore the experiment should not broadly export private helpers merely to
+support tracing. A low-level function becomes public only when it has independent
 astronomical or mathematical value, a stable input/output contract, and a
 credible long-term compatibility story.
 
@@ -781,7 +783,7 @@ required:
 
 ## 16. Non-goals
 
-The initial 3.2 work does not attempt to provide:
+The initial experiment does not attempt to provide:
 
 - a complete trace of every public API;
 - every intermediate numerical value;
@@ -813,9 +815,9 @@ The following remain deliberate PoC questions rather than implicit contracts:
 These questions should be answered from the observer PoC and reference-site
 consumer, not by designing all future modules in advance.
 
-## 18. Expected v3.2 outcome
+## 18. Expected experimental outcome
 
-A successful v3.2 traceable effort would establish:
+A successful traceability experiment would establish:
 
 - a small reusable observability seam for selected structured calculations;
 - a versioned semantic trace contract;

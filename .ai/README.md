@@ -12,6 +12,7 @@ This directory stores development notes and decisions for `orb.js`.
 
 Current release-related decisions:
 
+- `decisions/2026-09-27-traceable-release-separation.md`
 - `decisions/2026-04-27-full-vsop87a-api.md`
 - `decisions/2026-09-22-npm-package-and-release-lines.md`
 - `decisions/2026-09-22-separate-educational-materials.md`
@@ -22,8 +23,8 @@ Current implementation plans:
 
 - `plans/2026-09-25-orb-docs-project-architecture.md` (accepted architecture
   for the separate documentation site project)
-- `plans/2026-09-25-v3.2-traceable-architecture.md` (current architecture
-  draft for the next v3 minor)
+- `plans/2026-09-25-traceable-experiment-architecture.md` (release-unassigned
+  semantic traceability experiment)
 - `plans/2026-09-22-v3.1-implementation-plan-revised.md` (completed v3.1 plan)
 - `plans/2026-09-22-v3.1-implementation-plan.md` (superseded initial draft)
 

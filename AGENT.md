@@ -150,7 +150,7 @@ structured subpath.
 ## Related Notes
 
 - `.ai/plans/2026-09-25-orb-docs-project-architecture.md`
-- `.ai/plans/2026-09-25-v3.2-traceable-architecture.md`
+- `.ai/plans/2026-09-25-traceable-experiment-architecture.md`
 - `.ai/decisions/2026-04-27-full-vsop87a-api.md`
 - `.ai/decisions/2026-09-24-browser-support-and-astro-instant.md`
 - `.ai/decisions/2026-09-24-browser-compatibility-preflight.md`
